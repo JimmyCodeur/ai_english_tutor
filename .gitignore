@@ -2,3 +2,6 @@
 __pycache__
 *.mp3
 *.txt
+__init__.py
+config.py
+*.wav
