@@ -5,3 +5,11 @@ __pycache__
 __init__.py
 config.py
 *.wav
+*.svg
+*.ttf
+*.woff
+*.woff2
+*.eot
+*.png
+*.jpg
+
