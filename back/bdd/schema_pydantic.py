@@ -5,7 +5,7 @@ from typing import Optional
 
 class TokenData(BaseModel):
     user_id: Optional[str] = None
-
+    
 class TokenInBody(BaseModel):
     token: str
 
@@ -19,13 +19,20 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    date_creation: datetime
-
+    date_creation: datetime  
+    
     class Config:
         orm_mode = True
 
 class CreateAdminRequest(BaseModel):
     email: str
     nom: str
-    date_naissance: str
+    date_naissance: date
     password: str
+
+class UserLoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user_id: int
+    email: EmailStr
+    nom: str

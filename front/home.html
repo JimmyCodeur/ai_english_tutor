@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head> 
+
+    <!-- Basic Page Needs
+    ================================================== -->
+    <title>Courseplus Template</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Courseplus is - Professional A unique and beautiful collection of UI elements">
+
+    <!-- Favicon -->
+    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+
+    <!-- icons
+    ================================================== -->
+    <link rel="stylesheet" href="../static/assets/css/icons.css">
+
+    <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="../static/assets/css/uikit.css">
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+      html,
+      body {
+        background: white !important
+      }
+    
+      .container {
+        max-width: 1000px;
+      }
+       
+      @media (min-width: 960px) {
+        .view-on-mobile{  display: none; }
+      }
+      @media (max-width: 960px) {
+        .hide-on-mobile{  display: none; }
+      }
+
+
+
+      .demo-card {
+            color: #4a4a4a;
+            text-transform: capitalize;
+            position: relative;
+        }
+
+        .demo-card img {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-right: 1px;
+        }
+
+        .demo-card:hover.demo-card img,
+        .demo-card:hover span.new {
+            transition: 0.4s ease all;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .demo-card span.new {
+            color: white;
+            padding: 2px 9px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            right: -12px;
+            top: -13px;
+            box-shadow: 2px 2px 3px 0px #cecece;
+        }
+
+        .demo-card p {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .bg {
+          backdrop-filter: saturate(50%) blur(6px);
+          background: #ffffffd1;
+         
+        }
+        .bg .text-3xl{
+          font-size: 1.5rem;
+          transition: 0.2s all, 0.2s
+        }
+        .bg .mb-2 {
+          margin-bottom: 0.3rem;
+          transition: 0.2s all, 0.2s
+        }
+    </style>
+
+</head>
+<body>
+
+
+  <div id="wrapper" class="is-verticle">
+
+    <header uk-sticky> 
+        <div class="header_inner">
+            <div class="left-side">
+
+                <div id="logo" class="logo-container">
+                    <a href="home.html">
+                        <img src="../static/assets/images/logo.png" class="logo-image" alt="">
+                        <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
+                        <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+                    </a>
+                </div>
+                <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
+                </div>
+
+            </div>
+            <div class="right-side">                        
+                <div> 
+                    <a href="" class="flex items-center space-x-2">
+                        <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
+                    </a>
+                    <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
+                        <ul>   
+                            <li>
+                                <a href="" class="user">
+                                    <div class="user_avatar">
+                                        <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
+                                    </div>
+                                    <div class="user_name">
+                                        <div id="profile-name" class="info-name"></div>
+                                        <span id="profile-email" class="info-email"></span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li> 
+                                <a href="users-profile.html">
+                                    <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
+                                     Mon Compte 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="profile-setting.html">
+                                    <ion-icon name="settings-outline" class="is-icon"></ion-icon>
+                                    Configuration  
+                                </a>
+                            </li>
+                            <li> 
+                                <hr>
+                            </li>
+                            <li> 
+                                <a href="#" id="logout-link" onclick="logout()">
+                                    <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
+                                    Se déconnecter 
+                                </a>
+                            </li>
+                        </ul>
+                    </div> 
+
+                </div>
+
+            </div>
+        </div>
+    </header>
+  
+  <div class="py-4 mb-6 z-50 delimiter-top pt-12" uk-sticky="cls-active: bg delimiter-bottom ; cls-inactive: delimiter-top pt-12">
+    <div class="container">
+      <div class="lg:text-3xl text-xl leading-snug font-bold text-black"></div> 
+    </div>
+  </div>
+
+  <div class="pb-12">
+    <div class="container">
+      <div class="mb-2">
+        <div class="text-xl font-semibold">Choisi ton correspondant IA et la langue à apprendre </div>
+    </div>
+  
+      <div class="uk-child-width-1-3@m uk-child-width-1-2@s uk-flex-center"
+        uk-scrollspy="target: > div; cls: uk-animation-slide-bottom-small; delay: 100" uk-grid>
+        
+        <nav class="cd-secondary-nav border-b md:m-0 -mx-4 nav-small">
+          <ul>
+            <li class="active"><a href="#" class="lg:px-2 nav-item" data-lang="all">All</a></li>
+            <li><a href="#" class="lg:px-2 nav-item" data-lang="anglais"> Anglais </a></li>
+            <li><a href="#" class="lg:px-2 nav-item" data-lang="espagnol"> Espagnol </a></li>
+            <li><a href="#" class="lg:px-2 nav-item" data-lang="francais"> Français </a></li>
+            <li><a href="#" class="lg:px-2 nav-item" data-lang="allemand"> Allemand </a></li>
+          </ul>
+        </nav>
+        <div class="content all anglais">
+          <a href="brain-info-course.html">
+            <div class="demo-card">
+              <img src="../static/assets/images/ai/brain_learn.png" alt="">
+              <p>Français -> Anglais</p>
+            </div>
+          </a>
+        </div>
+        <div class="content all espagnol">
+          <a >
+            <div class="demo-card">
+              <img src="../static/assets/images/ai/aleas_learn.png" alt="">
+              <p>Espagnol -> Anglais (Bientôt disponible)</p>
+            </div>
+          </a>
+        </div>
+     
+      <br><br><br>
+
+    </div>
+             <div class="sidebar">
+            <div class="sidebar_inner" data-simplebar>
+                <ul class="border-transparent">
+                    <li><a href="home.html">
+                            <ion-icon name="home-outline" class="side-icon"></ion-icon>
+                            <span> Accueil </span>
+                        </a>
+                    </li> 
+                    <li><a href="messages.html">
+                            <ion-icon name="chatbox-ellipses-outline" class="side-icon"></ion-icon>
+                            <span>S'entrainer</span>
+                        </a>
+                    </li>
+                    <li><a href="billing-history.html">
+                            <ion-icon name="reader-outline" class="side-icon"></ion-icon>
+                            <span> Mes rapports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="side_overly" uk-toggle="target: #wrapper ; cls: is-collapse is-active"></div>
+        </div>       
+  </div>
+
+</div>
+               
+<div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
+    <div class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
+        <p class="capitalize font-medium"> © copyright by TalkAI</p>
+        <div class="lg:flex space-x-4 text-gray-700 capitalize hidden">
+            <a href="#">À Propos |</a>
+            <a href="#"> Aide |</a>
+            <a href="#"> Condiditon |</a>
+            <a href="#"> Confidentialité</a>
+        </div>
+    </div>
+</div>
+
+</div>
+ 
+
+    <!-- Javascript
+        ================================================== -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="../static/assets/js/uikit.js"></script>
+    <script src="../static/assets/js/tippy.all.min.js"></script>
+    <script src="../static/assets/js/simplebar.js"></script>
+    <script src="../static/assets/js/custom.js"></script>
+    <script src="../static/assets/js/bootstrap-select.min.js"></script>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
+    <script src="../static/assets/js/logout.js"></script>
+    <script src="../static/assets/js/info_users.js" defer></script>
+    <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const navItems = document.querySelectorAll('.nav-item');
+              const contentItems = document.querySelectorAll('.content');
+
+              navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                  e.preventDefault();
+
+                  // Remove 'active' class from all items
+                  navItems.forEach(nav => nav.parentElement.classList.remove('active'));
+
+                  // Add 'active' class to the clicked item
+                  item.parentElement.classList.add('active');
+
+                  // Get the language from data attribute
+                  const lang = item.getAttribute('data-lang');
+
+                  // Show/hide content items based on selected language
+                  contentItems.forEach(content => {
+                    if (lang === 'all' || content.classList.contains(lang)) {
+                      content.style.display = 'block';
+                    } else {
+                      content.style.display = 'none';
+                    }
+                  });
+                });
+              });
+            });
+  </script>
+
+</body>
+
+</html>

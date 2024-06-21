@@ -18,5 +18,6 @@ class User(Base):
     date_naissance = Column(Date)
     date_creation = Column(Date, server_default=func.current_date())
     role = Column(SqlEnum(Role), default=Role.UTILISATEUR.name, nullable=False)
+    avatar = Column(String, nullable=True)
 
 

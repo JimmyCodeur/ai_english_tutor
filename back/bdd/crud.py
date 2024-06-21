@@ -67,7 +67,7 @@ def update_user_role(db: Session, user_id: int, new_role: str):
     if not user:
         return False
     
-    user.role = new_role  # Assurez-vous que new_role est valide (utilisateur ou admin)
+    user.role = new_role
     db.commit()
     db.refresh(user)
     return True

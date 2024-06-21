@@ -6926,7 +6926,8 @@ header .header_inner .left-side #logo {
 
 header .header_inner .left-side #logo img {
   max-width: none;
-  height: 32px;
+  height: 110px;
+  padding-left: 60px;
 }
 
 header .header_inner .left-side #logo img.logo_inverse,
@@ -8007,24 +8008,17 @@ header .header_inner,
   }
   .is-verticle header .header_inner .left-side {
     height: 72px;
-    width: 300px;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-bottom-width: 1px;
-    border-right-width: 1px;
     border-bottom-color: #f0f0f0;
     padding: 0 20px;
   }
   .is-verticle header .header_inner .right-side {
     height: 72px;
     width: calc(100% - 300px);
-    max-width: 1160px;
     padding: 0 30px;
-    border-bottom-width: 1px;
-    background-color: rgba(249, 250, 251, 0.9);
+    background-color: rgba(255, 255, 255, 0);
     color: #1d1929;
     -webkit-box-pack: justify;
         -ms-flex-pack: justify;
-            justify-content: space-between;
   }
   .is-verticle header .header_inner .right-side > div {
     display: -webkit-box;

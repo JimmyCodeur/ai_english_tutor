@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head> 
+
+    <!-- Basic Page Needs
+    ================================================== -->
+    <title>Courseplus Template</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Talk.ai">
+
+    <!-- Favicon -->
+    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+
+    <!-- icons
+    ================================================== -->
+    <link rel="stylesheet" href="../static/assets/css/icons.css">
+
+    <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="../static/assets/css/uikit.css">
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+
+    <div id="wrapper" class="horizontal">
+        
+        <!--  Header  -->
+        <header class="is-transparent is-dark border-none" uk-sticky="cls-inactive:is-transparent is-dark border-none">
+            <div class="header_inner">
+                <div class="left-side">
+    
+                    <!-- Logo -->
+                    <!-- <div id="logo">
+                        <a href="home.html">
+                            <img src="../static/assets/images/logo.png" alt="">
+                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
+                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+                        </a>
+                    </div> -->
+    
+                    <!-- icon menu for mobile -->
+                    <div class="triger" uk-toggle="target: .header_menu ; cls: is-visible">
+                    </div>
+    
+                    <!-- menu bar for mobile -->
+                    <nav class="header_menu">
+                        <ul> 
+                           <li> <a href="home.html"> Accueil </a></li>
+                           <li> <a href="episodes.html"> S'entrainer </a></li>
+                           <li> <a href="episodes.html"> Mes rapports </a></li>
+                        </ul>
+                    </nav>
+    
+                    <!-- overly for small devices -->
+                    <div class="overly" uk-toggle="target: .header_menu ; cls: is-visible"></div>
+    
+                </div>
+                <div class="right-side">                        
+                    <div> 
+                        <a href="" class="flex items-center space-x-2">
+                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
+                        </a>
+                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
+                            <ul>   
+                                <li>
+                                    <a href="" class="user">
+                                        <div class="user_avatar">
+                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
+                                        </div>
+                                        <div class="user_name">
+                                            <div id="profile-name" class="info-name"></div>
+                                            <span id="profile-email" class="info-email"></span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li> 
+                                    <a href="users-profile.html">
+                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
+                                         Mon Compte 
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="profile-setting.html">
+                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
+                                        Configuration  
+                                    </a>
+                                </li>
+                                <li> 
+                                    <hr>
+                                </li>
+                                <li> 
+                                    <a href="#" id="logout-link" onclick="logout()">
+                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
+                                        Se déconnecter 
+                                    </a>
+                                </li>
+                            </ul>
+                        </div> 
+    
+                    </div>
+    
+                </div>
+            </div>
+        </header>
+  
+        <!-- course preview details -->
+        <div class="bg-gradient-to-bl from-purple-600 to-purple-400 text-white lg:-mt-20 lg:pt-20">
+            <div class="container p-0">
+                <div class="lg:flex items-center lg:space-x-12 lg:py-14 lg:px-20 p-3">
+
+                    <div class="lg:w-4/12">
+                        <div class="w-full lg:h-52 h-40 overflow-hidden rounded-lg relative lg:mb-0 mb-4">
+                            <img src="../static/assets/images/ai/brain_learn.png" alt="" class="w-full h-full absolute inset-0">
+                        </div>
+                    </div>
+                    <div class="lg:w-8/12">
+                         
+                        <h1 class="lg:leading-10 lg:text-3xl text-white text-xl leading-8 font-bold" id="presentation">Brain est parfait pour apprendre l'anglais en immersion totale</h1>
+                        <p class="lg:w-4/5 mt-4 md:text-lg md:block hidden"> L'objectif de Brain est de vous faire apprendre l'anglais par immersion. En discutant avec vous, Brain évaluera votre niveau et adaptera ses conversations en conséquence.</p>                
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  course tabs -->
+        <div class="bg-white border-b z-20 mb-4 overflow-hidden" uk-sticky="media: 992 ; offset:70">
+            <div class="mcontainer py-0 lg:px-32 flex justify-between items-center"> 
+                <nav class="cd-secondary-nav flex-1">
+                    <ul class="space-x-3" uk-scrollspy-nav="closest: li; scroll: true">
+                        <li><a href="#presentation" uk-scroll>Présentation</a></li>
+                        <li><a href="#apprentissage" uk-scroll>Apprentissage</a></li> 
+                        <li><a href="#materiel" uk-scroll>Matériel</a></li> 
+                        <li><a href="#remarques" uk-scroll>Remarques</a></li>
+                    </ul>
+                </nav>
+                <div class="flex space-x-3 lg:-mr-5">
+                    <a href="brain-course.html" class="flex items-center justify-center h-10 px-6 rounded-md bg-blue-600 text-white">Commencer !</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container p-0">
+            <div class="space-y-5 lg:w-8/12 mx-auto">
+                
+                <!-- Présentation section -->
+                <div class="space-y-7">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3" >🤖 Description</h3>
+                        <p id="apprentissage">
+                            Bienvenue dans l'univers révolutionnaire de Brain, une intelligence artificielle conçue pour réinventer l'apprentissage de l'anglais par immersion totale. Imaginez une expérience d'apprentissage où vous êtes transporté dans un environnement authentique, où la conversation devient la clé de votre progression linguistique.
+                        </p>
+                        <p>
+                            Brain utilise des technologies avancées pour évaluer en temps réel votre niveau de langue et ajuster ses interactions en fonction de vos compétences spécifiques et de vos intérêts personnels. Que vous soyez débutant ou que vous souhaitiez perfectionner votre anglais, Brain s'adapte à votre rythme et à votre style d'apprentissage, vous offrant des conversations pertinentes et enrichissantes.
+                        </p>
+                        <p>
+                            En intégrant des fonctionnalités de correction instantanée, Brain vous aide à améliorer votre prononciation et votre compréhension grammaticale tout en explorant des sujets qui vous passionnent. Chaque session avec Brain est conçue pour maximiser votre immersion linguistique, vous préparant ainsi à interagir efficacement dans des contextes anglophones réels.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Apprentissage section -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-1">😁 Ce que vous apprendrez</h3>
+                    <ul class="grid md:grid-cols-2">
+                        <li><i class="uil-check text-xl font-bold mr-2"></i>Pratiques avancées de conversation en anglais</li>
+                        <li><i class="uil-check text-xl font-bold mr-2"></i>Maîtrise de la prononciation et de la grammaire</li>
+                        <li><i class="uil-check text-xl font-bold mr-2"></i>Création de dialogues immersifs</li>
+                        <li><i class="uil-check text-xl font-bold mr-2"></i>Exploration des nuances de la langue anglaise</li>
+                        <li><i class="uil-check text-xl font-bold mr-2"></i>Engagement dans des conversations sur des sujets d'intérêt personnel</li>
+                        <li id="materiel"><i class="uil-check text-xl font-bold mr-2"></i>Préparation à des interactions réelles en anglais</li>
+                    </ul>
+                    <br>
+                    <p>
+                        Avec Brain, chaque leçon est une occasion de progresser significativement dans votre maîtrise de l'anglais. À travers des exercices interactifs et des simulations de situations réelles, vous développerez non seulement vos compétences linguistiques, mais aussi votre confiance à communiquer dans un environnement anglophone.
+                    </p>
+                    <p>
+                        Notre approche pédagogique innovante combine la technologie avancée avec l'expertise linguistique pour vous offrir une expérience d'apprentissage enrichissante et personnalisée. Découvrez comment Brain peut transformer votre manière d'apprendre et vous préparer efficacement pour réussir dans vos échanges en anglais.
+                    </p>
+                </div>
+                
+                <!-- Matériel section -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-1">⚙️ Matériel</h3>
+                    <ul class="list-disc ml-5 space-y-1">
+                        <li>Utiliser un micro si vous êtes sur un ordinateur</li>
+                        <li>Optimiser votre environnement pour une concentration maximale</li>
+                        <li>Utiliser des écouteurs pour une qualité audio optimale</li>
+                    </ul>
+                    <br>
+                    <p>
+                        Assurez-vous de disposer d'une connexion Internet stable pour profiter pleinement des fonctionnalités audio interactives de Brain. Chaque détail de votre environnement d'apprentissage compte pour maximiser vos progrès linguistiques et votre expérience utilisateur.
+                    </p>
+                </div>
+                
+                <!-- Remarques section -->
+                <div >
+                    <h3 class="text-lg font-semibold mb-3">📃 Remarques</h3>
+                    <p >
+                        Brain offre un suivi détaillé de votre progression à chaque session, vous permettant de visualiser vos améliorations au fil du temps. Que vous soyez un apprenant débutant ou avancé, nos programmes s'adaptent à vos besoins spécifiques pour vous offrir la meilleure expérience d'apprentissage possible.
+                    </p>
+                    <p id="remarques">
+                        Pour des interactions audio fluides et une expérience d'apprentissage optimale, assurez-vous de vous trouver dans un environnement calme et utilisez des écouteurs pour améliorer la qualité audio. Brain est conçu pour être votre compagnon d'apprentissage idéal, vous aidant à atteindre vos objectifs linguistiques avec efficacité et plaisir.
+                    </p>
+                </div>
+            </div>
+        
+            <div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
+                <div class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
+                    <p class="capitalize font-medium">© Copyright by Talk.ai</p>
+                    <div class="lg:flex space-x-4 text-gray-700 capitalize hidden">
+                        <a href="#">À Propos |</a>
+                        <a href="#">Aide |</a>
+                        <a href="#">Conditions |</a>
+                        <a href="#">Confidentialité</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+           
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="../static/assets/js/uikit.js"></script>
+    <script src="../static/assets/js/tippy.all.min.js"></script>
+    <script src="../static/assets/js/simplebar.js"></script>
+    <script src="../static/assets/js/custom.js"></script>
+    <script src="../static/assets/js/bootstrap-select.min.js"></script>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
+    <script src="../static/assets/js/info_users.js" defer></script>
+
+</body>
+
+</html>
