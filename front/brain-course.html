@@ -1,40 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head> 
-
-    <!-- Basic Page Needs
-    ================================================== -->
+<head>
     <title>Brain Course</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Courseplus is - Professional A unique and beautiful collection of UI elements">
 
-    <!-- Favicon -->
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-
-    <!-- icons
-    ================================================== -->
     <link rel="stylesheet" href="../static/assets/css/icons.css">
-
-    <!-- CSS
-    ================================================== -->
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/style.css">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .audio-player {
+            margin-top: 5px;
+            /* Espacement entre les messages audio */
+        }
+    </style>
+
+    
 
 </head>
 
 <body class="bg-black">
-
     <div id="wrapper" class="course-watch flex">
-
-        <!-- Sidebar -->
         <div class="sidebar bg-white flex flex-col items-center justify-between">
-            <!-- Close button for mobile -->
             <span class="btn-close-mobi right-3 left-auto" uk-toggle="target: #wrapper ; cls: is-active"></span>
 
-            <!-- Back to home link -->
             <div class="flex justify-between lg:-ml-1 mt-1 mr-2">
                 <a href="home.html" class="flex items-center text-blue-500">
                     <ion-icon name="chevron-back-outline" class="md:text-lg text-2xl"></ion-icon>
@@ -42,28 +35,27 @@
                 </a>
             </div>
 
-            <!-- Title -->
-            <h1 class="lg:text-2xl text-lg font-bold mt-2 line-clamp-2">Chat avec Brain</h1>
+            <h1 class="lg:text-2xl text-lg font-bold mt-2 line-clamp-2">Chat</h1>
 
-            <!-- Chat box -->
-            <div class="chat-box mt-4 p-4 flex-1 overflow-y-auto">
-                <div class="message mb-2 bg-gray-200 rounded-lg p-2 max-w-xs">Bonjour ! Comment puis-je vous aider aujourd'hui ?</div>
-                <div class="message self mb-2 bg-blue-500 text-white rounded-lg p-2 max-w-xs">Bonjour ! Je suis prêt à commencer mon apprentissage.</div>
+            <div id="chatBox" class="chat-box mt-4 p-4 flex-1 overflow-y-auto">            
             </div>
 
+            <button id="toggleRecording" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-600">Commencer l'enregistrement</button>
 
+            <div id="loadingIndicator" class="hidden mt-2 flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
+                </svg>
+                <span class="text-yellow-500 ml-1">En cours de traitement...</span>
+            </div>
         </div>
 
-        <!-- Main Contents -->
-        <div class="main_content h-screen flex justify-center items-center">
-            <!-- Contenu principal ici -->
-        </div>
+        <div class="main_content h-screen flex flex-col justify-center items-center">
 
+        </div>
     </div>
 
-          
-    <!-- Javascript
-    ================================================== -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="../static/assets/js/uikit.js"></script>
     <script src="../static/assets/js/tippy.all.min.js"></script>
@@ -72,8 +64,197 @@
     <script src="../static/assets/js/bootstrap-select.min.js"></script>
     <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 
+    <script>
+        let recorder;
+        let audioChunks = [];
+        let recording = false;
+        let initialChatStarted = false;
+
+        async function startChat() {
+            updateButtonState('processing');
+            try {
+                const response = await fetch('/chat/start', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                displayMessage(data.generated_response, 'bot', data.audio_base64);
+
+                // Charger et jouer l'audio généré
+                const audioBase64 = data.audio_base64;
+                const audioElement = document.getElementById('generatedAudio');
+                audioElement.src = "data:audio/wav;base64," + audioBase64;
+
+                audioElement.style.display = "none";
+
+                // Afficher l'indicateur de chargement et cacher l'audio
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('audioStatus').classList.remove('hidden');
+                audioElement.style.display = "block";
+
+                // Jouer l'audio
+                audioElement.play();
+
+                // Détecter le début et la fin de la lecture de l'audio
+                audioElement.onplay = () => {
+                    document.getElementById('avatar').classList.add('speaking');
+                    document.getElementById('audioStatus').classList.add('hidden');
+                };
+                audioElement.onpause = () => {
+                    document.getElementById('avatar').classList.remove('speaking');
+                };
+                audioElement.onended = () => {
+                    document.getElementById('avatar').classList.remove('speaking');
+                };
+            } catch (err) {
+                console.error('Error starting chat: ', err);
+            } finally {
+                updateButtonState('start');
+            }
+        }
+
+        async function toggleRecording() {
+            if (!recording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    recorder = new MediaRecorder(stream);
+                    recorder.ondataavailable = e => audioChunks.push(e.data);
+                    recorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks);
+                        const formData = new FormData();
+                        formData.append('audio_file', audioBlob, 'recorded_audio.wav');
+                        updateButtonState('processing');
+                        try {
+                            const response = await fetch('/chat/', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await response.json();
+                            console.log(data);
+                            displayMessage(data.user_input, 'user');
+                            displayMessage(data.generated_response, 'bot', data.audio_base64);
+
+                            // Charger et jouer l'audio généré
+                            const audioBase64 = data.audio_base64;
+                            const audioElement = document.getElementById('generatedAudio');
+                            audioElement.src = "data:audio/wav;base64," + audioBase64;
+
+                            audioElement.style.display = "none";
+
+                            // Afficher l'indicateur de chargement et cacher l'audio
+                            document.getElementById('loadingIndicator').classList.add('hidden');
+                            document.getElementById('audioStatus').classList.remove('hidden');
+                            audioElement.style.display = "block";
+
+                            // Jouer l'audio
+                            audioElement.play();
+
+                            // Détecter le début et la fin de la lecture de l'audio
+                            audioElement.onplay = () => {
+                                document.getElementById('avatar').classList.add('speaking');
+                                document.getElementById('audioStatus').classList.add('hidden');
+                            };
+                            audioElement.onpause = () => {
+                                document.getElementById('avatar').classList.remove('speaking');
+                            };
+                            audioElement.onended = () => {
+                                document.getElementById('avatar').classList.remove('speaking');
+                            };
+
+                        } catch (err) {
+                            console.error('Error sending audio data to server: ', err);
+                        } finally {
+                            audioChunks = [];
+                            recording = false;
+                            updateButtonState('start');
+                        }
+                    };
+                    recorder.start();
+                    recording = true;
+                    updateButtonState('stop');
+                } catch (err) {
+                    console.error('Error starting recording: ', err);
+                }
+            } else {
+                recorder.stop();
+            }
+        }
+
+        function displayMessage(message, sender, audioBase64) {
+            const chatBox = document.getElementById('chatBox');
+
+            // Créer un conteneur pour le message et l'audio
+            const messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container mb-2';
+
+            // Créer le div pour le message textuel
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender === 'bot' ? '' : 'self'} bg-${sender === 'bot' ? 'gray-200' : 'blue-500'} ${sender === 'bot' ? 'rounded-lg' : 'text-white rounded-lg'} p-2 max-w-xs`;
+            messageDiv.textContent = message;
+
+            // Ajouter le message textuel au conteneur
+            messageContainer.appendChild(messageDiv);
+
+            if (audioBase64)
+
+            // Si un fichier audio est fourni, créer et ajouter l'élément audio
+            if (audioBase64) {
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                audioElement.src = "data:audio/wav;base64," + audioBase64;
+                audioElement.className = 'audio-player'; // Classe pour styliser le lecteur audio
+
+                // Attacher un événement pour démarrer la lecture dès que l'audio est chargé
+                audioElement.addEventListener('loadeddata', () => {
+                    audioElement.play(); // Démarrer la lecture
+                });
+
+                // Ajouter l'élément audio au conteneur
+                messageContainer.appendChild(audioElement);
+            }
+
+            // Ajouter le conteneur au chatBox
+            chatBox.appendChild(messageContainer);
+
+            // Faire défiler vers le bas pour afficher le dernier message ajouté
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function updateButtonState(state) {
+            const button = document.getElementById('toggleRecording');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+
+            switch (state) {
+                case 'start':
+                    button.textContent = "Commencer l'enregistrement";
+                    button.classList.remove('hidden');
+                    button.classList.remove('bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
+                    button.classList.add('bg-green-500', 'text-white');
+                    loadingIndicator.classList.add('hidden');
+                    break;
+                case 'stop':
+                    button.textContent = "Arrêter l'enregistrement";
+                    button.classList.remove('bg-green-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
+                    button.classList.add('bg-red-500', 'text-white');
+                    loadingIndicator.classList.add('hidden');
+                    break;
+                case 'processing':
+                    button.classList.add('hidden');
+                    loadingIndicator.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        document.getElementById('toggleRecording').addEventListener('click', async () => {
+            if (!initialChatStarted) {
+                await startChat();
+                initialChatStarted = true;
+            } else {
+                await toggleRecording();
+            }
+        });
+    </script>
 </body>
 
 </html>
-
-

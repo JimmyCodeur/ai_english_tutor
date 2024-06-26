@@ -6,6 +6,7 @@ from log_conversation import log_conversation
 from faster_whisper import WhisperModel
 from TTS.api import TTS
 import os
+import re
 
 model_name = 'phi3'
 model_size = "large-v2"  
@@ -14,10 +15,18 @@ asr_model = WhisperModel(model_size, device="cuda", compute_type="float16")
 tts_model = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=True)
 tts_model.to("cuda")
 
-def transcribe_audio(file_path):
-    segments, info = asr_model.transcribe(file_path, beam_size=5)
+def transcribe_audio(file_path, language=None):
+    model_size = "large-v3"
+    asr_model = WhisperModel(model_size, device="cuda", compute_type="float16")
+    segments, info = asr_model.transcribe(file_path, beam_size=5, language=language)
+    
+    # Combine segments into a single string
     transcribed_text = ' '.join([segment.text for segment in segments])
-    transcribed_text_clean = transcribed_text.replace('*', '').replace('+', '')
+    
+    # Replace unwanted characters and clean the text
+    transcribed_text_clean = re.sub(r'[^A-Za-z0-9\s.,!?\'-]', '', transcribed_text)  # Keep only alphanumeric characters and common punctuation
+    transcribed_text_clean = re.sub(r'\s+', ' ', transcribed_text_clean).strip()  # Remove extra whitespace and strip leading/trailing spaces
+
     return transcribed_text_clean
 
 def main():
