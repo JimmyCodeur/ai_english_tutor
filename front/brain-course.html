@@ -15,12 +15,8 @@
     <style>
         .audio-player {
             margin-top: 5px;
-            /* Espacement entre les messages audio */
         }
     </style>
-
-    
-
 </head>
 
 <body class="bg-black">
@@ -37,8 +33,8 @@
 
             <h1 class="lg:text-2xl text-lg font-bold mt-2 line-clamp-2">Chat</h1>
 
-            <div id="chatBox" class="chat-box mt-4 p-4 flex-1 overflow-y-auto">            
-            </div>
+            <div id="chatBox" class="chat-box mt-4 p-4 flex-1 overflow-y-auto"></div>
+            <div id="suggestionsBox"></div>
 
             <button id="toggleRecording" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-600">Commencer l'enregistrement</button>
 
@@ -51,9 +47,7 @@
             </div>
         </div>
 
-        <div class="main_content h-screen flex flex-col justify-center items-center">
-
-        </div>
+        <div class="main_content h-screen flex flex-col justify-center items-center"></div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -116,6 +110,12 @@
             if (!recording) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                    // Vérifier si le microphone est actif et non muet
+                    const audioTracks = stream.getAudioTracks();
+                    if (audioTracks.length === 0 || !audioTracks[0].enabled) {
+                        throw new Error("Microphone is muted or inactive.");
+                    }
                     recorder = new MediaRecorder(stream);
                     recorder.ondataavailable = e => audioChunks.push(e.data);
                     recorder.onstop = async () => {
@@ -130,38 +130,26 @@
                             });
                             const data = await response.json();
                             console.log(data);
-                            displayMessage(data.user_input, 'user');
-                            displayMessage(data.generated_response, 'bot', data.audio_base64);
 
-                            // Charger et jouer l'audio généré
-                            const audioBase64 = data.audio_base64;
-                            const audioElement = document.getElementById('generatedAudio');
-                            audioElement.src = "data:audio/wav;base64," + audioBase64;
+                            if (data.error === "unknown_language") {
+                                displayMessage("Erreur de prononciation, recommence !", 'bot', null, true);
+                            } else {
+                                if (data.user_input) {
+                                    displayMessage(data.user_input, 'user');
+                                }
 
-                            audioElement.style.display = "none";
+                                if (data.generated_response) {
+                                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                                }
 
-                            // Afficher l'indicateur de chargement et cacher l'audio
-                            document.getElementById('loadingIndicator').classList.add('hidden');
-                            document.getElementById('audioStatus').classList.remove('hidden');
-                            audioElement.style.display = "block";
-
-                            // Jouer l'audio
-                            audioElement.play();
-
-                            // Détecter le début et la fin de la lecture de l'audio
-                            audioElement.onplay = () => {
-                                document.getElementById('avatar').classList.add('speaking');
-                                document.getElementById('audioStatus').classList.add('hidden');
-                            };
-                            audioElement.onpause = () => {
-                                document.getElementById('avatar').classList.remove('speaking');
-                            };
-                            audioElement.onended = () => {
-                                document.getElementById('avatar').classList.remove('speaking');
-                            };
+                                if (data.suggestions) {
+                                    appendSuggestions(data.suggestions);
+                                }
+                            }
 
                         } catch (err) {
                             console.error('Error sending audio data to server: ', err);
+                            displayErrorMessage("Erreur lors de l'envoi des données audio au serveur.");
                         } finally {
                             audioChunks = [];
                             recording = false;
@@ -172,15 +160,69 @@
                     recording = true;
                     updateButtonState('stop');
                 } catch (err) {
-                    console.error('Error starting recording: ', err);
+                    if (err.name === 'DOMException' && err.message.includes('Requested device not found')) {
+                        console.error('Error starting recording: ', err);
+                        displayErrorMessage("Microphone non trouvé. Veuillez vérifier que votre microphone est connecté et fonctionne correctement.");
+                    } else {
+                        console.error('Error starting recording: ', err);
+                        displayErrorMessage("🎙️ Erreur lors du démarrage de l'enregistrement : Microphone inactif ou muet.");
+                    }
                 }
             } else {
                 recorder.stop();
             }
         }
 
-        function displayMessage(message, sender, audioBase64) {
+        function appendSuggestions(suggestions) {
             const chatBox = document.getElementById('chatBox');
+
+            // Créer un titre pour les suggestions
+            const suggestionsTitle = document.createElement('div');
+            suggestionsTitle.className = 'suggestions-title text-gray-500 font-bold mb-2';
+            suggestionsTitle.textContent = 'Suggestion : ⬇️';
+
+            chatBox.appendChild(suggestionsTitle);
+
+            if (suggestions && suggestions.length > 0) {
+                suggestions.forEach((suggestion, index) => {
+                    if (suggestion.trim() !== "") {
+                        const suggestionDiv = document.createElement('div');
+                        suggestionDiv.className = 'div bg-yellow-200 text-blue-800 p-2 rounded mb-2';
+                        suggestionDiv.textContent = suggestion;
+                        suggestionDiv.setAttribute('data-index', index); // Attribut pour gérer le clic
+                        suggestionDiv.addEventListener('click', () => {
+                            // Action à effectuer lors du clic sur une suggestion
+                            // Par exemple, remplacer le contenu de l'entrée utilisateur avec la suggestion choisie
+                            const userInputField = document.getElementById('userInputField');
+                            userInputField.value = suggestion;
+                        });
+                        chatBox.appendChild(suggestionDiv);
+                    }
+                });
+            } else {
+                const noSuggestionsDiv = document.createElement('div');
+                noSuggestionsDiv.className = 'no-suggestions text-red-500';
+                noSuggestionsDiv.textContent = "Aucune suggestion disponible.";
+                chatBox.appendChild(noSuggestionsDiv);
+            }
+
+            // Faire défiler vers le bas pour afficher le dernier message ajouté
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function displayMessage(message, sender, audioBase64, isError = false) {
+            const chatBox = document.getElementById('chatBox');
+            if (message.trim() === "Thank you.") {
+                const errorMessageDiv = document.createElement('div');
+                errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
+                errorMessageDiv.textContent = "🗣️ Aucun audio détecté, recommencez.";
+                chatBox.appendChild(errorMessageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return;
+            }
+            if (!message) return; // Ne rien faire si le message est null
+
+            
 
             // Créer un conteneur pour le message et l'audio
             const messageContainer = document.createElement('div');
@@ -188,13 +230,15 @@
 
             // Créer le div pour le message textuel
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender === 'bot' ? '' : 'self'} bg-${sender === 'bot' ? 'gray-200' : 'blue-500'} ${sender === 'bot' ? 'rounded-lg' : 'text-white rounded-lg'} p-2 max-w-xs`;
+            if (isError) {
+                messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
+            } else {
+                messageDiv.className = `message ${sender === 'bot' ? '' : 'self'} bg-${sender === 'bot' ? 'gray-200' : 'blue-500'} ${sender === 'bot' ? 'rounded-lg' : 'text-white rounded-lg'} p-2 max-w-xs`;
+            }
             messageDiv.textContent = message;
 
             // Ajouter le message textuel au conteneur
             messageContainer.appendChild(messageDiv);
-
-            if (audioBase64)
 
             // Si un fichier audio est fourni, créer et ajouter l'élément audio
             if (audioBase64) {
@@ -210,10 +254,21 @@
 
                 // Ajouter l'élément audio au conteneur
                 messageContainer.appendChild(audioElement);
-            }
+            } 
 
             // Ajouter le conteneur au chatBox
             chatBox.appendChild(messageContainer);
+
+            // Faire défiler vers le bas pour afficher le dernier message ajouté
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function displayErrorMessage(errorMessage) {
+            const chatBox = document.getElementById('chatBox');
+            const errorMessageDiv = document.createElement('div');
+            errorMessageDiv.className = 'message text-red-500 rounded-lg p-2 max-w-xs';
+            errorMessageDiv.textContent = errorMessage;
+            chatBox.appendChild(errorMessageDiv);
 
             // Faire défiler vers le bas pour afficher le dernier message ajouté
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -253,7 +308,8 @@
             } else {
                 await toggleRecording();
             }
-        });
+        }
+    );
     </script>
 </body>
 

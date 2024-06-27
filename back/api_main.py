@@ -16,12 +16,18 @@ from log_conversation import log_conversation
 from load_model import generate_ollama_response
 from tts_utils import text_to_speech_audio
 from app import transcribe_audio
+from audio_utils import save_user_audio
 from TTS.api import TTS
 from fastapi.middleware.cors import CORSMiddleware
 import base64
 import nltk
 from langdetect import detect_langs, DetectorFactory
 from langdetect.lang_detect_exception import LangDetectException
+import noisereduce
+import soundfile as sf
+import numpy as np
+import subprocess
+import os
 
 
 DetectorFactory.seed = 0  # Pour obtenir des résultats reproductibles
@@ -29,18 +35,29 @@ DetectorFactory.seed = 0  # Pour obtenir des résultats reproductibles
 def detect_language(text):
     try:
         languages = detect_langs(text)
+        print(languages)
+        
         # Filtrer pour ne garder que les langues en et fr
         filtered_langs = [lang for lang in languages if lang.lang in ['en', 'fr']]
+        
         if not filtered_langs:
             return 'unknown'
+        
         # Sélectionner la langue avec le score de confiance le plus élevé
         best_guess = max(filtered_langs, key=lambda lang: lang.prob)
+        print(best_guess)
+        
         # Utiliser un seuil de confiance
-        if best_guess.prob < 0.7:  # Ajuster le seuil en fonction des tests
+        confidence_threshold = 0.7  # Ajuster le seuil en fonction des tests et des résultats souhaités
+        
+        if best_guess.prob < confidence_threshold:
             return 'unknown'
+        
         return best_guess.lang
+    
     except LangDetectException:
         return 'unknown'
+    
 
 Base.metadata.create_all(bind=engine)
 
@@ -213,40 +230,100 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
     return {"message": "Utilisateur supprimé avec succès"}
 
 nltk.download('punkt')
-first_interaction = True
+
+
+
 
 @app.post("/chat/")
 async def chat_with_brain(audio_file: UploadFile = File(...)):
-    global first_interaction
 
     model_name = 'phi3'
 
-    tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)
-    
+    tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
     tts_model.to("cuda")
     
-    audio_path = f"user_audio/{audio_file.filename}"
+    audio_path = f"./user_audio/{audio_file.filename}"
     with open(audio_path, "wb") as f:
         f.write(await audio_file.read()) 
-    
+
+    # Convert the audio file to a supported format using ffmpeg
+    converted_audio_path = f"./audio/user/converted_{audio_file.filename}"
+    if os.path.exists(converted_audio_path):
+        os.remove(converted_audio_path)
+    subprocess.run(['ffmpeg', '-i', audio_path, '-acodec', 'pcm_s16le', '-ar', '44100', converted_audio_path])
+
+    # Reduce noise from the converted audio file
+    audio_data, sr = sf.read(converted_audio_path)
+    reduced_noise = noisereduce.reduce_noise(audio_data, sr)
+
+    # Save the denoised audio back to file
+    denoised_audio_path = f"./audio/user/denoised_converted_{audio_file.filename}"
+    sf.write(denoised_audio_path, reduced_noise, sr)
+
+    # audio_path = save_user_audio(audio_file)
+
     user_input = transcribe_audio(audio_path).strip()
     print(user_input)
 
+    language = detect_language(user_input)
+    print(language)       
+
+
+        # Check if the transcription is "Thank you." (or adjust as needed)
+    if user_input == "Thank you.":
+        return {
+            "user_input": user_input,
+            "generated_response": None,
+            "audio_base64": None  # or any response indicating no recording
+        }
+    
+    if user_input.lower() in ["help", "help.", "help!", "help?"]:
+        print("Detected help request.")
+        
+        # Lire la dernière ligne du fichier conversation_logs.txt
+        with open('./log/conversation_logs.txt', 'r', encoding='utf-8') as file:
+            lines = [line.strip() for line in file.readlines() if line.strip()]
+            last_line = lines[-1] if lines else ""
+
+        # Extraire le texte après 'Response: '
+        if last_line.startswith('[') and 'Response: ' in last_line:
+            prompt_for_suggestions = last_line.split('Response: ', 1)[1].strip()
+        else:
+            prompt_for_suggestions = last_line
+
+        prompt_for_suggestions += (
+        "\n Please respond with very short messages and at an easy level"        
+        )
+
+        print(prompt_for_suggestions)
+
+        generated_suggestions = generate_ollama_response(model_name, prompt_for_suggestions)
+        
+        if isinstance(generated_suggestions, list):
+            generated_suggestions = '\n'.join([f"{i + 1}. {s}" for i, s in enumerate(generated_suggestions)])
+
+        suggestions_list = generated_suggestions.split('\n')[:2]
+        print(suggestions_list)
+
+        return {
+            "user_input": user_input,
+            "generated_response": None,
+            "audio_base64": None,
+            "suggestions": suggestions_list
+        }
+
     if not user_input:
         raise HTTPException(status_code=400, detail="Aucune entrée utilisateur détectée dans l'audio.")
-    
-    language = detect_language(user_input)
-    print(language)
 
     if language == 'unknown':
         return {
-            "user_input": user_input,
-            "generated_response": False,
+            "error": "unknown_language",
+            "generated_response": "What ?",
             "audio_base64": None,
-            "display_message": True
         }
     
     if language == 'en':
+        print("promp english tommy")
         prompt = (
             "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English. \n"
             "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
@@ -260,7 +337,8 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
             "Avoid asking how to say things in French.\n"
             f"User: {user_input}\n"
         )
-    else:
+    elif language == 'fr':
+        print("user parle francais")
         prompt = (
             "You are a 4-year-old child named Tommy. \n"
             "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
@@ -298,6 +376,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
 @app.post("/chat/start")
 async def start_chat():
     model_name = 'phi3'
+    print("english start")
     prompt = (
             "Hello! My name is Tommy. I'm a 4-year-old child. Let's have a fun chat in English! "
             "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"

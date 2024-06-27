@@ -9,7 +9,7 @@ tts_model.to("cuda")
 
 def text_to_speech_audio(generated_response):
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    audio_file_path = f"./back/ai_audio/teacher_{current_time}.wav"
+    audio_file_path = f"./audio/teacher/teacher_{current_time}.wav"
     wav_data = tts_model.tts(generated_response)
     wav_data_np = np.array(wav_data, dtype=np.float32)
     wav_data_np = wav_data_np / np.max(np.abs(wav_data_np))

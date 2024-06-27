@@ -36,3 +36,9 @@ class UserLoginResponse(BaseModel):
     user_id: int
     email: EmailStr
     nom: str
+
+class MessageRequest(BaseModel):
+    message: str
+
+class SuggestionResponse(BaseModel):
+    suggestions: list

@@ -1,5 +1,5 @@
 from system_utils import check_cuda
-from audio_utils import record_audio
+
 from tts_utils import text_to_speech_audio
 from load_model import generate_ollama_response
 from log_conversation import log_conversation
@@ -15,10 +15,10 @@ asr_model = WhisperModel(model_size, device="cuda", compute_type="float16")
 tts_model = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=True)
 tts_model.to("cuda")
 
-def transcribe_audio(file_path, language=None):
+def transcribe_audio(file_path):
     model_size = "large-v3"
     asr_model = WhisperModel(model_size, device="cuda", compute_type="float16")
-    segments, info = asr_model.transcribe(file_path, beam_size=5, language=language)
+    segments, info = asr_model.transcribe(file_path, beam_size=5)
     
     # Combine segments into a single string
     transcribed_text = ' '.join([segment.text for segment in segments])
