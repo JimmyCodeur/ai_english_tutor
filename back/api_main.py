@@ -17,7 +17,8 @@ from transcribe_audio import transcribe_audio
 from audio_utils import file_to_base64,save_user_audio
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_start
+from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en
+from help_suggestion import help_sugg
 from TTS.api import TTS
 import base64
 import nltk
@@ -226,41 +227,9 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
             "audio_base64": None 
         }
     
-    if user_input.lower() in ["help", "help.", "help!", "help?"]:
-        print("Detected help request.")
-        
-        with open('./log/conversation_logs.txt', 'r', encoding='utf-8') as file:
-            lines = [line.strip() for line in file.readlines() if line.strip()]
-            last_line = lines[-1] if lines else ""
-
-        if last_line.startswith('[') and 'Response: ' in last_line:
-            prompt_for_suggestions = last_line.split('Response: ', 1)[1].strip()
-        else:
-            prompt_for_suggestions = last_line
-
-        prompt_for_suggestions += (
-        "\n Please respond with very short messages and at an easy level"        
-        )
-
-        print(prompt_for_suggestions)
-
-        generated_suggestions = generate_ollama_response(model_name, prompt_for_suggestions)
-        
-        if isinstance(generated_suggestions, list):
-            generated_suggestions = '\n'.join([f"{i + 1}. {s}" for i, s in enumerate(generated_suggestions)])
-
-        suggestions_list = generated_suggestions.split('\n')[:2]
-        print(suggestions_list)
-
-        return {
-            "user_input": user_input,
-            "generated_response": None,
-            "audio_base64": None,
-            "suggestions": suggestions_list
-        }
-
-    if not user_input:
-        raise HTTPException(status_code=400, detail="Aucune entrée utilisateur détectée dans l'audio.")
+    log_file_path = './log/conversation_logs.txt'
+    if user_input.lower() in ["help", "help.", "help!", "help?","Help !"]:
+        return help_sugg(log_file_path, model_name, user_input)
 
     if language == 'unknown':
         return {
@@ -271,37 +240,12 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     
     if language == 'en':
         print("promp2 english tommy")
-        prompt = (
-            "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English. \n"
-            "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
-            "1. Engage the person in simple and playful conversations in English to encourage learning.\n"
-            "2. Ask about their day or their interests to keep the conversation going.\n"
-            "3. Use simple English words to explain things they might not understand.\n"
-            "4. Do not ask the same question more than once.\n"
-            "5. You must only repeat the same phrase once"
-            "Remember, the goal is to create a fun and engaging environment where they can learn English naturally.\n"
-            "Please limit greetings (e.g., Hi, hello, Hello, hi there) to only once in your response.\n"
-            "Please limit the number of questions asked to one per response.\n"
-            "Avoid asking how to say things in French.\n"
-            f"User: {user_input}\n"
-        )
+        prompt = prompt_tommy_en.format(user_input=user_input)
     elif language == 'fr':
         print("user parle francais")
-        prompt = (
-            "You are a 4-year-old child named Tommy. \n"
-            "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
-            "You must always respond in English.\n"
-            "Warning: Poorly pronounced English detected. Please try again with clearer pronunciation."
-            f"User: {user_input}\n"
-        )
+        prompt = prompt_tommy_fr.format(user_input=user_input)
 
-    generated_response = generate_phi3_response(prompt)        
-   
-    # if language == 'en':
-    #     limited_response = ' '.join(sentences[:3])
-    # else:
-    #     limited_response = ' '.join(sentences[:2])
-       
+    generated_response = generate_phi3_response(prompt)     
     audio_file_path = text_to_speech_audio(generated_response)           
     audio_base64 = file_to_base64(audio_file_path)    
     log_conversation(prompt, generated_response)    
