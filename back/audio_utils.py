@@ -2,6 +2,7 @@ import sounddevice as sd
 import wave
 from datetime import datetime
 from fastapi import UploadFile
+import base64
 
 # def record_audio(duration, fs=16000, device=None):
 #     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -26,3 +27,8 @@ def save_user_audio(audio_file: UploadFile):
     with open(audio_path, "wb") as f:
         f.write(audio_file.file.read())
     return audio_path
+
+def file_to_base64(file_path):
+    with open(file_path, "rb") as f:
+        audio_bytes = f.read()
+    return base64.b64encode(audio_bytes).decode("utf-8")

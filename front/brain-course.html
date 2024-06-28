@@ -149,7 +149,7 @@
 
                         } catch (err) {
                             console.error('Error sending audio data to server: ', err);
-                            displayErrorMessage("Erreur lors de l'envoi des données audio au serveur.");
+                            displayErrorMessage("Erreur lors de l'enregustrement, recommencez.");
                         } finally {
                             audioChunks = [];
                             recording = false;
@@ -212,7 +212,7 @@
 
         function displayMessage(message, sender, audioBase64, isError = false) {
             const chatBox = document.getElementById('chatBox');
-            if (message.trim() === "Thank you.") {
+            if (["Thank you.", "Obrigado.", "Tchau.", "E a"].includes(message.trim())) {
                 const errorMessageDiv = document.createElement('div');
                 errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
                 errorMessageDiv.textContent = "🗣️ Aucun audio détecté, recommencez.";

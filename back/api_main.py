@@ -1,79 +1,36 @@
 from fastapi import FastAPI, Depends, Form, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
 from bdd.schema_pydantic import TokenInBody, UserLoginResponse
 from pydantic import EmailStr, constr
 from datetime import date
-from bdd.database import get_db, engine
+from bdd.database import get_db
 from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role
 from bdd.models import Base, User as DBUser, Role
-from passlib.context import CryptContext
 from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from log_conversation import log_conversation
-from load_model import generate_ollama_response
+from load_model import generate_ollama_response, generate_phi3_response
 from tts_utils import text_to_speech_audio
-from app import transcribe_audio
-from audio_utils import save_user_audio
+from transcribe_audio import transcribe_audio
+from audio_utils import file_to_base64,save_user_audio
+from detect_langs import detect_language
+from cors import add_middleware
+from prompt import prompt_tommy_start
 from TTS.api import TTS
-from fastapi.middleware.cors import CORSMiddleware
 import base64
 import nltk
-from langdetect import detect_langs, DetectorFactory
-from langdetect.lang_detect_exception import LangDetectException
 import noisereduce
 import soundfile as sf
 import numpy as np
 import subprocess
 import os
 
-
-DetectorFactory.seed = 0  # Pour obtenir des résultats reproductibles
-
-def detect_language(text):
-    try:
-        languages = detect_langs(text)
-        print(languages)
-        
-        # Filtrer pour ne garder que les langues en et fr
-        filtered_langs = [lang for lang in languages if lang.lang in ['en', 'fr']]
-        
-        if not filtered_langs:
-            return 'unknown'
-        
-        # Sélectionner la langue avec le score de confiance le plus élevé
-        best_guess = max(filtered_langs, key=lambda lang: lang.prob)
-        print(best_guess)
-        
-        # Utiliser un seuil de confiance
-        confidence_threshold = 0.7  # Ajuster le seuil en fonction des tests et des résultats souhaités
-        
-        if best_guess.prob < confidence_threshold:
-            return 'unknown'
-        
-        return best_guess.lang
-    
-    except LangDetectException:
-        return 'unknown'
-    
-
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Autorise tous les domaines (à ajuster en fonction de vos besoins)
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
+add_middleware(app)
 
 app.mount("/static", StaticFiles(directory="./front/static"), name="static")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get('/')
 def index():
@@ -231,9 +188,6 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
 
 nltk.download('punkt')
 
-
-
-
 @app.post("/chat/")
 async def chat_with_brain(audio_file: UploadFile = File(...)):
 
@@ -246,17 +200,14 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     with open(audio_path, "wb") as f:
         f.write(await audio_file.read()) 
 
-    # Convert the audio file to a supported format using ffmpeg
     converted_audio_path = f"./audio/user/converted_{audio_file.filename}"
     if os.path.exists(converted_audio_path):
         os.remove(converted_audio_path)
     subprocess.run(['ffmpeg', '-i', audio_path, '-acodec', 'pcm_s16le', '-ar', '44100', converted_audio_path])
 
-    # Reduce noise from the converted audio file
     audio_data, sr = sf.read(converted_audio_path)
     reduced_noise = noisereduce.reduce_noise(audio_data, sr)
 
-    # Save the denoised audio back to file
     denoised_audio_path = f"./audio/user/denoised_converted_{audio_file.filename}"
     sf.write(denoised_audio_path, reduced_noise, sr)
 
@@ -268,24 +219,20 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     language = detect_language(user_input)
     print(language)       
 
-
-        # Check if the transcription is "Thank you." (or adjust as needed)
     if user_input == "Thank you.":
         return {
             "user_input": user_input,
             "generated_response": None,
-            "audio_base64": None  # or any response indicating no recording
+            "audio_base64": None 
         }
     
     if user_input.lower() in ["help", "help.", "help!", "help?"]:
         print("Detected help request.")
         
-        # Lire la dernière ligne du fichier conversation_logs.txt
         with open('./log/conversation_logs.txt', 'r', encoding='utf-8') as file:
             lines = [line.strip() for line in file.readlines() if line.strip()]
             last_line = lines[-1] if lines else ""
 
-        # Extraire le texte après 'Response: '
         if last_line.startswith('[') and 'Response: ' in last_line:
             prompt_for_suggestions = last_line.split('Response: ', 1)[1].strip()
         else:
@@ -323,7 +270,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
         }
     
     if language == 'en':
-        print("promp english tommy")
+        print("promp2 english tommy")
         prompt = (
             "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English. \n"
             "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
@@ -331,8 +278,9 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
             "2. Ask about their day or their interests to keep the conversation going.\n"
             "3. Use simple English words to explain things they might not understand.\n"
             "4. Do not ask the same question more than once.\n"
+            "5. You must only repeat the same phrase once"
             "Remember, the goal is to create a fun and engaging environment where they can learn English naturally.\n"
-            "Please limit greetings (e.g., Hi, hello, hi there) to only once in your response.\n"
+            "Please limit greetings (e.g., Hi, hello, Hello, hi there) to only once in your response.\n"
             "Please limit the number of questions asked to one per response.\n"
             "Avoid asking how to say things in French.\n"
             f"User: {user_input}\n"
@@ -347,26 +295,16 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
             f"User: {user_input}\n"
         )
 
-    generated_response = generate_ollama_response(model_name, prompt)
-    
-    if isinstance(generated_response, list):
-        generated_response = ' '.join(generated_response)
-    
-    sentences = nltk.tokenize.sent_tokenize(generated_response)
-    
-    if language == 'en':
-        limited_response = ' '.join(sentences[:3])
-    else:
-        limited_response = ' '.join(sentences[:2])
-    
-    generated_response = limited_response
-    
-    audio_file_path = text_to_speech_audio(generated_response)
-           
-    audio_base64 = file_to_base64(audio_file_path)
-    
-    log_conversation(prompt, generated_response)
-    
+    generated_response = generate_phi3_response(prompt)        
+   
+    # if language == 'en':
+    #     limited_response = ' '.join(sentences[:3])
+    # else:
+    #     limited_response = ' '.join(sentences[:2])
+       
+    audio_file_path = text_to_speech_audio(generated_response)           
+    audio_base64 = file_to_base64(audio_file_path)    
+    log_conversation(prompt, generated_response)    
     return {
         "user_input": user_input,
         "generated_response": generated_response,
@@ -375,47 +313,16 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
 
 @app.post("/chat/start")
 async def start_chat():
-    model_name = 'phi3'
-    print("english start")
-    prompt = (
-            "Hello! My name is Tommy. I'm a 4-year-old child. Let's have a fun chat in English! "
-            "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
-            "1. Engage the person in simple and playful conversations in English to encourage learning.\n"
-            "2. Ask about their day or their interests to keep the conversation going.\n"
-            "3. Use simple English words to explain things they might not understand.\n"
-            "4. Do not ask the same question more than once.\n"
-            "Remember, the goal is to create a fun and engaging environment where they can learn English naturally.\n"
-            "Please limit greetings (e.g., Hi, hello, hi there) to only once in your response.\n"
-            "Please limit the number of questions asked to one per response.\n"
-            "Avoid asking how to say things in French.\n"
-    )
-
-    generated_response = generate_ollama_response(model_name, prompt)
-
-    if isinstance(generated_response, list):
-        generated_response = ' '.join(generated_response)
-    
-    sentences = nltk.tokenize.sent_tokenize(generated_response)
-    
-    limited_response = ' '.join(sentences[:3])
-
-    generated_response = limited_response
-    
+    print("prompt_tommy_start")
+    prompt = prompt_tommy_start
+    generated_response = generate_phi3_response(prompt)    
     audio_file_path = text_to_speech_audio(generated_response)
-           
-    audio_base64 = file_to_base64(audio_file_path)
-    
-    log_conversation(prompt, generated_response)
-    
+    audio_base64 = file_to_base64(audio_file_path)    
+    log_conversation(prompt, generated_response)    
     return {
         "generated_response": generated_response,
         "audio_base64": audio_base64
     }
-
-def file_to_base64(file_path):
-    with open(file_path, "rb") as f:
-        audio_bytes = f.read()
-    return base64.b64encode(audio_bytes).decode("utf-8")
 
 if __name__ == "__main__":
     import uvicorn

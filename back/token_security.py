@@ -14,7 +14,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 revoked_tokens: Set[str] = set()
 
 def token_is_revoked(token: str) -> bool:
