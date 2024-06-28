@@ -14,7 +14,7 @@ from log_conversation import log_conversation
 from load_model import generate_ollama_response, generate_phi3_response
 from tts_utils import text_to_speech_audio
 from transcribe_audio import transcribe_audio
-from audio_utils import file_to_base64,save_user_audio
+from audio_utils import file_to_base64, save_user_audio, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
 from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en
@@ -198,23 +198,15 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     tts_model.to("cuda")
     
     audio_path = f"./user_audio/{audio_file.filename}"
+    
     with open(audio_path, "wb") as f:
         f.write(await audio_file.read()) 
+    
+    denoised_audio_path = process_audio_file(audio_path, audio_file.filename)    
 
-    converted_audio_path = f"./audio/user/converted_{audio_file.filename}"
-    if os.path.exists(converted_audio_path):
-        os.remove(converted_audio_path)
-    subprocess.run(['ffmpeg', '-i', audio_path, '-acodec', 'pcm_s16le', '-ar', '44100', converted_audio_path])
+    # save_user_audio(denoised_audio_path)
 
-    audio_data, sr = sf.read(converted_audio_path)
-    reduced_noise = noisereduce.reduce_noise(audio_data, sr)
-
-    denoised_audio_path = f"./audio/user/denoised_converted_{audio_file.filename}"
-    sf.write(denoised_audio_path, reduced_noise, sr)
-
-    # audio_path = save_user_audio(audio_file)
-
-    user_input = transcribe_audio(audio_path).strip()
+    user_input = transcribe_audio(denoised_audio_path).strip()
     print(user_input)
 
     language = detect_language(user_input)
