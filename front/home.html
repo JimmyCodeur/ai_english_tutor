@@ -2,46 +2,29 @@
 <html lang="en">
 
 <head> 
-
-    <!-- Basic Page Needs
-    ================================================== -->
     <title>Courseplus Template</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Courseplus is - Professional A unique and beautiful collection of UI elements">
-
-    <!-- Favicon -->
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-
-    <!-- icons
-    ================================================== -->
     <link rel="stylesheet" href="../static/assets/css/icons.css">
-
-    <!-- CSS
-    ================================================== -->
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/style.css">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-
     <style>
       html,
       body {
         background: white !important
-      }
-    
+      }    
       .container {
         max-width: 1000px;
-      }
-       
+      }       
       @media (min-width: 960px) {
         .view-on-mobile{  display: none; }
       }
       @media (max-width: 960px) {
         .hide-on-mobile{  display: none; }
       }
-
-
-
       .demo-card {
             color: #4a4a4a;
             text-transform: capitalize;
@@ -91,17 +74,13 @@
           transition: 0.2s all, 0.2s
         }
     </style>
-
 </head>
+
 <body>
-
-
   <div id="wrapper" class="is-verticle">
-
     <header uk-sticky> 
         <div class="header_inner">
             <div class="left-side">
-
                 <div id="logo" class="logo-container">
                     <a href="home.html">
                         <img src="../static/assets/images/logo.png" class="logo-image" alt="">
@@ -111,7 +90,6 @@
                 </div>
                 <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
                 </div>
-
             </div>
             <div class="right-side">                        
                 <div> 
@@ -154,9 +132,7 @@
                             </li>
                         </ul>
                     </div> 
-
                 </div>
-
             </div>
         </div>
     </header>
@@ -245,10 +221,6 @@
 </div>
 
 </div>
- 
-
-    <!-- Javascript
-        ================================================== -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="../static/assets/js/uikit.js"></script>
     <script src="../static/assets/js/tippy.all.min.js"></script>
@@ -266,17 +238,10 @@
               navItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                   e.preventDefault();
-
-                  // Remove 'active' class from all items
                   navItems.forEach(nav => nav.parentElement.classList.remove('active'));
-
-                  // Add 'active' class to the clicked item
                   item.parentElement.classList.add('active');
 
-                  // Get the language from data attribute
                   const lang = item.getAttribute('data-lang');
-
-                  // Show/hide content items based on selected language
                   contentItems.forEach(content => {
                     if (lang === 'all' || content.classList.contains(lang)) {
                       content.style.display = 'block';
@@ -288,7 +253,5 @@
               });
             });
   </script>
-
-</body>
-
+  </body>
 </html>

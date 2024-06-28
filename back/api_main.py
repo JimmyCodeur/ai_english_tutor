@@ -11,27 +11,24 @@ from bdd.crud import create_user, delete_user, update_user, get_user_by_id, upda
 from bdd.models import Base, User as DBUser, Role
 from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from log_conversation import log_conversation
-from load_model import generate_ollama_response, generate_phi3_response
+from load_model import generate_phi3_response
 from tts_utils import text_to_speech_audio
 from transcribe_audio import transcribe_audio
-from audio_utils import file_to_base64, save_user_audio, process_audio_file
+from audio_utils import file_to_base64, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
 from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en
 from help_suggestion import help_sugg
 from TTS.api import TTS
-import base64
 import nltk
-import noisereduce
 import soundfile as sf
 import numpy as np
-import subprocess
-import os
+
 
 app = FastAPI()
 add_middleware(app)
-
 app.mount("/static", StaticFiles(directory="./front/static"), name="static")
+nltk.download('punkt')
 
 @app.get('/')
 def index():
@@ -85,7 +82,7 @@ def login_for_access_token(email: str = Form(...), password: str = Form(...), db
             detail="Email or password incorrect",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
+    
     access_token = create_access_token(data={"sub": user.email, "role": user.role})
     print(f"Generated Access Token: {access_token}")
     return {
@@ -95,7 +92,6 @@ def login_for_access_token(email: str = Form(...), password: str = Form(...), db
         "email": user.email,
         "nom": user.nom
     }
-
 
 @app.post("/logout")
 def logout(token_data: TokenInBody, db: Session = Depends(get_db)):
@@ -187,28 +183,18 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return {"message": "Utilisateur supprimé avec succès"}
 
-nltk.download('punkt')
-
 @app.post("/chat/")
 async def chat_with_brain(audio_file: UploadFile = File(...)):
-
     model_name = 'phi3'
-
     tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
-    tts_model.to("cuda")
-    
-    audio_path = f"./user_audio/{audio_file.filename}"
-    
+    tts_model.to("cuda")    
+    audio_path = f"./audio/user/{audio_file.filename}"    
     with open(audio_path, "wb") as f:
-        f.write(await audio_file.read()) 
-    
-    denoised_audio_path = process_audio_file(audio_path, audio_file.filename)    
-
+        f.write(await audio_file.read())    
+    denoised_audio_path = process_audio_file(audio_path, audio_file.filename) 
     # save_user_audio(denoised_audio_path)
-
     user_input = transcribe_audio(denoised_audio_path).strip()
     print(user_input)
-
     language = detect_language(user_input)
     print(language)       
 

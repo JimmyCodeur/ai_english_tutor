@@ -2,32 +2,23 @@
 <html lang="en">
 
 <head> 
-
     <title>TalkAI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="TalkAI tutor">
-
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-
     <link rel="stylesheet" href="../static/assets/css/icons.css">
-
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/style.css">
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-
-   
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">   
 </head>
 
 <body>
-
     <div id="wrapper" class="is-verticle">
-
         <header uk-sticky> 
             <div class="header_inner">
                 <div class="left-side">
-    
-                    <div id="logo">
+                        <div id="logo">
                         <a href="home.html">
                             <img src="../static/assets/images/logo.png" alt="">
                             <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
@@ -36,8 +27,7 @@
                     </div>
                     <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
                     </div>
-    
-                </div>
+                    </div>
                 <div class="right-side">                        
                     <div> 
                         <a href="users-profile.html" class="flex items-center space-x-2">
@@ -79,19 +69,14 @@
                                 </li>
                             </ul>
                         </div> 
-
-                    </div>
-    
+                    </div>    
                 </div>
             </div>
         </header>
 
-        <div class="main_content">
- 
+        <div class="main_content"> 
             <div class="container">
-
                 <h3 class="text-2xl font-medium mb-5"> Configuration Compte </h3>
-
                 <nav class="cd-secondary-nav border-b md:m-0 -mx-4 nav-small">
                     <ul>
                         <li class="active"><a href="#" class="lg:px-2">Générale </a></li>
@@ -104,7 +89,6 @@
                     </ul>
                 </nav>
                 
-                <!-- Basic information -->
                 <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
                     <div>
                         <div uk-sticky="offset:100;bottom:true;media:992">
@@ -115,8 +99,7 @@
                     <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
 
                         <div class="grid grid-cols-2 gap-3 lg:p-6 p-4">
-                            <!-- Website logo  -->
-                            <label for="system_info" class="font-medium">Photo  </label>
+                            <label for="system_info" class="font-medium">Photo</label>
                             <div class="col-span-2 flex py-2 space-x-5">
                                 <img src="../static/assets/images/avatars/placeholder.png" alt="" class="h-12 rounded-full w-12">
                                 <a href="#" class="border font-medium px-3 py-1.5 rounded-md self-center shadow-sm text-center text-sm">Change</a>
@@ -142,12 +125,10 @@
                                 <textarea id="about" name="about" rows="3"  class="with-border info-about"></textarea>
                             </div> 
                             <button type="submit" class="bg-blue-600 btn btn-info font-semibold inline-block px-5 py-2 rounded-md submit text-white">Modifier</button>
-                        </div> 
-                        
+                        </div>                         
                     </div>
                 </div>
 
-                <!-- Change Password -->
                 <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
                     <div>
                         <div uk-sticky="offset:100;bottom:true;media:992">
@@ -330,11 +311,7 @@
 
                     </div>
                 </div> -->
-
-
-            </div>
-             
-          
+            </div>          
         </div>
                
             <div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
@@ -348,10 +325,8 @@
                     </div>
                 </div>
             </div>
-           
         </div>
  
-
          <div class="sidebar">
             <div class="sidebar_inner" data-simplebar>
                 <ul class="border-transparent">
@@ -372,12 +347,10 @@
                     </li>
                 </ul>
             </div>
-
             <div class="side_overly" uk-toggle="target: #wrapper ; cls: is-collapse is-active"></div>
         </div>       
     </div>
 
- 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="../static/assets/js/uikit.js"></script>
     <script src="../static/assets/js/tippy.all.min.js"></script>
@@ -389,7 +362,5 @@
     <script src="../static/assets/js/logout.js"></script>
     <script src="../static/assets/js/info_users.js" defer></script>
  
- 
 </body>
-
 </html>

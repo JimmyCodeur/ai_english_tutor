@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Courseplus is - Professional A unique and beautiful collection of UI elements">
-
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
     <link rel="stylesheet" href="../static/assets/css/icons.css">
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
@@ -23,7 +22,6 @@
     <div id="wrapper" class="course-watch flex">
         <div class="sidebar bg-white flex flex-col items-center justify-between">
             <span class="btn-close-mobi right-3 left-auto" uk-toggle="target: #wrapper ; cls: is-active"></span>
-
             <div class="flex justify-between lg:-ml-1 mt-1 mr-2">
                 <a href="home.html" class="flex items-center text-blue-500">
                     <ion-icon name="chevron-back-outline" class="md:text-lg text-2xl"></ion-icon>
@@ -46,7 +44,6 @@
                 <span class="text-yellow-500 ml-1">En cours de traitement...</span>
             </div>
         </div>
-
         <div class="main_content h-screen flex flex-col justify-center items-center"></div>
     </div>
 
@@ -73,22 +70,18 @@
                 const data = await response.json();
                 displayMessage(data.generated_response, 'bot', data.audio_base64);
 
-                // Charger et jouer l'audio généré
                 const audioBase64 = data.audio_base64;
                 const audioElement = document.getElementById('generatedAudio');
                 audioElement.src = "data:audio/wav;base64," + audioBase64;
 
                 audioElement.style.display = "none";
 
-                // Afficher l'indicateur de chargement et cacher l'audio
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 document.getElementById('audioStatus').classList.remove('hidden');
                 audioElement.style.display = "block";
 
-                // Jouer l'audio
                 audioElement.play();
 
-                // Détecter le début et la fin de la lecture de l'audio
                 audioElement.onplay = () => {
                     document.getElementById('avatar').classList.add('speaking');
                     document.getElementById('audioStatus').classList.add('hidden');
@@ -111,7 +104,6 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                    // Vérifier si le microphone est actif et non muet
                     const audioTracks = stream.getAudioTracks();
                     if (audioTracks.length === 0 || !audioTracks[0].enabled) {
                         throw new Error("Microphone is muted or inactive.");
@@ -175,8 +167,6 @@
 
         function appendSuggestions(suggestions) {
             const chatBox = document.getElementById('chatBox');
-
-            // Créer un titre pour les suggestions
             const suggestionsTitle = document.createElement('div');
             suggestionsTitle.className = 'suggestions-title text-gray-500 font-bold mb-2';
             suggestionsTitle.textContent = 'Suggestion : ⬇️';
@@ -189,10 +179,8 @@
                         const suggestionDiv = document.createElement('div');
                         suggestionDiv.className = 'div bg-yellow-200 text-blue-800 p-2 rounded mb-2';
                         suggestionDiv.textContent = suggestion;
-                        suggestionDiv.setAttribute('data-index', index); // Attribut pour gérer le clic
+                        suggestionDiv.setAttribute('data-index', index);
                         suggestionDiv.addEventListener('click', () => {
-                            // Action à effectuer lors du clic sur une suggestion
-                            // Par exemple, remplacer le contenu de l'entrée utilisateur avec la suggestion choisie
                             const userInputField = document.getElementById('userInputField');
                             userInputField.value = suggestion;
                         });
@@ -205,8 +193,6 @@
                 noSuggestionsDiv.textContent = "Aucune suggestion disponible.";
                 chatBox.appendChild(noSuggestionsDiv);
             }
-
-            // Faire défiler vers le bas pour afficher le dernier message ajouté
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -220,15 +206,11 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
                 return;
             }
-            if (!message) return; // Ne rien faire si le message est null
+            if (!message) return; 
 
-            
-
-            // Créer un conteneur pour le message et l'audio
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container mb-2';
 
-            // Créer le div pour le message textuel
             const messageDiv = document.createElement('div');
             if (isError) {
                 messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
@@ -236,30 +218,19 @@
                 messageDiv.className = `message ${sender === 'bot' ? '' : 'self'} bg-${sender === 'bot' ? 'gray-200' : 'blue-500'} ${sender === 'bot' ? 'rounded-lg' : 'text-white rounded-lg'} p-2 max-w-xs`;
             }
             messageDiv.textContent = message;
-
-            // Ajouter le message textuel au conteneur
             messageContainer.appendChild(messageDiv);
 
-            // Si un fichier audio est fourni, créer et ajouter l'élément audio
             if (audioBase64) {
                 const audioElement = document.createElement('audio');
                 audioElement.controls = true;
                 audioElement.src = "data:audio/wav;base64," + audioBase64;
-                audioElement.className = 'audio-player'; // Classe pour styliser le lecteur audio
-
-                // Attacher un événement pour démarrer la lecture dès que l'audio est chargé
+                audioElement.className = 'audio-player';
                 audioElement.addEventListener('loadeddata', () => {
-                    audioElement.play(); // Démarrer la lecture
+                    audioElement.play();
                 });
-
-                // Ajouter l'élément audio au conteneur
                 messageContainer.appendChild(audioElement);
             } 
-
-            // Ajouter le conteneur au chatBox
             chatBox.appendChild(messageContainer);
-
-            // Faire défiler vers le bas pour afficher le dernier message ajouté
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -269,8 +240,6 @@
             errorMessageDiv.className = 'message text-red-500 rounded-lg p-2 max-w-xs';
             errorMessageDiv.textContent = errorMessage;
             chatBox.appendChild(errorMessageDiv);
-
-            // Faire défiler vers le bas pour afficher le dernier message ajouté
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
