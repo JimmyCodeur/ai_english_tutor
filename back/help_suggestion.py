@@ -8,11 +8,11 @@ def help_sugg(log_file_path: str, model_name: str, user_input: str) -> dict:
         last_line = lines[-1] if lines else ""
 
     if last_line.startswith('[') and 'Response: ' in last_line:
-        prompt_for_suggestions = last_line.split('Response: ', 1)[1].strip()
+        user_input = last_line.split('Response: ', 1)[1].strip()
     else:
-        prompt_for_suggestions = last_line
+        user_input = last_line
 
-    prompt_for_suggestions += "\n Please respond with very short messages and at an easy level"
+    prompt_for_suggestions = f"User input: {user_input}\nPlease respond with very short messages and at an easy level."
 
     print(prompt_for_suggestions)
 
@@ -21,7 +21,7 @@ def help_sugg(log_file_path: str, model_name: str, user_input: str) -> dict:
     if isinstance(generated_suggestions, list):
         generated_suggestions = '\n'.join([f"{i + 1}. {s}" for i, s in enumerate(generated_suggestions)])
 
-    suggestions_list = generated_suggestions.split('\n')[:2]
+    suggestions_list = generated_suggestions.split('\n')[:5]
     print(suggestions_list)
 
     return {

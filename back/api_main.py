@@ -184,7 +184,7 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
     return {"message": "Utilisateur supprimé avec succès"}
 
 @app.post("/chat/")
-async def chat_with_brain(audio_file: UploadFile = File(...)):
+async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
     model_name = 'phi3'
     tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
     tts_model.to("cuda")    
@@ -212,19 +212,21 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     if language == 'unknown':
         return {
             "error": "unknown_language",
-            "generated_response": "What ?",
+            "generated_response": "It appears you speak French. Please check your pronunciation.",
             "audio_base64": None,
         }
     
     if language == 'en':
         print("promp2 english tommy")
         prompt = prompt_tommy_en.format(user_input=user_input)
+        print(prompt)
     elif language == 'fr':
         print("user parle francais")
         prompt = prompt_tommy_fr.format(user_input=user_input)
+        print(prompt)
 
-    generated_response = generate_phi3_response(prompt)     
-    audio_file_path = text_to_speech_audio(generated_response)           
+    generated_response = generate_phi3_response(prompt)
+    audio_file_path = text_to_speech_audio(generated_response, voice)           
     audio_base64 = file_to_base64(audio_file_path)    
     log_conversation(prompt, generated_response)    
     return {
@@ -234,11 +236,11 @@ async def chat_with_brain(audio_file: UploadFile = File(...)):
     }
 
 @app.post("/chat/start")
-async def start_chat():
+async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):    
     print("prompt_tommy_start")
     prompt = prompt_tommy_start
     generated_response = generate_phi3_response(prompt)    
-    audio_file_path = text_to_speech_audio(generated_response)
+    audio_file_path = text_to_speech_audio(generated_response, voice) 
     audio_base64 = file_to_base64(audio_file_path)    
     log_conversation(prompt, generated_response)    
     return {

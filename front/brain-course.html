@@ -124,7 +124,7 @@
                             console.log(data);
 
                             if (data.error === "unknown_language") {
-                                displayMessage("Erreur de prononciation, recommence !", 'bot', null, true);
+                                displayMessage("😵‍💫 It appears you speak French. Please check your pronunciation.", 'bot', null, true);
                             } else {
                                 if (data.user_input) {
                                     displayMessage(data.user_input, 'user');
