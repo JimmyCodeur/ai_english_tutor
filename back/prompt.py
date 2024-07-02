@@ -23,3 +23,27 @@ prompt_tommy_en = (
             "Speaks like a 4 year old in English"
             "User: {user_input}\n"
 )
+
+import random
+
+english_phrases = [
+    "Hello! How are you?",
+    "What's your name?",
+    "Could you please help me?",
+    "Where is the nearest restaurant?",
+    "I'm learning English.",
+    "How do you say this in English?",
+    "Nice to meet you!",
+    "Can you speak more slowly, please?",
+    "Excuse me, where is the bathroom?",
+    "Thank you very much!",
+    "I would like to order a coffee, please.",
+    "Have a nice day!"
+]
+
+def get_random_english_sentence():
+    return random.choice(english_phrases)
+
+brain_begin = (
+    "repaet this phrases:\n"   
+)

@@ -9416,6 +9416,15 @@ input[type="button"].dark1, input[type="submit"].dark1 {
   background: #62d76b;
 }
 
+.hidden-audio {
+  display: none;
+}
+
+#generatedAudio {
+  display: none;
+}
+
+
 /* -------------------------------------------------------------- */
 /* 05. Add your custom classes
 ----------------------------------------------------------------- */

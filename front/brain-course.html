@@ -2,51 +2,140 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Course</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Courseplus is - Professional A unique and beautiful collection of UI elements">
-    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-    <link rel="stylesheet" href="../static/assets/css/icons.css">
-    <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/style.css">
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        .audio-player {
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="../static/assets/css/uikit.css">
+    <link rel="stylesheet" href="../static/assets/css/icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
+    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
 </head>
 
-<body class="bg-black">
-    <div id="wrapper" class="course-watch flex">
-        <div class="sidebar bg-white flex flex-col items-center justify-between">
-            <span class="btn-close-mobi right-3 left-auto" uk-toggle="target: #wrapper ; cls: is-active"></span>
-            <div class="flex justify-between lg:-ml-1 mt-1 mr-2">
-                <a href="home.html" class="flex items-center text-blue-500">
-                    <ion-icon name="chevron-back-outline" class="md:text-lg text-2xl"></ion-icon>
-                    <span class="text-sm md:inline hidden"> Retour</span>
-                </a>
+
+
+<body class="flex flex-col min-h-screen bg-gray-100">
+    <div id="wrapper" class="is-verticle">
+        <!-- Barre de navigation -->
+        <header uk-sticky> 
+            <div class="header_inner">
+                <div class="left-side">
+                    <div id="logo" class="logo-container">
+                        <a href="home.html">
+                            <img src="../static/assets/images/logo.png" class="logo-image" alt="">
+                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
+                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+                        </a>
+                    </div>
+                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
+                    </div>
+                </div>
+                <div class="right-side">                        
+                    <div> 
+                        <a href="" class="flex items-center space-x-2">
+                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
+                        </a>
+                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
+                            <ul>   
+                                <li>
+                                    <a href="" class="user">
+                                        <div class="user_avatar">
+                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
+                                        </div>
+                                        <div class="user_name">
+                                            <div id="profile-name" class="info-name"></div>
+                                            <span id="profile-email" class="info-email"></span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li> 
+                                    <a href="users-profile.html">
+                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
+                                         Mon Compte 
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="profile-setting.html">
+                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
+                                        Configuration  
+                                    </a>
+                                </li>
+                                <li> 
+                                    <hr>
+                                </li>
+                                <li> 
+                                    <a href="#" id="logout-link" onclick="logout()">
+                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
+                                        Se déconnecter 
+                                    </a>
+                                </li>
+                            </ul>
+                        </div> 
+                    </div>
+                </div>
             </div>
+        </header>
 
-            <h1 class="lg:text-2xl text-lg font-bold mt-2 line-clamp-2">Chat</h1>
+        <!-- Section avec l'image agrandie de l'avatar -->
+        <main class="flex-1 flex flex-col items-center justify-center">
 
-            <div id="chatBox" class="chat-box mt-4 p-4 flex-1 overflow-y-auto"></div>
-            <div id="suggestionsBox"></div>
+            <div class="w-full flex justify-center my-8">
+                <img id="avatarGif" src="../static/assets/images/ai/brain.png" class="w-64 h-64 rounded-full" alt="Avatar de l'IA">              
 
-            <button id="toggleRecording" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-600">Commencer l'enregistrement</button>
+            </div>
+        </main>
 
-            <div id="loadingIndicator" class="hidden mt-2 flex items-center">
+        <!-- Chat Section -->
+        <section class="chat-container w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
+            <!-- Barre de titre -->
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="lg:text-2xl text-lg font-bold">Chat</h1>            
+            </div>
+        
+            <!-- Chat Box -->
+            <div id="chatBox" class="chat-box h-80 overflow-y-auto mb-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+                <!-- <audio id="generatedAudio" controls></audio> -->
+
+            </div>            
+        
+            <!-- Suggestions Box -->
+            <div id="suggestionsBox" class="mb-4"></div>
+
+            <!-- <svg class="h-8 w-8 text-pink-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4" />  <path d="M11 19l4 -9l4 9m-.9 -2h-6.2" /></svg> -->
+
+        
+            <!-- Champ de texte pour parler -->
+            <!-- <textarea id="userInputField" class="user-input w-full p-1 border border-gray-300 rounded-lg mb-2 h-8 text-xs" rows="2" placeholder="Entrez votre message..."></textarea> -->
+
+        
+            <!-- Boutons d'action -->
+            <div class="action-buttons flex justify-between">
+                <button id="toggleRecording" class="btn-microphone bg-green-500 text-white py-2 px-4 rounded-lg mr-2 flex items-center" onclick="toggleRecording()">
+                    <svg class="h-6 w-6 text-white mr-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z"/>  
+                        <rect x="9" y="2" width="6" height="11" rx="3" />  
+                        <path d="M5 10a7 7 0 0 0 14 0" />  
+                        <line x1="8" y1="21" x2="16" y2="21" />  
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                    Enregistrement
+                </button>
+            </div>
+        
+            <!-- Indicateur de chargement -->
+            <div id="loadingIndicator" class="loading-indicator hidden mt-4 flex items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
                 </svg>
-                <span class="text-yellow-500 ml-1">En cours de traitement...</span>
+                <span class="text-yellow-500">En cours de traitement...</span>
             </div>
-        </div>
-        <div class="main_content h-screen flex flex-col justify-center items-center"></div>
+        </section>
+        
     </div>
+</body>
 
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="../static/assets/js/uikit.js"></script>
     <script src="../static/assets/js/tippy.all.min.js"></script>
@@ -61,6 +150,11 @@
         let recording = false;
         let initialChatStarted = false;
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            await startChat();
+            initialChatStarted = true;
+        });
+
         async function startChat() {
             updateButtonState('processing');
             try {
@@ -72,26 +166,25 @@
 
                 const audioBase64 = data.audio_base64;
                 const audioElement = document.getElementById('generatedAudio');
-                audioElement.src = "data:audio/wav;base64," + audioBase64;
+                if (audioElement) {
+                    audioElement.src = "data:audio/wav;base64," + audioBase64;
+                    audioElement.style.display = "none";
+                    audioElement.style.display = "block";
+                    audioElement.className = 'audio-player hidden-audio';
 
-                audioElement.style.display = "none";
+                    // Lecture automatique dès que la source est définie
+                    audioElement.play().then(() => {
+                        // Actions supplémentaires lors de la lecture
+                        document.getElementById('avatarGif').src = "../static/assets/images/ai/brain.gif";
+                    }).catch((error) => {
+                        console.error('Error playing audio:', error);
+                    });
+
+                } else {
+                    console.error('Element with ID "generatedAudio" not found.');
+                }
 
                 document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('audioStatus').classList.remove('hidden');
-                audioElement.style.display = "block";
-
-                audioElement.play();
-
-                audioElement.onplay = () => {
-                    document.getElementById('avatar').classList.add('speaking');
-                    document.getElementById('audioStatus').classList.add('hidden');
-                };
-                audioElement.onpause = () => {
-                    document.getElementById('avatar').classList.remove('speaking');
-                };
-                audioElement.onended = () => {
-                    document.getElementById('avatar').classList.remove('speaking');
-                };
             } catch (err) {
                 console.error('Error starting chat: ', err);
             } finally {
@@ -99,11 +192,12 @@
             }
         }
 
+
         async function toggleRecording() {
             if (!recording) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+                    
                     const audioTracks = stream.getAudioTracks();
                     if (audioTracks.length === 0 || !audioTracks[0].enabled) {
                         throw new Error("Microphone is muted or inactive.");
@@ -124,7 +218,7 @@
                             console.log(data);
 
                             if (data.error === "unknown_language") {
-                                displayMessage("😵‍💫 It appears you speak French. Please check your pronunciation.", 'bot', null, true);
+                                displayMessage("😵‍💫 Il semble que ta prononciation n'est pas bonne, ou tu parles en français, recommencez.", 'bot', null, true);
                             } else {
                                 if (data.user_input) {
                                     displayMessage(data.user_input, 'user');
@@ -198,6 +292,7 @@
 
         function displayMessage(message, sender, audioBase64, isError = false) {
             const chatBox = document.getElementById('chatBox');
+
             if (["Thank you.", "Obrigado.", "Tchau.", "E a",".","Bye."].includes(message.trim())) {
                 const errorMessageDiv = document.createElement('div');
                 errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
@@ -214,25 +309,108 @@
             const messageDiv = document.createElement('div');
             if (isError) {
                 messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
+            } else if (message.startsWith('Traduction :')) {
+                // Pour le message traduit, changer la couleur de fond en orange
+                messageDiv.className = 'message bg-green-200 text-black rounded-lg p-2 max-w-xs';
             } else {
-                messageDiv.className = `message ${sender === 'bot' ? '' : 'self'} bg-${sender === 'bot' ? 'gray-200' : 'blue-500'} ${sender === 'bot' ? 'rounded-lg' : 'text-white rounded-lg'} p-2 max-w-xs`;
+                messageDiv.className = `message ${sender === 'bot' ? 'bg-gray-200 rounded-lg text-black' : 'self bg-blue-500 text-white rounded-lg'} p-2 max-w-xs`;
             }
             messageDiv.textContent = message;
             messageContainer.appendChild(messageDiv);
+            
+            // Add translate icon only if message does not start with 'translated_message'
+            if (!message.startsWith('Traduction :') && sender === 'bot') {
+                const iconSVG = `
+                    <svg class="h-6 w-6 text-pink-500 inline-block ml-2 cursor-pointer translate-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" data-message="${message}">
+                        <path stroke="none" d="M0 0h24v24H0z"/>
+                        <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4"/>
+                        <path d="M11 19l4 -9l4 9m-.9 -2h-6.2"/>
+                    </svg>
+                `;
+                messageContainer.insertAdjacentHTML('beforeend', iconSVG);
+            }
 
             if (audioBase64) {
                 const audioElement = document.createElement('audio');
                 audioElement.controls = true;
                 audioElement.src = "data:audio/wav;base64," + audioBase64;
-                audioElement.className = 'audio-player';
+                audioElement.className = 'audio-player hidden-audio';
                 audioElement.addEventListener('loadeddata', () => {
                     audioElement.play();
                 });
+
+                // Add event listeners to change avatar
+                audioElement.onplay = () => {
+                    changeAvatarToGif(); // Change avatar to GIF when audio starts
+                };
+                audioElement.onpause = () => {
+                    changeAvatarToPng(); // Change avatar to PNG when audio pauses
+                };
+                audioElement.onended = () => {
+                    changeAvatarToPng(); // Change avatar to PNG when audio ends
+                };
+
                 messageContainer.appendChild(audioElement);
             } 
+            
             chatBox.appendChild(messageContainer);
             chatBox.scrollTop = chatBox.scrollHeight;
+            
+            const translateIcon = messageContainer.querySelector('.translate-icon');
+            if (translateIcon) {
+                translateIcon.addEventListener('click', () => {
+                    const message = translateIcon.getAttribute('data-message');
+                    translateMessage(message);
+                    messageContainer.style.color = 'black'; // Change text color on translate click
+                    translateIcon.remove();
+                });
+            }
         }
+
+
+        function translateMessage(message) {
+            const translateUrl = 'http://localhost:8000/translate/';
+            
+
+            // Corps de la requête à envoyer à FastAPI
+            const requestBody = {
+                message: message
+            };
+
+            // Options de la requête fetch
+            const fetchOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            };
+
+            // Envoyer la requête à FastAPI pour la traduction
+            fetch(translateUrl, fetchOptions)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Erreur lors de la traduction');
+                })
+                .then(data => {
+                    // Réussite de la requête, afficher la traduction
+                    const translatedMessage = data.translated_message;
+                    console.log(`Message traduit: "${translatedMessage}"`);
+                    // Mettre à jour l'interface utilisateur avec le message traduit
+                    displayMessage(`Traduction : ${translatedMessage}`, 'bot');
+                    const translateIcon = messageContainer.querySelector('.translate-icon');
+                    if (translateIcon) {
+                        translateIcon.remove();  // Retirer l'icône de traduction du message traduit
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la traduction:', error);
+                    // Gérer les erreurs ici, par exemple afficher un message d'erreur à l'utilisateur
+                });
+        }
+
 
         function displayErrorMessage(errorMessage) {
             const chatBox = document.getElementById('chatBox');
@@ -249,7 +427,7 @@
 
             switch (state) {
                 case 'start':
-                    button.textContent = "Commencer l'enregistrement";
+                    button.textContent = "Parler";
                     button.classList.remove('hidden');
                     button.classList.remove('bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
                     button.classList.add('bg-green-500', 'text-white');
@@ -270,15 +448,47 @@
             }
         }
 
-        document.getElementById('toggleRecording').addEventListener('click', async () => {
-            if (!initialChatStarted) {
-                await startChat();
-                initialChatStarted = true;
-            } else {
-                await toggleRecording();
+        function monitorAudioVolume(audioElement) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaElementSource(audioElement);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            function checkVolume() {
+                analyser.getByteFrequencyData(dataArray);
+                const volume = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+                if (volume < 10) {
+                    changeAvatarToPng();
+                } else {
+                    changeAvatarToGif();
+                }
+                requestAnimationFrame(checkVolume);
             }
+
+            audioElement.onplay = () => {
+                audioContext.resume().then(() => {
+                    checkVolume();
+                });
+            };
         }
-    );
+
+       
+        function changeAvatarToGif() {
+            const avatarImg = document.getElementById('avatarGif');
+            avatarImg.src = "../static/assets/images/ai/brain.gif"; // Assurez-vous que ce chemin est correct
+        }
+
+        function changeAvatarToPng() {
+            const avatarImg = document.getElementById('avatarGif');
+            avatarImg.src = "../static/assets/images/ai/brain.png"; // Assurez-vous que ce chemin est correct
+        }
+        
+
+
     </script>
 </body>
 

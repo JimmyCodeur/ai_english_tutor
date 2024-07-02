@@ -42,3 +42,6 @@ class MessageRequest(BaseModel):
 
 class SuggestionResponse(BaseModel):
     suggestions: list
+
+class TranslationRequest(BaseModel):
+    message: str  

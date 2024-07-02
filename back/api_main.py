@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
-from bdd.schema_pydantic import TokenInBody, UserLoginResponse
+from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest
 from pydantic import EmailStr, constr
 from datetime import date
 from bdd.database import get_db
@@ -17,7 +17,7 @@ from transcribe_audio import transcribe_audio
 from audio_utils import file_to_base64, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en
+from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, brain_begin, english_phrases
 from help_suggestion import help_sugg
 from TTS.api import TTS
 import nltk
@@ -218,7 +218,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
     
     if language == 'en':
         print("promp2 english tommy")
-        prompt = prompt_tommy_en.format(user_input=user_input)
+        prompt = brain_begin.format(user_input=user_input)
         print(prompt)
     elif language == 'fr':
         print("user parle francais")
@@ -238,7 +238,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
 @app.post("/chat/start")
 async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):    
     print("prompt_tommy_start")
-    prompt = prompt_tommy_start
+    prompt = brain_begin
     generated_response = generate_phi3_response(prompt)    
     audio_file_path = text_to_speech_audio(generated_response, voice) 
     audio_base64 = file_to_base64(audio_file_path)    
@@ -248,6 +248,18 @@ async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):
         "audio_base64": audio_base64
     }
 
+@app.post("/translate")
+async def translate_message(request: TranslationRequest):
+    try:
+        prompt = f"translate this message in french: \n {request.message}"
+        generated_response = generate_phi3_response(prompt)
+
+        return {
+            "translated_message": generated_response
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api_main:app", host="127.0.0.1", port=8000, reload=True)
