@@ -45,3 +45,6 @@ class SuggestionResponse(BaseModel):
 
 class TranslationRequest(BaseModel):
     message: str  
+
+class ChatRequest(BaseModel):
+    message: str

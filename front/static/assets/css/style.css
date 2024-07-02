@@ -9424,6 +9424,34 @@ input[type="button"].dark1, input[type="submit"].dark1 {
   display: none;
 }
 
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.message-container {
+  display: flex;
+  justify-content: flex-end; /* Pour aligner à droite */
+  margin-bottom: 10px;
+}
+
+.message {
+  padding: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.self {
+  align-self: flex-end; /* Pour aligner le message de l'utilisateur à droite */
+}
+
+.bot {
+  align-self: flex-start; /* Pour aligner le message de l'IA à gauche */
+}
+
 
 /* -------------------------------------------------------------- */
 /* 05. Add your custom classes

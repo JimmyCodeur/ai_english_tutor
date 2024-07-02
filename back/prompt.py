@@ -42,8 +42,8 @@ english_phrases = [
 ]
 
 def get_random_english_sentence():
+    if not english_phrases:
+        return None
     return random.choice(english_phrases)
 
-brain_begin = (
-    "repaet this phrases:\n"   
-)
+

@@ -89,14 +89,21 @@
         <section class="chat-container w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
             <!-- Barre de titre -->
             <div class="flex justify-between items-center mb-4">
-                <h1 class="lg:text-2xl text-lg font-bold">Chat</h1>            
+                <h1 class="lg:text-2xl text-lg font-bold">Chat</h1>
+                <div id="loadingIndicator" class="loading-indicator hidden mt-4 flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
+                    </svg>
+                    <span class="text-yellow-500">En cours</span>
+                </div>          
             </div>
         
             <!-- Chat Box -->
             <div id="chatBox" class="chat-box h-80 overflow-y-auto mb-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
                 <!-- <audio id="generatedAudio" controls></audio> -->
 
-            </div>            
+            </div>    
         
             <!-- Suggestions Box -->
             <div id="suggestionsBox" class="mb-4"></div>
@@ -118,18 +125,18 @@
                         <line x1="8" y1="21" x2="16" y2="21" />  
                         <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
-                    Enregistrement
+                    Parler
+                </button>
+                <button id="toggleTextArea" class="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center" onclick="toggleTextArea()">
+                    <svg class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                    Clavier
                 </button>
             </div>
-        
+            <textarea id="userInputField" class="user-input w-full p-2 border border-gray-300 rounded-lg mb-2 hidden" rows="2" placeholder="Entrez votre message..."></textarea>
+            <button id="sendTextMessage" class="bg-yellow-500 text-white py-2 px-4 rounded-lg hidden" onclick="sendTextMessage()">Envoyer</button>
             <!-- Indicateur de chargement -->
-            <div id="loadingIndicator" class="loading-indicator hidden mt-4 flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
-                </svg>
-                <span class="text-yellow-500">En cours de traitement...</span>
-            </div>
         </section>
         
     </div>
@@ -158,7 +165,7 @@
         async function startChat() {
             updateButtonState('processing');
             try {
-                const response = await fetch('/chat/start', {
+                const response = await fetch('/chat_repeat/start', {
                     method: 'POST'
                 });
                 const data = await response.json();
@@ -210,7 +217,7 @@
                         formData.append('audio_file', audioBlob, 'recorded_audio.wav');
                         updateButtonState('processing');
                         try {
-                            const response = await fetch('/chat/', {
+                            const response = await fetch('/chat_repeat', {
                                 method: 'POST',
                                 body: formData
                             });
@@ -235,7 +242,7 @@
 
                         } catch (err) {
                             console.error('Error sending audio data to server: ', err);
-                            displayErrorMessage("Erreur lors de l'enregustrement, recommencez.");
+                            displayErrorMessage("Erreur lors de l'enregistrement, recommencez.");
                         } finally {
                             audioChunks = [];
                             recording = false;
@@ -313,8 +320,12 @@
                 // Pour le message traduit, changer la couleur de fond en orange
                 messageDiv.className = 'message bg-green-200 text-black rounded-lg p-2 max-w-xs';
             } else {
-                messageDiv.className = `message ${sender === 'bot' ? 'bg-gray-200 rounded-lg text-black' : 'self bg-blue-500 text-white rounded-lg'} p-2 max-w-xs`;
+            if (sender === 'bot') {
+                messageDiv.className = 'message bg-gray-200 rounded-lg text-black';
+            } else {
+                messageDiv.className = 'message self bg-blue-500 text-white rounded-lg';
             }
+        }
             messageDiv.textContent = message;
             messageContainer.appendChild(messageDiv);
             
@@ -487,6 +498,51 @@
             avatarImg.src = "../static/assets/images/ai/brain.png"; // Assurez-vous que ce chemin est correct
         }
         
+        function toggleTextArea() {
+            const userInputField = document.getElementById('userInputField');
+            const sendTextMessageButton = document.getElementById('sendTextMessage');
+
+            if (userInputField.classList.contains('hidden')) {
+                userInputField.classList.remove('hidden');
+                sendTextMessageButton.classList.remove('hidden');
+            } else {
+                userInputField.classList.add('hidden');
+                sendTextMessageButton.classList.add('hidden');
+            }
+        }
+
+    async function sendTextMessage() {
+        const userInputField = document.getElementById('userInputField');
+        const message = userInputField.value.trim();
+
+        if (message) {
+            displayMessage(message, 'user');
+            userInputField.value = '';
+            updateButtonState('processing');
+            try {
+                const response = await fetch('/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                if (data.generated_response) {
+                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                }
+                if (data.suggestions) {
+                    appendSuggestions(data.suggestions);
+                }
+            } catch (err) {
+                console.error('Error sending text message: ', err);
+                displayErrorMessage("Erreur lors de l'envoi du message texte.");
+            } finally {
+                updateButtonState('start');
+            }
+        }
+    }
+            
 
 
     </script>

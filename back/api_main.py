@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
-from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest
+from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest
 from pydantic import EmailStr, constr
 from datetime import date
 from bdd.database import get_db
@@ -17,7 +17,7 @@ from transcribe_audio import transcribe_audio
 from audio_utils import file_to_base64, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, brain_begin, english_phrases
+from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, get_random_english_sentence, english_phrases
 from help_suggestion import help_sugg
 from TTS.api import TTS
 import nltk
@@ -218,7 +218,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
     
     if language == 'en':
         print("promp2 english tommy")
-        prompt = brain_begin.format(user_input=user_input)
+        prompt = prompt_tommy_en.format(user_input=user_input)
         print(prompt)
     elif language == 'fr':
         print("user parle francais")
@@ -235,15 +235,91 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
         "audio_base64": audio_base64
     }
 
-@app.post("/chat/start")
-async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):    
-    print("prompt_tommy_start")
-    prompt = brain_begin
-    generated_response = generate_phi3_response(prompt)    
+@app.post("/chat_repeat/start")
+async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):
+    prompt = get_random_english_sentence()
+    
+    if prompt:
+        print(prompt)
+        # Retirer la phrase choisie de la liste
+        english_phrases.remove(prompt)
+        
+        # Mettre à jour brain_repeat avec la phrase choisie
+        brain_repeat = "can you repeat this phrase:\n"
+        brain_repeat += f"{prompt}\n"
+        
+        # Demander à l'utilisateur de répéter la phrase
+        generated_response = f"Can you please repeat this phrase:\n{prompt}"
+        
+        # Générer le fichier audio pour la réponse simulée
+        audio_file_path = text_to_speech_audio(generated_response, voice) 
+        audio_base64 = file_to_base64(audio_file_path)    
+        
+        # Enregistrer la conversation dans les logs
+        log_conversation(prompt, generated_response)    
+        
+        return {
+            "generated_response": generated_response,
+            "audio_base64": audio_base64
+        }
+    else:
+        return {"error": "No more phrases available."}
+    
+@app.post("/chat_repeat")
+async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
+    model_name = 'phi3'
+    tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
+    tts_model.to("cuda")    
+    audio_path = f"./audio/user/{audio_file.filename}"    
+    with open(audio_path, "wb") as f:
+        f.write(await audio_file.read())    
+    denoised_audio_path = process_audio_file(audio_path, audio_file.filename) 
+    # save_user_audio(denoised_audio_path)
+    user_input = transcribe_audio(denoised_audio_path).strip()
+    print(user_input)
+    language = detect_language(user_input)
+    print(language)       
+
+    if user_input == "Thank you.":
+        return {
+            "user_input": user_input,
+            "generated_response": None,
+            "audio_base64": None 
+        }
+    
+    log_file_path = './log/conversation_logs.txt'
+    if user_input.lower() in ["help", "help.", "help!", "help?","Help !"]:
+        return help_sugg(log_file_path, model_name, user_input)
+
+    if language == 'unknown':
+        return {
+            "error": "unknown_language",
+            "generated_response": "It appears you speak French. Please check your pronunciation.",
+            "audio_base64": None,
+        }
+    
+
+    prompt = get_random_english_sentence()
+    print(prompt)
+    # Retirer la phrase choisie de la liste
+    english_phrases.remove(prompt)
+        
+    # Mettre à jour brain_repeat avec la phrase choisie
+    brain_repeat = "can you repeat this phrase:\n"
+    brain_repeat += f"{prompt}\n"
+        
+    # Demander à l'utilisateur de répéter la phrase
+    generated_response = f"Can you please repeat this phrase:\n{prompt}"
+        
+    # Générer le fichier audio pour la réponse simulée
     audio_file_path = text_to_speech_audio(generated_response, voice) 
     audio_base64 = file_to_base64(audio_file_path)    
+        
+# Enregistrer la conversation dans les logs
     log_conversation(prompt, generated_response)    
+        
     return {
+        "user_input": user_input,
         "generated_response": generated_response,
         "audio_base64": audio_base64
     }
@@ -256,6 +332,21 @@ async def translate_message(request: TranslationRequest):
 
         return {
             "translated_message": generated_response
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/chat/message")
+async def send_message(request: ChatRequest):
+    try:
+        prompt = request.message
+        generated_response = generate_phi3_response(prompt)
+        audio_file_path = text_to_speech_audio(generated_response, "english_ljspeech_tacotron2-DDC")
+        audio_base64 = file_to_base64(audio_file_path)
+        log_conversation(prompt, generated_response)
+        return {
+            "generated_response": generated_response,
+            "audio_base64": audio_base64
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
