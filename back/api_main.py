@@ -22,6 +22,10 @@ from TTS.api import TTS
 import nltk
 import soundfile as sf
 import numpy as np
+from fastapi import FastAPI, Query
+from typing import Optional
+from pydantic import BaseModel
+from prompt import get_random_category 
 
 
 app = FastAPI()
@@ -235,17 +239,28 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
         "audio_base64": audio_base64
     }
 
+class StartChatRequest(BaseModel):
+    choice: Optional[str] = Query(None)
+
 @app.post("/chat_repeat/start")
-async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):
+async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC"):
     global current_prompt
+
+    choice = request_data.choice
     
-    prompt = get_random_r_f_m_greetings_common_conversations()
-    
+    if choice == "r_f_m_greetings_common_conversations":
+        prompt = get_random_category("greetings_common_conversations")
+    elif choice == "english_phrases":
+        prompt = get_random_category("english_phrases")
+    else:
+        return {"error": "Invalid choice parameter."}
+
     if prompt:
         current_prompt = prompt.rstrip("!?.")
         print(prompt)
         
-        if prompt in r_f_m_greetings_common_conversations:
+        # Si prompt est dans r_f_m_greetings_common_conversations, le retirer de la liste
+        if choice == "r_f_m_greetings_common_conversations" and prompt in r_f_m_greetings_common_conversations:
             r_f_m_greetings_common_conversations.remove(prompt)
         
         generated_response = generate_response_variation(prompt)

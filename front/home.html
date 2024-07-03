@@ -196,7 +196,7 @@
             </ul>
           </nav>
           <div class="content all anglais">
-            <a href="brain-course.html" onclick="startChat('common_conversations')">
+            <a href="brain-course.html?choice=r_f_m_greetings_common_conversations">
               <div class="demo-card">
                 <img src="../static/assets/images/ai/brain.gif" alt="">
                 <p>Salutations et conversations courantes</p>
@@ -205,7 +205,7 @@
           </div>
           
           <div class="content all anglais">
-            <a href="brain-course.html" onclick="startChat('english_phrases')">
+            <a href="brain-course.html?choice=english_phrases">
               <div class="demo-card">
                 <img src="../static/assets/images/ai/brain.gif" alt="">
                 <p>English Phrases</p>
@@ -266,29 +266,16 @@
     <script src="../static/assets/js/logout.js"></script>
     <script src="../static/assets/js/info_users.js" defer></script>
     <script>
-            // async function startChat(category) {
-            //     const response = await fetch('/chat_repeat/start', {
-            //         method: 'POST',
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //         },
-            //         body: JSON.stringify({
-            //             category: category,
-            //             voice: 'english_ljspeech_tacotron2-DDC'
-            //         }),
-            //     });
-
-            //     const data = await response.json();
-            //     if (data.error) {
-            //         console.error(data.error);
-            //     } else {
-            //         console.log(data.generated_response);
-            //         // Handle the audio base64 here
-            //     }
-            // }
             document.addEventListener('DOMContentLoaded', () => {
               const navItems = document.querySelectorAll('.nav-item');
               const contentItems = document.querySelectorAll('.content');
+              const urlParams = new URLSearchParams(window.location.search);
+              const choice = urlParams.get('choice');
+
+              if (choice) {
+                const chatTitle = document.querySelector('.chat-container h1');
+                chatTitle.textContent += ` - ${choice}`;
+              }
 
               navItems.forEach(item => {
                 item.addEventListener('click', (e) => {

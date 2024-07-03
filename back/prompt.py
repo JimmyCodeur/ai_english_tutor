@@ -26,7 +26,7 @@ def generate_incorrect_response(incorrect_responses, prompt):
     return generated_response
 
 def get_random_category(category):
-    if category == "common_conversations":
+    if category == "greetings_common_conversations":
         return random.choice(r_f_m_greetings_common_conversations) if r_f_m_greetings_common_conversations else None
     elif category == "english_phrases":
         return random.choice(english_phrases) if english_phrases else None

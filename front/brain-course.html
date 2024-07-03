@@ -158,15 +158,20 @@
         let initialChatStarted = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await startChat();
-            initialChatStarted = true;
+            const urlParams = new URLSearchParams(window.location.search);
+            const choice = urlParams.get('choice');
+            await startChat(choice);
         });
 
-        async function startChat() {
+        async function startChat(choice) {
             updateButtonState('processing');
             try {
                 const response = await fetch('/chat_repeat/start', {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ choice: choice })
                 });
                 const data = await response.json();
                 displayMessage(data.generated_response, 'bot', data.audio_base64);
