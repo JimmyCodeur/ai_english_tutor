@@ -17,8 +17,7 @@ from transcribe_audio import transcribe_audio
 from audio_utils import file_to_base64, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, get_random_english_sentence, english_phrases
-from help_suggestion import help_sugg
+from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, get_random_r_f_m_greetings_common_conversations, r_f_m_greetings_common_conversations, generate_response_variation, incorrect_responses_general, correct_responses_general, generate_correct_response, generate_incorrect_response
 from TTS.api import TTS
 import nltk
 import soundfile as sf
@@ -29,6 +28,7 @@ app = FastAPI()
 add_middleware(app)
 app.mount("/static", StaticFiles(directory="./front/static"), name="static")
 nltk.download('punkt')
+current_prompt = None
 
 @app.get('/')
 def index():
@@ -237,25 +237,22 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
 
 @app.post("/chat_repeat/start")
 async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):
-    prompt = get_random_english_sentence()
+    global current_prompt
+    
+    prompt = get_random_r_f_m_greetings_common_conversations()
     
     if prompt:
+        current_prompt = prompt.rstrip("!?.")
         print(prompt)
-        # Retirer la phrase choisie de la liste
-        english_phrases.remove(prompt)
         
-        # Mettre à jour brain_repeat avec la phrase choisie
-        brain_repeat = "can you repeat this phrase:\n"
-        brain_repeat += f"{prompt}\n"
+        if prompt in r_f_m_greetings_common_conversations:
+            r_f_m_greetings_common_conversations.remove(prompt)
         
-        # Demander à l'utilisateur de répéter la phrase
-        generated_response = f"Can you please repeat this phrase:\n{prompt}"
+        generated_response = generate_response_variation(prompt)
         
-        # Générer le fichier audio pour la réponse simulée
         audio_file_path = text_to_speech_audio(generated_response, voice) 
         audio_base64 = file_to_base64(audio_file_path)    
         
-        # Enregistrer la conversation dans les logs
         log_conversation(prompt, generated_response)    
         
         return {
@@ -264,66 +261,54 @@ async def start_chat(voice: str = "english_ljspeech_tacotron2-DDC"):
         }
     else:
         return {"error": "No more phrases available."}
-    
+
 @app.post("/chat_repeat")
 async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
-    model_name = 'phi3'
-    tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
-    tts_model.to("cuda")    
-    audio_path = f"./audio/user/{audio_file.filename}"    
-    with open(audio_path, "wb") as f:
-        f.write(await audio_file.read())    
-    denoised_audio_path = process_audio_file(audio_path, audio_file.filename) 
-    # save_user_audio(denoised_audio_path)
-    user_input = transcribe_audio(denoised_audio_path).strip()
-    print(user_input)
-    language = detect_language(user_input)
-    print(language)       
+    global current_prompt
+    print(current_prompt)
 
-    if user_input == "Thank you.":
+    audio_path = f"./audio/user/{audio_file.filename}"
+    with open(audio_path, "wb") as f:
+        f.write(await audio_file.read())
+    
+    user_input = transcribe_audio(audio_path).strip().lower()   
+    user_input = user_input.rstrip("!?.")
+    
+    print(f"User's voice input: {user_input}")
+    expected_prompt = current_prompt.lower().strip()
+
+    if current_prompt is None:
+        generated_response = "There are no prompts available at the moment."
+    else:
+        expected_prompt = current_prompt.lower().strip()
+    
+        if user_input == expected_prompt or user_input == expected_prompt.rstrip("!?."):
+            generated_response = generate_correct_response(correct_responses_general, current_prompt)
+            
+            if r_f_m_greetings_common_conversations:
+                prompt = get_random_r_f_m_greetings_common_conversations()
+                current_prompt = prompt
+                
+                r_f_m_greetings_common_conversations.remove(prompt)
+                
+                generated_response += f"\n\n{generate_response_variation(prompt)}"
+            else:
+                current_prompt = None
+                generated_response += "\n\nThere are no more phrases available."
+        else:
+            generated_response = generate_incorrect_response(incorrect_responses_general, current_prompt)
+    
+        audio_file_path = text_to_speech_audio(generated_response, voice)
+        audio_base64 = file_to_base64(audio_file_path)
+        
+        log_conversation(user_input, generated_response)
+        
         return {
             "user_input": user_input,
-            "generated_response": None,
-            "audio_base64": None 
+            "generated_response": generated_response,
+            "audio_base64": audio_base64
         }
-    
-    log_file_path = './log/conversation_logs.txt'
-    if user_input.lower() in ["help", "help.", "help!", "help?","Help !"]:
-        return help_sugg(log_file_path, model_name, user_input)
-
-    if language == 'unknown':
-        return {
-            "error": "unknown_language",
-            "generated_response": "It appears you speak French. Please check your pronunciation.",
-            "audio_base64": None,
-        }
-    
-
-    prompt = get_random_english_sentence()
-    print(prompt)
-    # Retirer la phrase choisie de la liste
-    english_phrases.remove(prompt)
         
-    # Mettre à jour brain_repeat avec la phrase choisie
-    brain_repeat = "can you repeat this phrase:\n"
-    brain_repeat += f"{prompt}\n"
-        
-    # Demander à l'utilisateur de répéter la phrase
-    generated_response = f"Can you please repeat this phrase:\n{prompt}"
-        
-    # Générer le fichier audio pour la réponse simulée
-    audio_file_path = text_to_speech_audio(generated_response, voice) 
-    audio_base64 = file_to_base64(audio_file_path)    
-        
-# Enregistrer la conversation dans les logs
-    log_conversation(prompt, generated_response)    
-        
-    return {
-        "user_input": user_input,
-        "generated_response": generated_response,
-        "audio_base64": audio_base64
-    }
-
 @app.post("/translate")
 async def translate_message(request: TranslationRequest):
     try:

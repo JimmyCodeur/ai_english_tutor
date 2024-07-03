@@ -48,3 +48,7 @@ class TranslationRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+
+# class ChatStartRequest(BaseModel):
+#     category: str
+#     voice: str
