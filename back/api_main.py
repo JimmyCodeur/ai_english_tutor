@@ -144,6 +144,7 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.email, "role": user.role})
+    print(f"Generated Access Token: {access_token}")
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.put("/update-user-role/{user_id}")
@@ -243,8 +244,10 @@ class StartChatRequest(BaseModel):
     choice: Optional[str] = Query(None)
 
 @app.post("/chat_repeat/start")
-async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC"):
+async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     global current_prompt
+
+    user_id = current_user.id
 
     choice = request_data.choice
     
@@ -269,7 +272,11 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
         audio_file_path = text_to_speech_audio(generated_response, voice) 
         audio_base64 = file_to_base64(audio_file_path)    
         
-        log_conversation(prompt, generated_response)    
+        # log_conversation(prompt, generated_response)
+        log = log_conversation(db, user_id=user_id, prompt=prompt, response=generated_response)    
+        db.add(log)
+        db.commit()
+        db.refresh(log)
         
         return {
             "generated_response": generated_response,
@@ -279,8 +286,10 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
         return {"error": "No more phrases available."}
 
 @app.post("/chat_repeat")
-async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
+async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     global current_prompt
+
+    user_id = current_user.id
 
     if not choice:
         return {"error": "Choice parameter is required."}
@@ -329,7 +338,10 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     audio_file_path = text_to_speech_audio(generated_response, voice)
     audio_base64 = file_to_base64(audio_file_path)
     
-    log_conversation(user_input, generated_response)
+    log = log_conversation(db, user_id=user_id, prompt=current_prompt, response=generated_response)    
+    db.add(log)
+    db.commit()
+    db.refresh(log)
     
     return {
         "user_input": user_input,

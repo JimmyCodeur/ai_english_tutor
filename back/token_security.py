@@ -19,7 +19,7 @@ revoked_tokens: Set[str] = set()
 def token_is_revoked(token: str) -> bool:
     return token in revoked_tokens
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
