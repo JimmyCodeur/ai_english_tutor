@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Date, Enum as SqlEnum, func, DateTime
+from sqlalchemy import Column, Integer, String, Date, Enum as SqlEnum, func, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
 from datetime import date
 
@@ -28,6 +29,48 @@ class ConversationLog(Base):
     timestamp = Column(DateTime, default=func.now(), nullable=False)
     prompt = Column(String, nullable=False)    # Le message d'entrée (prompt)
     response = Column(String)                  # La réponse générée par l'IA
+    user_audio_base64 = Column(String)
+    user_input = Column(String) 
 
     def __repr__(self):
         return f"<ConversationLog(id={self.id}, user_id={self.user_id}, timestamp={self.timestamp}, prompt='{self.prompt}', response='{self.response}')>"
+    
+class Conversation(Base):
+    __tablename__ = 'conversations'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user1_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user2_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    category = Column(String, nullable=False)  # Ajout de la catégorie pour distinguer les conversations
+
+    # Relation avec la table User pour récupérer les détails des utilisateurs
+    user1 = relationship("User", foreign_keys=[user1_id])
+    user2 = relationship("User", foreign_keys=[user2_id])
+
+    def __repr__(self):
+        return f"<Conversation(id={self.id}, user1_id={self.user1_id}, user2_id={self.user2_id}, category='{self.category}')>"
+
+
+
+class Message(Base):
+    __tablename__ = 'messages'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # L'id de l'utilisateur qui a envoyé le message
+    conversation_id = Column(Integer, ForeignKey('conversations.id'), nullable=False)  # L'id de la conversation à laquelle le message est associé
+    timestamp = Column(DateTime, default=func.now(), nullable=False)
+    content = Column(String, nullable=False)
+    user_input = Column(String)
+    user_audio_base64 = Column(String)
+    response = Column(String)
+
+    # Relation avec la table User pour récupérer les détails de l'utilisateur
+    user = relationship("User")
+    
+    # Relation avec la table Conversation pour récupérer les détails de la conversation
+    conversation = relationship("Conversation")
+
+    def __repr__(self):
+        return f"<Message(id={self.id}, user_id={self.user_id}, conversation_id={self.conversation_id}, timestamp={self.timestamp}, content='{self.content}')>"
+
+

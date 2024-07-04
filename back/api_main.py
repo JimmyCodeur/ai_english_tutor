@@ -8,9 +8,9 @@ from pydantic import EmailStr, constr
 from datetime import date
 from bdd.database import get_db
 from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role
-from bdd.models import Base, User as DBUser, Role
+from bdd.models import ConversationLog, Message, Base, User as DBUser, Role
 from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
-from log_conversation import log_conversation
+from log_conversation import log_conversation, create_or_get_conversation
 from load_model import generate_phi3_response
 from tts_utils import text_to_speech_audio
 from transcribe_audio import transcribe_audio
@@ -234,6 +234,7 @@ async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "engl
     audio_file_path = text_to_speech_audio(generated_response, voice)           
     audio_base64 = file_to_base64(audio_file_path)    
     log_conversation(prompt, generated_response)    
+
     return {
         "user_input": user_input,
         "generated_response": generated_response,
@@ -272,11 +273,18 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
         audio_file_path = text_to_speech_audio(generated_response, voice) 
         audio_base64 = file_to_base64(audio_file_path)    
         
-        # log_conversation(prompt, generated_response)
-        log = log_conversation(db, user_id=user_id, prompt=prompt, response=generated_response)    
+        # Enregistrer la conversation dans la table ConversationLog
+        log = ConversationLog(user_id=user_id, prompt=current_prompt, response=generated_response, user_audio_base64=None, user_input=None)
         db.add(log)
         db.commit()
         db.refresh(log)
+
+        # Enregistrer le message dans la table Message
+        conversation = create_or_get_conversation(db, user_id, choice)
+        message = Message(user_id=user_id, conversation_id=conversation.id, content=prompt, user_input=None, user_audio_base64=None, response=generated_response)
+        db.add(message)
+        db.commit()
+        db.refresh(message)
         
         return {
             "generated_response": generated_response,
@@ -338,11 +346,19 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     audio_file_path = text_to_speech_audio(generated_response, voice)
     audio_base64 = file_to_base64(audio_file_path)
     
-    log = log_conversation(db, user_id=user_id, prompt=current_prompt, response=generated_response)    
+    # Enregistrer la conversation dans la table ConversationLog
+    log = ConversationLog(user_id=user_id, prompt=current_prompt, response=generated_response, user_audio_base64=audio_base64, user_input=user_input)
     db.add(log)
     db.commit()
     db.refresh(log)
-    
+
+    # Enregistrer le message dans la table Message
+    conversation = create_or_get_conversation(db, user_id, category)
+    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, user_audio_base64=audio_base64, user_input=user_input, response=generated_response)
+    db.add(message)
+    db.commit()
+    db.refresh(message)
+
     return {
         "user_input": user_input,
         "generated_response": generated_response,
