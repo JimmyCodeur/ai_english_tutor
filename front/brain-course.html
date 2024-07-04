@@ -54,6 +54,12 @@
                                          Mon Compte 
                                     </a>
                                 </li>
+                                <li> 
+                                    <a href="users-profile.html">
+                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
+                                         Historique 
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="profile-setting.html">
                                         <ion-icon name="settings-outline" class="is-icon"></ion-icon>
@@ -220,6 +226,9 @@
                         const audioBlob = new Blob(audioChunks);
                         const formData = new FormData();
                         formData.append('audio_file', audioBlob, 'recorded_audio.wav');
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const choice = urlParams.get('choice');
+                        formData.append('choice', choice);
                         updateButtonState('processing');
                         try {
                             const response = await fetch('/chat_repeat', {
@@ -367,6 +376,12 @@
                 };
 
                 messageContainer.appendChild(audioElement);
+                const replayIconSVG = `
+                    <svg class="h-6 w-6 text-zinc-500 cursor-pointer replay-icon"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                `;
+                messageContainer.insertAdjacentHTML('beforeend', replayIconSVG);
             } 
             
             chatBox.appendChild(messageContainer);
@@ -381,12 +396,20 @@
                     translateIcon.remove();
                 });
             }
+            const replayIcon = messageContainer.querySelector('.replay-icon');
+            if (replayIcon) {
+                replayIcon.addEventListener('click', () => {
+                    const audioPlayer = messageContainer.querySelector('.audio-player');
+                    if (audioPlayer) {
+                        audioPlayer.play();
+                    }
+                });
+            }    
         }
 
 
         function translateMessage(message) {
             const translateUrl = 'http://localhost:8000/translate/';
-            
 
             // Corps de la requête à envoyer à FastAPI
             const requestBody = {
@@ -414,11 +437,20 @@
                     // Réussite de la requête, afficher la traduction
                     const translatedMessage = data.translated_message;
                     console.log(`Message traduit: "${translatedMessage}"`);
+                    
+                    // Trouver le dernier message affiché dans le chat
+                    const messageContainer = document.querySelector('.message-container:last-child');
+
                     // Mettre à jour l'interface utilisateur avec le message traduit
-                    displayMessage(`Traduction : ${translatedMessage}`, 'bot');
-                    const translateIcon = messageContainer.querySelector('.translate-icon');
-                    if (translateIcon) {
-                        translateIcon.remove();  // Retirer l'icône de traduction du message traduit
+                    if (messageContainer) {
+                        displayMessage(`Traduction : ${translatedMessage}`, 'bot');
+                        
+                        const translateIcon = messageContainer.querySelector('.translate-icon');
+                        if (translateIcon) {
+                            translateIcon.remove();  // Retirer l'icône de traduction du message traduit
+                        }
+                    } else {
+                        console.error('Erreur lors de la traduction: Aucun messageContainer trouvé.');
                     }
                 })
                 .catch(error => {

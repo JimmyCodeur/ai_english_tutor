@@ -1,21 +1,16 @@
 import random
 
-def get_random_r_f_m_greetings_common_conversations():
-    if not r_f_m_greetings_common_conversations:
-        return None
-    return random.choice(r_f_m_greetings_common_conversations)
-
 def generate_response_variation(prompt):
     if not variations_general:
         return None
     return random.choice(variations_general) + prompt
 
-def generate_correct_response(correct_responses, prompt):
+def generate_correct_response(correct_responses):
     if not correct_responses:
         return "Oops! There was an error generating the response."
     
     response = random.choice(correct_responses)    
-    generated_response = f"{response} {prompt}"    
+    generated_response = f"{response}"    
     return generated_response
 
 def generate_incorrect_response(incorrect_responses, prompt):
@@ -26,13 +21,15 @@ def generate_incorrect_response(incorrect_responses, prompt):
     return generated_response
 
 def get_random_category(category):
-    if category == "greetings_common_conversations":
-        return random.choice(r_f_m_greetings_common_conversations) if r_f_m_greetings_common_conversations else None
+    if category == "r_a_m_greetings_common_conversations":
+        return random.choice(r_a_m_greetings_common_conversations) if r_a_m_greetings_common_conversations else None
     elif category == "english_phrases":
         return random.choice(english_phrases) if english_phrases else None
+    elif category == "r_a_m_travel_situation_at_the_airport":
+        return random.choice(r_a_m_travel_situation_at_the_airport) if r_a_m_travel_situation_at_the_airport else None
     return None
 
-r_f_m_greetings_common_conversations = [
+r_a_m_greetings_common_conversations = [
     "Hello",
     "Good morning",
     "Good afternoon",
@@ -159,6 +156,59 @@ r_f_m_greetings_common_conversations = [
     "How was your conversation?",
     "How was your dialogue?",
     "How was your discussion?"
+]
+
+r_a_m_travel_situation_at_the_airport = [
+    "Where are the check-in counters?",
+    "Which gate is for boarding?",
+    "Could you help me find the baggage claim area?",
+    "Is there a shuttle to the rental car center?",
+    "How early should I arrive for my flight?",
+    "Where can I exchange currency?",
+    "Could you tell me where the nearest restroom is?",
+    "Is there a place to charge my phone around here?",
+    "Do you have a map of the airport?",
+    "How do I get to Terminal 10 ?",
+    "Are there any restaurants or cafes in this terminal?",
+    "Can I bring this phone through security?",
+    "What is the liquid restriction for carry-on bags?",
+    "Is there Wi-Fi available in the airport?",
+    "How can I access the airport lounge?",
+    "Are there any duty-free shops here?",
+    "Can I get a boarding pass printout here?",
+    "Do I need to go through customs here or at my final destination?",
+    "Is there a place to store luggage here?",
+    "What time does my flight board?",
+    "Can I upgrade my seat at the gate?",
+    "Is there an ATM nearby?",
+    "Are there any travel advisories I should be aware of?",
+    "Where can I find a taxi or rideshare service?",
+    "How do I get to the airport hotel shuttle pickup?",
+    "Can you take me to [hotel name], please?",
+    "How much does it cost to go to [destination]?",
+    "Do you accept credit cards?",
+    "Could you please turn on the meter?",
+    "How long will it take to get there?",
+    "Can you recommend a good restaurant around here?",
+    "Is there a surcharge for luggage?",
+    "Could you take a different route to avoid traffic?",
+    "Are there any tolls on the way?",
+    "Could you wait here for a few minutes?",
+    "Do you have a receipt for the fare?",
+    "Is there a flat rate to the airport?",
+    "Can you drop me off at Terminal two?",
+    "Are you familiar with this area?",
+    "Is there a taxi stand near london?",
+    "Could you help me with my bags?",
+    "How long have you been driving taxis?",
+    "Is there a discount for booking a return trip?",
+    "What's the best way to get to parkland from here?",
+    "Could you recommend a sightseeing tour?",
+    "Can you recommend any local attractions?",
+    "Are there any safety tips I should know about?",
+    "Is it safe to walk around this area at night?",
+    "How much do you charge for waiting time?",
+    "What's the fastest route to the train station?"
 ]
 
 english_phrases = [

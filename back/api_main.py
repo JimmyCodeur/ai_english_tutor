@@ -17,7 +17,7 @@ from transcribe_audio import transcribe_audio
 from audio_utils import file_to_base64, process_audio_file
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, get_random_r_f_m_greetings_common_conversations, r_f_m_greetings_common_conversations, generate_response_variation, incorrect_responses_general, correct_responses_general, generate_correct_response, generate_incorrect_response
+from prompt import prompt_tommy_start, prompt_tommy_fr, prompt_tommy_en, r_a_m_greetings_common_conversations, r_a_m_greetings_common_conversations, generate_response_variation, incorrect_responses_general, correct_responses_general, generate_correct_response, generate_incorrect_response
 from TTS.api import TTS
 import nltk
 import soundfile as sf
@@ -248,10 +248,12 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
 
     choice = request_data.choice
     
-    if choice == "r_f_m_greetings_common_conversations":
-        prompt = get_random_category("greetings_common_conversations")
+    if choice == "r_a_m_greetings_common_conversations":
+        prompt = get_random_category("r_a_m_greetings_common_conversations")
     elif choice == "english_phrases":
         prompt = get_random_category("english_phrases")
+    elif choice == "r_a_m_travel_situation_at_the_airport":
+        prompt = get_random_category("r_a_m_travel_situation_at_the_airport")
     else:
         return {"error": "Invalid choice parameter."}
 
@@ -259,9 +261,8 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
         current_prompt = prompt.rstrip("!?.")
         print(prompt)
         
-        # Si prompt est dans r_f_m_greetings_common_conversations, le retirer de la liste
-        if choice == "r_f_m_greetings_common_conversations" and prompt in r_f_m_greetings_common_conversations:
-            r_f_m_greetings_common_conversations.remove(prompt)
+        if choice == "r_a_m_greetings_common_conversations" and prompt in r_a_m_greetings_common_conversations:
+            r_a_m_greetings_common_conversations.remove(prompt)
         
         generated_response = generate_response_variation(prompt)
         
@@ -278,56 +279,68 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
         return {"error": "No more phrases available."}
 
 @app.post("/chat_repeat")
-async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
+async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
     global current_prompt
-    print(current_prompt)
+
+    if not choice:
+        return {"error": "Choice parameter is required."}
+
+    if choice == "r_a_m_greetings_common_conversations":
+        category = "r_a_m_greetings_common_conversations"
+    elif choice == "english_phrases":
+        category = "english_phrases"
+    elif choice == "r_a_m_travel_situation_at_the_airport":
+        category = "r_a_m_travel_situation_at_the_airport"
+    else:
+        return {"error": "Invalid choice parameter."}
+
+    if current_prompt is None:
+        return {"error": "No current prompt available. Please start a new chat session."}
 
     audio_path = f"./audio/user/{audio_file.filename}"
     with open(audio_path, "wb") as f:
         f.write(await audio_file.read())
     
-    user_input = transcribe_audio(audio_path).strip().lower()   
+    user_input = transcribe_audio(audio_path).strip().lower()
     user_input = user_input.rstrip("!?.")
     
     print(f"User's voice input: {user_input}")
     expected_prompt = current_prompt.lower().strip()
 
-    if current_prompt is None:
-        generated_response = "There are no prompts available at the moment."
-    else:
-        expected_prompt = current_prompt.lower().strip()
-    
-        if user_input == expected_prompt or user_input == expected_prompt.rstrip("!?."):
-            generated_response = generate_correct_response(correct_responses_general, current_prompt)
+    if user_input == expected_prompt or user_input == expected_prompt.rstrip("!?."):
+        generated_response = generate_correct_response(correct_responses_general)
+        
+        # Fetch next prompt based on the category
+        prompt = get_random_category(category)
+        if prompt:
+            current_prompt = prompt.rstrip("!?.")
+            print(f"Next prompt: {prompt}")
             
-            if r_f_m_greetings_common_conversations:
-                prompt = get_random_r_f_m_greetings_common_conversations()
-                current_prompt = prompt
-                
-                r_f_m_greetings_common_conversations.remove(prompt)
-                
-                generated_response += f"\n\n{generate_response_variation(prompt)}"
-            else:
-                current_prompt = None
-                generated_response += "\n\nThere are no more phrases available."
+            if category == "r_a_m_greetings_common_conversations" and prompt in r_a_m_greetings_common_conversations:
+                r_a_m_greetings_common_conversations.remove(prompt)
+            
+            generated_response += f"\n\n{generate_response_variation(prompt)}"
         else:
-            generated_response = generate_incorrect_response(incorrect_responses_general, current_prompt)
+            current_prompt = None
+            generated_response += "\n\nThere are no more phrases available."
+    else:
+        generated_response = generate_incorrect_response(incorrect_responses_general, current_prompt)
     
-        audio_file_path = text_to_speech_audio(generated_response, voice)
-        audio_base64 = file_to_base64(audio_file_path)
-        
-        log_conversation(user_input, generated_response)
-        
-        return {
-            "user_input": user_input,
-            "generated_response": generated_response,
-            "audio_base64": audio_base64
-        }
-        
+    audio_file_path = text_to_speech_audio(generated_response, voice)
+    audio_base64 = file_to_base64(audio_file_path)
+    
+    log_conversation(user_input, generated_response)
+    
+    return {
+        "user_input": user_input,
+        "generated_response": generated_response,
+        "audio_base64": audio_base64
+    }
+
 @app.post("/translate")
 async def translate_message(request: TranslationRequest):
     try:
-        prompt = f"translate this message in french: \n {request.message}"
+        prompt = f"traduire ce message en français : \n {request.message}"
         generated_response = generate_phi3_response(prompt)
 
         return {
