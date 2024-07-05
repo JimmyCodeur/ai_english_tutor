@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head> 
+<head>
     <title>TalkAI</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,14 +11,54 @@
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/style.css">
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-    <script src="../static/assets/js/info_users.js" defer></script>   
+    <script src="../static/assets/js/info_users.js" defer></script>
+    <style>
+        /* Styles spécifiques pour l'affichage des conversations et des messages */
+        .conversation {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .conversation h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .conversation button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .conversation button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .message p {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 
 <body>
     <div id="wrapper" class="is-verticle">
-        <header uk-sticky> 
+        <header uk-sticky>
             <div class="header_inner">
-                <div class="left-side">    
+                <div class="left-side">
                     <div id="logo">
                         <a href="home.html">
                             <img src="../static/assets/images/logo.png" alt="">
@@ -26,17 +66,15 @@
                             <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
                         </a>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
-                    </div>
-    
+                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"></div>
                 </div>
-                <div class="right-side">                        
-                    <div> 
+                <div class="right-side">
+                    <div>
                         <a href="" class="flex items-center space-x-2">
-                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
+                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt="">
                         </a>
                         <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
-                            <ul>   
+                            <ul>
                                 <li>
                                     <a href="" class="user">
                                         <div class="user_avatar">
@@ -48,113 +86,214 @@
                                         </div>
                                     </a>
                                 </li>
-                                <li> 
-                                    <a href="">
+                                <li>
+                                    <a href="#">
                                         <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
-                                         Mon Compte 
+                                        Mon Compte
                                     </a>
                                 </li>
-                                <li> 
+                                <li>
                                     <a href="users-profile.html">
                                         <ion-icon name="folder-outline" class="is-icon"></ion-icon>
-                                         Historique 
+                                        Historique
                                     </a>
                                 </li>
                                 <li>
                                     <a href="profile-setting.html">
                                         <ion-icon name="settings-outline" class="is-icon"></ion-icon>
-                                        Configuration  
+                                        Configuration
                                     </a>
                                 </li>
-                                <li> 
+                                <li>
                                     <hr>
                                 </li>
-                                <li> 
+                                <li>
                                     <a href="#" id="logout-link" onclick="logout()">
                                         <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
-                                        Se déconnecter 
+                                        Se déconnecter
                                     </a>
                                 </li>
                             </ul>
-                        </div> 
-                    </div>    
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
-    <div class="main_content">    
-                <div class="container">
-                    <div class="bg-white p-10 rounded-md shadow">                    
-                        <div class="flex justify-between space-x-10">
-                            <div class="flex-1">
-                                <div class="font-semibold lg:text-3xl mt-4 text-lg info-name"></div>
-                                <div class="flex mt-7 space-x-10 text-base">
-                                    <div>
-                                        <div class="font-medium text-gray-400"> Nombres de sessions</div>
-                                        <div class="mt-2 text-xl font-semibold">15</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-7">
-                                    <div class="font-semibold text-lg mb-2"> Description</div>
-                                    <p> a ajouter </p>
+        <div class="main_content">
+            <div class="container">
+                <div class="bg-white p-10 rounded-md shadow">
+                    <div class="flex justify-between space-x-10">
+                        <div class="flex-1">
+                            <div class="font-semibold lg:text-3xl mt-4 text-lg info-name"></div>
+                            <div class="flex mt-7 space-x-10 text-base">
+                                <div>
+                                    <div class="font-medium text-gray-400">Nombres de sessions</div>
+                                    <div class="mt-2 text-xl font-semibold">15</div>
                                 </div>
                             </div>
-                            <div>
-                                <div class="w-36 h-36 rounded-full overflow-hidden">
-                                    <img src="../static/assets/images/avatars/avatar-4.jpg" alt="" class="w-full h-full inset-0 object-cover"> 
-                                </div>
+
+                            <div class="mt-7">
+                                <div class="font-semibold text-lg mb-2">Description</div>
+                                <p>à ajouter</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="w-36 h-36 rounded-full overflow-hidden">
+                                <img src="../static/assets/images/avatars/avatar-4.jpg" alt="" class="w-full h-full inset-0 object-cover">
                             </div>
                         </div>
                     </div>
-               
-            <div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
-                <div class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
-                    <p class="capitalize font-medium"> © copyright by TalkAI</p>
-                    <div class="lg:flex space-x-4 text-gray-700 capitalize hidden">
-                        <a href="#">À Propos |</a>
-                        <a href="#"> Aide |</a>
-                        <a href="#"> Condiditon |</a>
-                        <a href="#"> Confidentialité</a>
+                </div>
+                <div class="bg-white p-10 mt-8 rounded-md shadow">
+                    <h2 class="text-2xl font-semibold mb-4">Historique des Conversations</h2>
+                    <div id="conversations-container">
+                        <!-- Conversations will be dynamically added here -->
                     </div>
                 </div>
-            </div>           
-        </div>
- 
+                <div class="bg-white p-10 mt-8 rounded-md shadow" id="messages-section" style="display:none;">
+                    <h2 class="text-2xl font-semibold mb-4">Messages</h2>
+                    <div id="messages-accordion" uk-accordion>
+                        <!-- Accordion container for messages -->
+                    </div>
+                </div>
 
-         <div class="sidebar">
-            <div class="sidebar_inner" data-simplebar>
-                <ul class="border-transparent">
-                    <li><a href="home.html">
-                            <ion-icon name="home-outline" class="side-icon"></ion-icon>
-                            <span> Accueil </span>
-                        </a>
-                    </li> 
-                    <li><a href="messages.html">
-                            <ion-icon name="chatbox-ellipses-outline" class="side-icon"></ion-icon>
-                            <span>S'entrainer</span>
-                        </a>
-                    </li>
-                    <li><a href="billing-history.html">
-                            <ion-icon name="reader-outline" class="side-icon"></ion-icon>
-                            <span> Mes rapports</span>
-                        </a>
-                    </li>
-                </ul>
+                <div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
+                    <div class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
+                        <p class="capitalize font-medium">© copyright by TalkAI</p>
+                        <div class="lg:flex space-x-4 text-gray-700 capitalize hidden">
+                            <a href="#">À Propos |</a>
+                            <a href="#">Aide |</a>
+                            <a href="#">Condiditon |</a>
+                            <a href="#">Confidentialité</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="side_overly" uk-toggle="target: #wrapper ; cls: is-collapse is-active"></div>
-        </div>       
+
+            <div class="sidebar">
+                <div class="sidebar_inner" data-simplebar>
+                    <ul class="border-transparent">
+                        <li><a href="home.html">
+                                <ion-icon name="home-outline" class="side-icon"></ion-icon>
+                                <span>Accueil</span>
+                            </a>
+                        </li>
+                        <li><a href="messages.html">
+                                <ion-icon name="chatbox-ellipses-outline" class="side-icon"></ion-icon>
+                                <span>S'entrainer</span>
+                            </a>
+                        </li>
+                        <li><a href="billing-history.html">
+                                <ion-icon name="reader-outline" class="side-icon"></ion-icon>
+                                <span>Mes rapports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="side_overly" uk-toggle="target: #wrapper ; cls: is-collapse is-active"></div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="../static/assets/js/uikit.js"></script>
+        <script src="../static/assets/js/tippy.all.min.js"></script>
+        <script src="../static/assets/js/simplebar.js"></script>
+        <script src="../static/assets/js/custom.js"></script>
+        <script src="../static/assets/js/bootstrap-select.min.js"></script>
+        <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
+        <script nomodule="" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
+        <script src="../static/assets/js/logout.js"></script>
+        <script>
+            function getAccessToken() {
+                return localStorage.getItem('accessToken');
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+            const accessToken = getAccessToken();
+
+            const categoryMapping = {
+                "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
+                "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport",
+                "english_phrases": "🗣️ Phrases en anglais"
+            };
+
+            fetch('/user/conversations', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(conversations => {
+                    const container = document.getElementById('conversations-container');
+                    container.innerHTML = '';
+                    conversations.forEach(conversation => {
+                        const readableCategory = categoryMapping[conversation.category] || conversation.category;
+                        const div = document.createElement('div');
+                        div.className = 'conversation';
+                        div.innerHTML = `                            
+                            <h3>Catégorie: ${readableCategory}</h3>
+                            <button onclick="loadMessages(${conversation.id}, '${readableCategory}')">Voir les messages</button>
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(error => console.error('Error fetching conversations:', error));
+        });
+
+        function loadMessages(conversationId, readableCategory) {
+            const accessToken = getAccessToken();
+
+            fetch(`/user/conversations/${conversationId}/messages`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(messages => {
+                const container = document.getElementById('conversations-container');
+                container.innerHTML = ''; // Clear previous content
+
+                // Create the messages section
+                const messagesHTML = `
+                    <div class="bg-white p-10 mt-8 rounded-md shadow" id="messages-section">
+                        <h2 class="text-2xl font-semibold mb-4">Messages</h2>
+                        <div id="messages-accordion" uk-accordion>
+                            ${messages.map((message, index) => `
+                                <div class="uk-accordion-title">
+                                    ${index + 1}. ${new Date(message.timestamp).toLocaleString()}
+                                </div>
+                                <div class="uk-accordion-content">
+                                    <p>Content: ${message.content}</p>
+                                    <p>User Input: ${message.user_input}</p>
+                                    <p>Response: ${message.response}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // Append messages section to conversations container
+                container.innerHTML = messagesHTML;
+
+                // Display the messages section
+                document.getElementById('messages-section').style.display = 'block';
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+        }
+
+        </script>
     </div>
- 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="../static/assets/js/uikit.js"></script>
-    <script src="../static/assets/js/tippy.all.min.js"></script>
-    <script src="../static/assets/js/simplebar.js"></script>
-    <script src="../static/assets/js/custom.js"></script>
-    <script src="../static/assets/js/bootstrap-select.min.js"></script>
-    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule="" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
-    <script src="../static/assets/js/logout.js"></script>
- 
- </body>
+</body>
+
 </html>

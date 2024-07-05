@@ -612,6 +612,49 @@
             }
         }
     }
+    
+
+                window.addEventListener('beforeunload', async function(event) {
+                event.preventDefault(); // Annuler l'événement pour éviter le déchargement immédiat
+                await stopChatSession(); // Appel de la fonction pour arrêter la session de chat
+            });
+
+            async function stopChatSession() {
+                try {
+                    const accessToken = localStorage.getItem("accessToken");
+                    if (!accessToken) {
+                        throw new Error("Access token not found in localStorage.");
+                    }
+
+                    const response = await fetch('/chat_repeat/stop', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log(data); // Gérer le message de succès ou d'erreur selon les besoins
+
+                    // Afficher un popup si la session a été arrêtée avec succès
+                    if (data.message === "Chat session ended successfully.") {
+                        alert("Chat session ended successfully!");
+                        // Vous pouvez personnaliser le contenu et le style du popup selon vos besoins
+                    }
+
+                    // Facultatif : mettre à jour l'interface utilisateur ou effectuer d'autres actions basées sur la réponse du serveur
+                } catch (err) {
+                    console.error('Error stopping chat session: ', err);
+                    // Gérer l'erreur : afficher un message d'erreur ou logique de réessai
+                }
+            }
+
+
             
 
 

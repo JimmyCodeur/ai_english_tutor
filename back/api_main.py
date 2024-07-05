@@ -3,12 +3,13 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
-from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest
+from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema
 from pydantic import EmailStr, constr
 from datetime import date
 from bdd.database import get_db
 from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role
 from bdd.models import ConversationLog, Message, Base, User as DBUser, Role
+from bdd.models import Conversation
 from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from log_conversation import log_conversation, create_or_get_conversation
 from load_model import generate_phi3_response
@@ -23,9 +24,10 @@ import nltk
 import soundfile as sf
 import numpy as np
 from fastapi import FastAPI, Query
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 from prompt import get_random_category 
+from datetime import datetime
 
 
 app = FastAPI()
@@ -346,6 +348,18 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     audio_file_path = text_to_speech_audio(generated_response, voice)
     audio_base64 = file_to_base64(audio_file_path)
     
+    # Vérifier s'il existe déjà une conversation active dans cette catégorie pour l'utilisateur
+    conversation = db.query(Conversation).filter(
+        (Conversation.user1_id == user_id),
+        (Conversation.category == category),
+        Conversation.active == True,
+        Conversation.end_time == None  # Assurez-vous que la conversation n'a pas encore de end_time
+    ).first()
+
+    if not conversation:
+        # Si aucune conversation active n'existe, créer une nouvelle
+        conversation = create_or_get_conversation(db, user_id, category)
+    
     # Enregistrer la conversation dans la table ConversationLog
     log = ConversationLog(user_id=user_id, prompt=current_prompt, response=generated_response, user_audio_base64=audio_base64, user_input=user_input)
     db.add(log)
@@ -353,7 +367,6 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     db.refresh(log)
 
     # Enregistrer le message dans la table Message
-    conversation = create_or_get_conversation(db, user_id, category)
     message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, user_audio_base64=audio_base64, user_input=user_input, response=generated_response)
     db.add(message)
     db.commit()
@@ -364,6 +377,32 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
         "generated_response": generated_response,
         "audio_base64": audio_base64
     }
+
+@app.post("/chat_repeat/stop")
+async def stop_chat(current_user: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        # Obtenez l'utilisateur actuel
+        user_id = current_user.id
+
+        # Trouvez la conversation active pour cet utilisateur avec un start_time non nul
+        active_conversation = db.query(Conversation).filter(
+            ((Conversation.user1_id == user_id) | (Conversation.user2_id == user_id)),
+            Conversation.start_time.isnot(None),  # Vérifiez si start_time n'est pas nul
+            Conversation.end_time.is_(None)  # Vérifiez si end_time est nul (pour éviter de répéter)
+        ).first()
+
+        if active_conversation:
+            # Mettez à jour l'heure de fin de la conversation
+            active_conversation.end_session(db)  # Utilisez la méthode end_session définie dans la classe Conversation
+
+            return {"message": "Chat session ended successfully."}
+        else:
+            return {"error": "No active chat session found or already ended."}
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
 
 @app.post("/translate")
 async def translate_message(request: TranslationRequest):
@@ -391,7 +430,73 @@ async def send_message(request: ChatRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+category_mapping = {
+    "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
+    "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport",
+    "english_phrases": "🗣️ Phrases en anglais"
+}
+
+
+@app.post("/end_conversation/{conversation_id}")
+def end_conversation(conversation_id: int, db: Session = Depends(get_db)):
+    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    if conversation:
+        conversation.end_session(db)
+        return {"message": "Conversation ended successfully"}
+    else:
+        return {"error": "Conversation not found"}, 404
+
+@app.post("/start_conversation/{user2_id}")
+def start_conversation(user2_id: int, category: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Vérifiez si l'utilisateur existe
+    user2 = get_user_by_id(db, user2_id)
+    if not user2:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Créer une nouvelle conversation
+    new_conversation = create_new_conversation(current_user.id, user2_id, category, db)
     
+    return {"message": "Conversation started successfully", "conversation_id": new_conversation.id}
+
+
+
+@app.post("/end_conversation/{conversation_id}")
+def end_conversation(conversation_id: int, db: Session = Depends(get_db)):
+    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    if conversation:
+        conversation.end_session(db)
+        return {"message": "Conversation ended successfully"}
+    else:
+        return {"error": "Conversation not found"}, 404
+
+
+@app.get("/user/conversations", response_model=List[ConversationSchema])
+def get_user_conversations(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    conversations = db.query(Conversation).filter(
+        (Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)
+    ).all()
+    
+    # Map category identifiers to readable names
+    for conversation in conversations:
+        conversation.category = category_mapping.get(conversation.category, conversation.category)
+    
+    return conversations
+
+@app.get("/user/conversations/{conversation_id}/messages", response_model=List[MessageSchema])
+def get_conversation_messages(conversation_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversation_id,
+        ((Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id))
+    ).first()
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    messages = db.query(Message).filter(Message.conversation_id == conversation.id).all()
+    return messages   
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api_main:app", host="127.0.0.1", port=8000, reload=True)

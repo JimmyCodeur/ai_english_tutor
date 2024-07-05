@@ -49,6 +49,42 @@ class TranslationRequest(BaseModel):
 class ChatRequest(BaseModel):
     message: str
 
-# class ChatStartRequest(BaseModel):
-#     category: str
-#     voice: str
+class ConversationLog(BaseModel):
+    id: int
+    user_id: int
+    timestamp: datetime
+    prompt: str
+    response: str
+    user_audio_base64: Optional[str] = None
+    user_input: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+class ConversationLogCreate(ConversationLog):
+    pass
+
+class ConversationLog(ConversationLog):
+    id: int
+    
+class ConversationSchema(BaseModel):
+    id: int
+    user1_id: int
+    user2_id: int
+    category: str
+
+    class Config:
+        orm_mode = True
+
+class MessageSchema(BaseModel):
+    id: int
+    user_id: int
+    conversation_id: int
+    timestamp: datetime
+    content: str
+    user_input: Optional[str]
+    user_audio_base64: Optional[str]
+    response: Optional[str]
+
+    class Config:
+        orm_mode = True

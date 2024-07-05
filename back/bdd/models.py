@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, Date, Enum as SqlEnum, func, DateTime, ForeignKey
+from sqlalchemy import Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
-from datetime import date
+from datetime import datetime, timezone
+
 
 Base = declarative_base()
 
@@ -41,7 +43,10 @@ class Conversation(Base):
     id = Column(Integer, primary_key=True, index=True)
     user1_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     user2_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    category = Column(String, nullable=False)  # Ajout de la catégorie pour distinguer les conversations
+    category = Column(String, nullable=False)
+    active = Column(Boolean, default=True)
+    start_time = Column(DateTime, default=func.now(), nullable=False)
+    end_time = Column(DateTime, nullable=True)
 
     # Relation avec la table User pour récupérer les détails des utilisateurs
     user1 = relationship("User", foreign_keys=[user1_id])
@@ -49,6 +54,12 @@ class Conversation(Base):
 
     def __repr__(self):
         return f"<Conversation(id={self.id}, user1_id={self.user1_id}, user2_id={self.user2_id}, category='{self.category}')>"
+    
+    def end_session(self, db_session):
+        if self.active:
+            self.active = False
+            self.end_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+            db_session.commit()
 
 
 
