@@ -72,6 +72,7 @@ class ConversationSchema(BaseModel):
     user1_id: int
     user2_id: int
     category: str
+    start_time: datetime
 
     class Config:
         orm_mode = True

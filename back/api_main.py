@@ -27,7 +27,7 @@ from fastapi import FastAPI, Query
 from typing import Optional, List
 from pydantic import BaseModel
 from prompt import get_random_category 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 app = FastAPI()
@@ -476,11 +476,15 @@ def get_user_conversations(current_user: User = Depends(get_current_user), db: S
     conversations = db.query(Conversation).filter(
         (Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)
     ).all()
-    
+
+    # Convert start_time to ISO 8601 format
+    for conversation in conversations:
+        conversation.start_time = conversation.start_time.replace(tzinfo=timezone.utc).isoformat()
+
     # Map category identifiers to readable names
     for conversation in conversations:
         conversation.category = category_mapping.get(conversation.category, conversation.category)
-    
+
     return conversations
 
 @app.get("/user/conversations/{conversation_id}/messages", response_model=List[MessageSchema])
