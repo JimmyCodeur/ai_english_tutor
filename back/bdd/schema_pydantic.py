@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, date
 from pydantic import BaseModel
 from typing import Optional
+from fastapi import Query
 
 class TokenData(BaseModel):
     user_id: Optional[str] = None
@@ -89,3 +90,6 @@ class MessageSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class StartChatRequest(BaseModel):
+    choice: Optional[str] = Query(None)

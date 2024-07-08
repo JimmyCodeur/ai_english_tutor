@@ -13,43 +13,43 @@
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <script src="../static/assets/js/info_users.js" defer></script>
     <style>
-        /* Styles spécifiques pour l'affichage des conversations et des messages */
         .conversation {
-            background-color: #f0f0f0;
+            background-color: #f9f9f9;
             padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .conversation h3 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
-        }
-
-        .conversation button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
-        .conversation button:hover {
-            background-color: #0056b3;
+        .conversation .conversation-date {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
         }
 
         .message {
-            border: 1px solid #ccc;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .message p {
-            margin-bottom: 5px;
+            margin: 5px 0;
+        }
+
+        .message strong {
+            color: #333;
         }
     </style>
 </head>
@@ -147,6 +147,18 @@
                 </div>
                 <div class="bg-white p-10 mt-8 rounded-md shadow">
                     <h2 class="text-2xl font-semibold mb-4">Historique des Conversations</h2>
+                    <div class="flex items-center mb-4 space-x-4">
+                        <label for="sortOrder" class="text-gray-700">Trier par :</label>
+                        <div class="relative">
+                            <select id="sortOrder" class="appearance-none bg-gray-200 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                <option value="recent">Plus récent</option>
+                                <option value="oldest">Plus ancien</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M10 12l-5-5 1.5-1.5L10 9.8l3.5-3.5L15 7z"/></svg>
+                            </div>
+                        </div>
+                    </div>
                     <div id="conversations-container">
                         <!-- Conversations will be dynamically added here -->
                     </div>
@@ -202,36 +214,53 @@
             function getAccessToken() {
                 return localStorage.getItem('accessToken');
             }
-        
+
             document.addEventListener("DOMContentLoaded", function () {
                 const accessToken = getAccessToken();
-        
+
                 const categoryMapping = {
                     "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
                     "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport",
                     "english_phrases": "🗣️ Phrases en anglais"
                 };
-        
-                fetch('/user/conversations', {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(conversations => {
-                    conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
-        
-                    const container = document.getElementById('conversations-container');
-                    if (!container) {
-                        throw new Error('Container element #conversations-container not found.');
-                    }
-        
+
+                const sortOrderSelect = document.getElementById('sortOrder');
+                const container = document.getElementById('conversations-container');
+
+                sortOrderSelect.addEventListener('change', () => {
+                    fetchConversations(sortOrderSelect.value);
+                });
+
+                fetchConversations('recent'); // Fetch conversations initially sorted by recent
+
+                function fetchConversations(sortOrder) {
+                    fetch('/user/conversations', {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(conversations => {
+                        // Sort conversations based on the selected order
+                        if (sortOrder === 'recent') {
+                            conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                        } else if (sortOrder === 'oldest') {
+                            conversations.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+                        }
+
+                        renderConversations(conversations);
+                    })
+                    .catch(error => console.error('Error fetching conversations:', error));
+                }
+
+                function renderConversations(conversations) {
                     container.innerHTML = '';
+
                     conversations.forEach(conversation => {
                         const readableCategory = categoryMapping[conversation.category] || conversation.category;
                         const div = document.createElement('div');
@@ -240,94 +269,17 @@
                         if (isNaN(startDate.getTime())) {
                             console.error(`Invalid date format for conversation with id ${conversation.id}: ${conversation.start_time}`);
                         } else {
-                            div.innerHTML = `                            
-                                <h3>Catégorie: ${readableCategory}</h3>
-                                <p>Date: ${startDate.toLocaleString()}</p>
-                                <div class="uk-accordion" uk-accordion>
-                                    <h3 class="uk-accordion-title">Voir les messages</h3>
-                                    <div class="uk-accordion-content" id="messages-${conversation.id}"></div>
-                                </div>
+                            div.innerHTML = `
+                                <h3>${readableCategory} - ${startDate.toLocaleString()}</h3>
+                                <a href="conversation.html?id=${conversation.id}" class="view-messages-link">Voir les messages</a>
                             `;
-                            div.querySelector('.uk-accordion-title').addEventListener('click', () => toggleAccordion(conversation.id));
                         }
                         container.appendChild(div);
                     });
-                })
-                .catch(error => console.error('Error fetching conversations:', error));
-            });
-        
-            function toggleAccordion(conversationId) {
-                const accordionContent = document.getElementById(`messages-${conversationId}`);
-                
-                if (accordionContent) {
-                    const accordion = UIkit.accordion(`#messages-${conversationId}`);
-                    if (accordion) {
-                        accordion.toggle(0); // Toggle the accordion's first item
-                        if (accordionContent.innerHTML.trim() === '') {
-                            loadMessages(conversationId);
-                        }
-                    } else {
-                        console.error('UIkit accordion not initialized properly.');
-                    }
-                } else {
-                    console.error(`Accordion content for conversation ${conversationId} not found.`);
                 }
-            }
-        
-            function loadMessages(conversationId) {
-                const accessToken = getAccessToken();
-
-                fetch(`/user/conversations/${conversationId}/messages`, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(messages => {
-                    const messagesContainer = document.getElementById(`messages-${conversationId}`);
-                    if (messagesContainer) {
-                        messagesContainer.innerHTML = '';
-
-                        // Tri des messages par date en ordre croissant
-                        messages.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-
-                        messages.forEach(message => {
-                            const messageDiv = document.createElement('div');
-                            messageDiv.className = 'message';
-
-                            // Vérifier et afficher le message de l'utilisateur ('Moi') s'il existe
-                            if (message.user_input !== null) {
-                                const userInputParagraph = document.createElement('p');
-                                userInputParagraph.innerHTML = `<strong>Moi:</strong> ${message.user_input}`;
-                                messageDiv.appendChild(userInputParagraph);
-
-                            }
-
-                            // Vérifier et afficher le message de l'IA ('Response') s'il existe
-                            if (message.response) {
-                                const responseParagraph = document.createElement('p');
-                                responseParagraph.innerHTML = `<strong>Response:</strong> ${message.response}`;
-                                messageDiv.appendChild(responseParagraph);
-
-                            }
-
-                            // Ajouter le message au conteneur des messages
-                            messagesContainer.appendChild(messageDiv);
-                        });
-                    } else {
-                        console.error(`Messages container for conversation ${conversationId} not found.`);
-                    }
-                })
-                .catch(error => console.error('Error fetching messages:', error));
-            }
+            });
 
         </script>
-        
     </div>
 </body>
 

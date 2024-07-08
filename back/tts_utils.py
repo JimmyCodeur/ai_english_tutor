@@ -4,9 +4,6 @@ import wave
 from datetime import datetime
 from filters_audio import lowpass_filter
 
-# tts_model = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=True)
-# tts_model.to("cuda")
-
 voices = {
     "xtts_v2": "tts_models/multilingual/multi-dataset/xtts_v2",
     "xtts_v1.1": "tts_models/multilingual/multi-dataset/xtts_v1.1",
@@ -100,29 +97,19 @@ vocoder_models = {
     "be_common-voice_hifigan": "vocoder_models/be/common-voice/hifigan"
 }
 
-
 def text_to_speech_audio(generated_response, voice_key):
     if voice_key not in voices:
         raise ValueError(f"Invalid voice key: {voice_key}")
 
     model_name = voices[voice_key]
-
-    # Initialisation du modèle TTS sans spécification du locuteur
     tts = TTS(model_name=model_name, progress_bar=False, gpu=True)
 
-    # Synthèse vocale à partir du texte généré
     wav_data = tts.tts(generated_response)
-
-    # Traitement audio (normalisation, filtrage passe-bas, etc.)
     wav_data_np = np.array(wav_data, dtype=np.float32)
     wav_data_np = wav_data_np / np.max(np.abs(wav_data_np))
-
-    cutoff_freq = 8000  # Fréquence de coupure du filtre passe-bas
-    wav_data_filtered = lowpass_filter(wav_data_np, cutoff_freq, 22050)  # Appliquez votre filtre passe-bas ici
-
+    cutoff_freq = 8000
+    wav_data_filtered = lowpass_filter(wav_data_np, cutoff_freq, 22050)
     wav_data_pcm = np.int16(wav_data_filtered * 32767)
-
-    # Création du chemin et écriture du fichier audio WAV
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     audio_file_path = f"./audio/teacher/teacher_{current_time}.wav"
 

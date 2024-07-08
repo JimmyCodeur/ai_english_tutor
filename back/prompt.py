@@ -5,17 +5,12 @@ def generate_response_variation(prompt):
         return None
     return random.choice(variations_general) + prompt
 
-def generate_correct_response(correct_responses):
-    if not correct_responses:
-        return "Oops! There was an error generating the response."
-    
+def generate_correct_response(correct_responses):    
     response = random.choice(correct_responses)    
     generated_response = f"{response}"    
     return generated_response
 
 def generate_incorrect_response(incorrect_responses, prompt):
-    if not incorrect_responses:
-        return "Oops! There was an error generating the response."
     response = random.choice(incorrect_responses)    
     generated_response = f"{response} {prompt}"    
     return generated_response
@@ -28,6 +23,48 @@ def get_random_category(category):
     elif category == "r_a_m_travel_situation_at_the_airport":
         return random.choice(r_a_m_travel_situation_at_the_airport) if r_a_m_travel_situation_at_the_airport else None
     return None
+
+def get_prompt(choice: str) -> str:
+    if choice == "r_a_m_greetings_common_conversations":
+        return get_random_category("r_a_m_greetings_common_conversations")
+    elif choice == "english_phrases":
+        return get_random_category("english_phrases")
+    elif choice == "r_a_m_travel_situation_at_the_airport":
+        return get_random_category("r_a_m_travel_situation_at_the_airport")
+    else:
+        return None
+
+def get_category(choice: str) -> str:
+    categories = {
+        "r_a_m_greetings_common_conversations": "r_a_m_greetings_common_conversations",
+        "english_phrases": "english_phrases",
+        "r_a_m_travel_situation_at_the_airport": "r_a_m_travel_situation_at_the_airport"
+    }
+    return categories.get(choice, None)
+
+def fetch_next_prompt(category: str) -> str:
+    prompt = get_random_category(category)
+    return prompt
+
+def handle_response(user_input: str, expected_prompt: str, category: str) -> (str, str):
+    if user_input == expected_prompt or user_input == expected_prompt.rstrip("!?."):
+        response = generate_correct_response(correct_responses_general)
+        next_prompt = fetch_next_prompt(category)
+        if next_prompt:
+            response += f"\n\n{generate_response_variation(next_prompt)}"
+        else:
+            next_prompt = None
+            response += "\n\nThere are no more phrases available."
+    else:
+        response = generate_incorrect_response(incorrect_responses_general, expected_prompt)
+        next_prompt = expected_prompt
+    return response, next_prompt    
+
+category_mapping = {
+    "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
+    "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport",
+    "english_phrases": "🗣️ Phrases en anglais"
+}
 
 r_a_m_greetings_common_conversations = [
     "Hello",
@@ -157,7 +194,6 @@ r_a_m_greetings_common_conversations = [
     "How was your dialogue?",
     "How was your discussion?"
 ]
-
 r_a_m_travel_situation_at_the_airport = [
     "Where are the check-in counters?",
     "Which gate is for boarding?",
@@ -184,8 +220,8 @@ r_a_m_travel_situation_at_the_airport = [
     "Are there any travel advisories I should be aware of?",
     "Where can I find a taxi or rideshare service?",
     "How do I get to the airport hotel shuttle pickup?",
-    "Can you take me to [hotel name], please?",
-    "How much does it cost to go to [destination]?",
+    "Can you take me to hotel name please?",
+    "How much does it cost to go to London?",
     "Do you accept credit cards?",
     "Could you please turn on the meter?",
     "How long will it take to get there?",
@@ -210,7 +246,6 @@ r_a_m_travel_situation_at_the_airport = [
     "How much do you charge for waiting time?",
     "What's the fastest route to the train station?"
 ]
-
 english_phrases = [
     "where is the nearest bank?",
     "how much does it cost?",
@@ -312,7 +347,6 @@ english_phrases = [
     "how much is the room per night?",
     "is breakfast included?"
 ]
-
 variations_general = [
     f"Now, can you please repeat this phrase:\n",
     f"Could you please repeat this phrase:\n",
@@ -370,7 +404,6 @@ variations_general = [
     f"Here's a phrase. Repeat it back to me :\n",
     f"Could you say this phrase aloud for me :\n"
 ]
-
 correct_responses_general = [
     "Well done! You repeated the phrase correctly. Great job!",
     "Excellent job! You got it right. Keep it up!",
@@ -423,7 +456,6 @@ correct_responses_general = [
     "Well done! You nailed it.",
     "Excellent! You repeated it perfectly."
 ]
-
 incorrect_responses_general = [
     f"Oops! It seems like you didn't quite get it right. Please try again with:\n",
     f"Oh no! It looks like that wasn't quite right. Try again with:\n",
@@ -436,29 +468,28 @@ incorrect_responses_general = [
     f"Sorry, that's not what I said. Try again with:\n",
     f"Almost there, but not quite. Please try again with:\n"
 ]
-
 prompt_tommy_start = (
-            "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English.\n"
-            "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
-            "The words you use are from a four-year-old"
-            "1. Engage the person in simple and playful conversations in English to encourage learning.\n"
-            "2. Ask about their day or their interests to keep the conversation going.\n"
-            "3. Use simple English words to explain things they might not understand.\n"
-            "4. Do not ask the same question more than once.\n"
-            "Remember, the goal is to create a fun and engaging environment where they can learn English naturally.\n"
-            "Please limit greetings (e.g., Hi, hello, hi there) to only once in your response.\n"
-            "Please limit the number of questions asked to one per response.\n"
-            "Avoid asking how to say things in French.\n"
-            "{user_input}\n"
+    "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English.\n"
+    "The idea is that you always have to ask questions, find conversation topics, and help them learn English through immersion.\n"
+    "The words you use are from a four-year-old"
+    "1. Engage the person in simple and playful conversations in English to encourage learning.\n"
+    "2. Ask about their day or their interests to keep the conversation going.\n"
+    "3. Use simple English words to explain things they might not understand.\n"
+    "4. Do not ask the same question more than once.\n"
+    "Remember, the goal is to create a fun and engaging environment where they can learn English naturally.\n"
+    "Please limit greetings (e.g., Hi, hello, hi there) to only once in your response.\n"
+    "Please limit the number of questions asked to one per response.\n"
+    "Avoid asking how to say things in French.\n"
+    "{user_input}\n"
 )
 prompt_tommy_fr = (
-            "You are a 4-year-old child named Tommy. \n"
-            "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
-            "You must always respond in English.\n"
-            "User: {user_input}\n"
+    "You are a 4-year-old child named Tommy. \n"
+    "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
+    "You must always respond in English.\n"
+    "User: {user_input}\n"
 )
 prompt_tommy_en = (
-            "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English.\n"
-            "Speaks like a 4 year old in English"
-            "User: {user_input}\n"
+    "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English.\n"
+    "Speaks like a 4 year old in English"
+    "User: {user_input}\n"
 )

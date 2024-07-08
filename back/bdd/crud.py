@@ -5,8 +5,9 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
 from fastapi import HTTPException
-from bdd.models import User as DBUser, Role
-from datetime import date
+from bdd.models import User as DBUser
+from bdd.models import ConversationLog, Message, Conversation
+from log_conversation import create_or_get_conversation
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -101,3 +102,36 @@ def update_user(db: Session, user_id: int, user_data: UserCreate):
     db.commit()
     db.refresh(user)
     return user
+
+def log_conversation_to_db(db: Session, user_id: int, prompt: str, generated_response: str) -> None:
+    log = ConversationLog(user_id=user_id, prompt=prompt, response=generated_response, user_audio_base64=None, user_input=None)
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+
+def log_message_to_db(db: Session, user_id: int, conversation_id: int, prompt: str, generated_response: str) -> None:
+    message = Message(user_id=user_id, conversation_id=conversation_id, content=prompt, user_input=None, user_audio_base64=None, response=generated_response)
+    db.add(message)
+    db.commit()
+    db.refresh(message)
+
+def log_conversation_and_message(db: Session, user_id: int, category: str, current_prompt: str, user_input: str, generated_response: str, audio_base64: str) -> None:
+    conversation = db.query(Conversation).filter(
+        (Conversation.user1_id == user_id),
+        (Conversation.category == category),
+        Conversation.active == True,
+        Conversation.end_time == None
+    ).first()
+
+    if not conversation:
+        conversation = create_or_get_conversation(db, user_id, category)
+    
+    log = ConversationLog(user_id=user_id, prompt=current_prompt, response=generated_response, user_audio_base64=audio_base64, user_input=user_input)
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+
+    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, user_audio_base64=audio_base64, user_input=user_input, response=generated_response)
+    db.add(message)
+    db.commit()
+    db.refresh(message)

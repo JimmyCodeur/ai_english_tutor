@@ -1,4 +1,3 @@
-import langid
 from langdetect.lang_detect_exception import LangDetectException
 from langdetect import detect_langs, DetectorFactory
 from langid.langid import LanguageIdentifier, model
@@ -7,14 +6,9 @@ DetectorFactory.seed = 0
 
 def detect_language(text):
     try:
-        # Initialize langid identifier with English and French languages
         langid_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
         langid_identifier.set_languages(['en', 'fr'])
-        
-        # Classify the text using langid
         langid_lang, langid_confidence = langid_identifier.classify(text)
-        
-        # Classify the text using langdetect
         languages = detect_langs(text)
         filtered_langs = [lang for lang in languages if lang.lang in ['en', 'fr']]
         
@@ -31,7 +25,6 @@ def detect_language(text):
         print(f"Langid detected: {langid_lang} with confidence {langid_confidence}")
         print(f"Langdetect detected: {langdetect_lang} with confidence {langdetect_confidence}")
         
-        # Determine the final language based on the confidence levels
         if langid_confidence >= confidence_threshold and langdetect_confidence >= confidence_threshold:
             if langid_lang == langdetect_lang:
                 return langid_lang

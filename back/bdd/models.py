@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
 from datetime import datetime, timezone
 
-
 Base = declarative_base()
 
 class Role(str, PyEnum):
@@ -27,10 +26,10 @@ class ConversationLog(Base):
     __tablename__ = 'conversation_logs'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)  # L'id de l'utilisateur qui a initié la conversation
+    user_id = Column(Integer, nullable=False)
     timestamp = Column(DateTime, default=func.now(), nullable=False)
-    prompt = Column(String, nullable=False)    # Le message d'entrée (prompt)
-    response = Column(String)                  # La réponse générée par l'IA
+    prompt = Column(String, nullable=False) 
+    response = Column(String)
     user_audio_base64 = Column(String)
     user_input = Column(String) 
 
@@ -48,7 +47,6 @@ class Conversation(Base):
     start_time = Column(DateTime, default=func.now(), nullable=False)
     end_time = Column(DateTime, nullable=True)
 
-    # Relation avec la table User pour récupérer les détails des utilisateurs
     user1 = relationship("User", foreign_keys=[user1_id])
     user2 = relationship("User", foreign_keys=[user2_id])
 
@@ -60,8 +58,6 @@ class Conversation(Base):
             self.active = False
             self.end_time = datetime.utcnow().replace(tzinfo=timezone.utc)
             db_session.commit()
-
-
 
 class Message(Base):
     __tablename__ = 'messages'
@@ -75,10 +71,7 @@ class Message(Base):
     user_audio_base64 = Column(String)
     response = Column(String)
 
-    # Relation avec la table User pour récupérer les détails de l'utilisateur
     user = relationship("User")
-    
-    # Relation avec la table Conversation pour récupérer les détails de la conversation
     conversation = relationship("Conversation")
 
     def __repr__(self):

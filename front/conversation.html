@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation Detail</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .bg-white {
+            background-color: #ffffff;
+        }
+
+        .p-10 {
+            padding: 2.5rem;
+        }
+
+        .rounded-md {
+            border-radius: 0.375rem;
+        }
+
+        .shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+            font-weight: 600;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            background-color: #edf2f7;
+            border: 1px solid #cbd5e0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 0.375rem;
+        }
+
+        .message p {
+            margin: 5px 0;
+        }
+
+        .message strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background-color: #4a5568;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="users-profile.html" class="view-messages-link">Retour vers l'historique</a>
+    <div class="container">
+        <div class="bg-white p-10 mt-8 rounded-md shadow">
+            <h2 class="text-2xl font-semibold mb-4">Conversation Detail</h2>
+            <div id="messages-container">
+                <!-- Messages seront ajoutés ici -->
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const conversationId = params.get('id');
+            if (!conversationId) {
+                console.error('Conversation ID not provided.');
+                return;
+            }
+
+            const accessToken = getAccessToken();
+
+            fetch(`/user/conversations/${conversationId}/messages`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(messages => {
+                const messagesContainer = document.getElementById('messages-container');
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = '';
+
+                    // Sort messages by timestamp in ascending order (assuming timestamp is correctly retrieved)
+                    messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                    messages.forEach(message => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message';
+
+                        // Check if user_input exists and add it
+                        if (message.user_input !== null && message.user_input !== undefined) {
+                            const userInputParagraph = document.createElement('p');
+                            userInputParagraph.innerHTML = `<strong>Me:</strong> ${message.user_input}`;
+                            messageDiv.appendChild(userInputParagraph);
+                        }
+
+                        // Check if response exists and add it
+                        if (message.response !== null && message.response !== undefined) {
+                            const responseParagraph = document.createElement('p');
+                            responseParagraph.innerHTML = `<strong>IA:</strong> ${message.response}`;
+                            messageDiv.appendChild(responseParagraph);
+                        }
+
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                } else {
+                    console.error(`Messages container not found.`);
+                }
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+        });
+
+
+        function getAccessToken() {
+            return localStorage.getItem('accessToken');
+        }
+    </script>
+</body>
+
+</html>
