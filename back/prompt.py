@@ -22,6 +22,8 @@ def get_random_category(category):
         return random.choice(english_phrases) if english_phrases else None
     elif category == "r_a_m_travel_situation_at_the_airport":
         return random.choice(r_a_m_travel_situation_at_the_airport) if r_a_m_travel_situation_at_the_airport else None
+    elif category == "conv_greetings_common_conversations":
+        return random.choice(conv_greetings_common_conversations) if conv_greetings_common_conversations else None
     return None
 
 def get_prompt(choice: str) -> str:
@@ -31,6 +33,8 @@ def get_prompt(choice: str) -> str:
         return get_random_category("english_phrases")
     elif choice == "r_a_m_travel_situation_at_the_airport":
         return get_random_category("r_a_m_travel_situation_at_the_airport")
+    elif choice == "conv_greetings_common_conversations":
+        return get_random_category("conv_greetings_common_conversations")
     else:
         return None
 
@@ -38,7 +42,8 @@ def get_category(choice: str) -> str:
     categories = {
         "r_a_m_greetings_common_conversations": "r_a_m_greetings_common_conversations",
         "english_phrases": "english_phrases",
-        "r_a_m_travel_situation_at_the_airport": "r_a_m_travel_situation_at_the_airport"
+        "r_a_m_travel_situation_at_the_airport": "r_a_m_travel_situation_at_the_airport",
+        "conv_greetings_common_conversations": "conv_greetings_common_conversations"
     }
     return categories.get(choice, None)
 
@@ -63,8 +68,13 @@ def handle_response(user_input: str, expected_prompt: str, category: str) -> (st
 category_mapping = {
     "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
     "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport",
-    "english_phrases": "🗣️ Phrases en anglais"
+    "english_phrases": "🗣️ Phrases en anglais",
+    "conv_greetings_common_conversations": "conv_greetings_common_conversations"
 }
+conv_greetings_common_conversations = [
+    "Hello",
+    "Good morning",  
+]
 
 r_a_m_greetings_common_conversations = [
     "Hello",
@@ -491,5 +501,32 @@ prompt_tommy_fr = (
 prompt_tommy_en = (
     "You are a 4-year-old child named Tommy. You have to converse with a French person who doesn't speak English.\n"
     "Speaks like a 4 year old in English"
+    "User said : {user_input}\n"
+)
+
+# alice_start_greetings = (
+#     "You are a girl named Alice, a friend your age, in an English-speaking country.\n"
+#     "1. Start with a friendly greeting like 'Hi!' or 'Hello!'.\n"
+#     "2. Introduce yourself with your name, e.g., 'My name is Alice.'\n"
+#     "3. Ask Alice's name, e.g., 'What's your name?'\n"
+#     "4. Ask how Alice is doing today, e.g., 'How are you?'\n"
+#     "User :{user_input}\n"
+# )
+
+# alice_greetings = (
+#     "Continue the conversation with Alice, keeping in mind that you are speaking to a French person who has just arrived in an English-speaking country.\n"
+#     "Ask how the person's day has been so far, e.g., 'How has your day been so far?'\n"
+#     "Inquire about their first impressions of the country or city, e.g., 'How do you like it here so far?'\n"
+#     "Ask if they need any help or recommendations, e.g., 'Do you need any help or recommendations for places to visit?'\n"
+#     "Share some common interests or activities, e.g., 'I love going to the park. Do you like it too?'\n"
+#     "Ask about their hobbies or interests, e.g., 'What do you like to do in your free time?'\n"
+#     "Offer to introduce them to other friends or places, e.g., 'Would you like to meet some of my friends or see some cool places around here?'\n"
+#     "Keep the conversation friendly and simple, ensuring that the person feels welcome and comfortable.\n"
+#     "User :{user_input}\n"
+# )
+
+alice_greetings_fr = (
+    "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
+    "You must always respond in English.\n"
     "User: {user_input}\n"
 )

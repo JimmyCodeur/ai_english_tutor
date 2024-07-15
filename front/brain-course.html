@@ -178,7 +178,8 @@
 
             updateButtonState('processing');
             try {
-                const response = await fetch('/chat_repeat/start', {
+                const endpoint = getChatEndpoint();
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -228,6 +229,17 @@
             }
         }
 
+        function getChatEndpoint() {
+            const url = window.location.href;
+            if (url.includes('conv_')) {
+                return '/chat_conv/start';
+            } else if (url.includes('r_a_m_')) {
+                return '/chat_repeat/start';
+            } else {
+                throw new Error('Invalid URL: Unable to determine the correct endpoint');
+            }
+        }
+
 
         async function toggleRecording() {
             if (!recording) {
@@ -253,7 +265,8 @@
                             if (!accessToken) {
                                 throw new Error("Access token not found in localStorage.");
                             }
-                            const response = await fetch('/chat_repeat', {
+                            const endpointTwo = getChatEndpointTwo();
+                            const response = await fetch(endpointTwo, {
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${accessToken}`
@@ -310,6 +323,17 @@
                 }
             } else {
                 recorder.stop();
+            }
+        }
+
+        function getChatEndpointTwo() {
+            const url = window.location.href;
+            if (url.includes('conv_')) {
+                return '/chat_conv';
+            } else if (url.includes('r_a_m_')) {
+                return '/chat_repeat';
+            } else {
+                throw new Error('Invalid URL: Unable to determine the correct endpoint');
             }
         }
 

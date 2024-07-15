@@ -86,6 +86,7 @@ class MessageSchema(BaseModel):
     content: str
     user_input: Optional[str]
     user_audio_base64: Optional[str]
+    ia_audio_base64: Optional[str]
     response: Optional[str]
 
     class Config:

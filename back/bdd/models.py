@@ -69,6 +69,7 @@ class Message(Base):
     content = Column(String, nullable=False)
     user_input = Column(String)
     user_audio_base64 = Column(String)
+    ia_audio_base64 = Column(String)
     response = Column(String)
 
     user = relationship("User")

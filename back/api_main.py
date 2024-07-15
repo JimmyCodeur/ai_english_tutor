@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import asc
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
 from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest
-from pydantic import EmailStr, constr
+from pydantic import EmailStr, constr, BaseModel
 from datetime import date
 from bdd.database import get_db
 from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role, log_conversation_to_db, log_message_to_db, log_conversation_and_message
@@ -13,19 +13,21 @@ from bdd.models import Message, User as DBUser, Role
 from bdd.models import Conversation
 from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from log_conversation import log_conversation, create_or_get_conversation
-from load_model import generate_phi3_response
+from load_model import generate_phi3_response, generate_ollama_response
 from help_suggestion import help_sugg
 from tts_utils import text_to_speech_audio
 from transcribe_audio import transcribe_audio
-from audio_utils import file_to_base64, process_audio_file
+from audio_utils import file_to_base64
 from detect_langs import detect_language
 from cors import add_middleware
-from prompt import prompt_tommy_fr, prompt_tommy_en, generate_response_variation, get_prompt, get_category, handle_response, category_mapping
+from prompt import generate_response_variation, get_prompt, get_category, handle_response, category_mapping
 from TTS.api import TTS
 import nltk
 from fastapi import FastAPI
 from typing import List ,Optional
 from datetime import timezone
+import time
+import re
 
 app = FastAPI()
 add_middleware(app)
@@ -191,59 +193,248 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return {"message": "Utilisateur supprimé avec succès"}
 
-@app.post("/chat/")
-async def chat_with_brain(audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC"):
+conversation_history = {}
+conversation_start_time = {}
+alice_start_greetings = "Hi! My name is Alice. What's your name?"
+
+@app.post("/chat_conv/start")
+async def chat_with_brain(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+    global conversation_history
+    global conversation_start_time
+
+    user_id = current_user.id
+    choice = request_data.choice
+
+    audio_file_path = text_to_speech_audio(alice_start_greetings, voice)
+    audio_base64 = file_to_base64(audio_file_path)
+
+    # Initialize or retrieve conversation history for the user
+    if user_id in conversation_history:
+        user_history = conversation_history[user_id]
+    else:
+        user_history = []
+        conversation_history[user_id] = user_history
+        conversation_start_time[user_id] = time.time()
+
+    # Log the initial conversation
+    log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings) 
+    conversation = create_or_get_conversation(db, user_id, choice)
+    log_message_to_db(db, user_id, conversation.id, alice_start_greetings, alice_start_greetings, audio_base64)
+
+    return {
+        "generated_response": alice_start_greetings,
+        "audio_base64": audio_base64
+    }
+
+import spacy
+
+# Load the spaCy model for NER
+nlp = spacy.load("en_core_web_sm")
+
+def replace_french_locations(sentence: str) -> str:
+    doc = nlp(sentence)
+    for ent in doc.ents:
+        if ent.label_ in ["GPE", "LOC"]:  # GPE (Geopolitical Entity), LOC (Location)
+            sentence = sentence.replace(ent.text, "[LOCATION]")
+    return sentence
+
+def evaluate_sentence_quality_phi3(sentence: str) -> bool:
+    # Replace French locations with a placeholder
+    cleaned_sentence = replace_french_locations(sentence)
+    print(cleaned_sentence)
+    
+    prompt = f"Is the following sentence well-constructed and grammatically correct? Answer with 'yes' or 'no':\n\n{cleaned_sentence}"
     model_name = 'phi3'
-    tts_model = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)    
-    tts_model.to("cuda")    
-    audio_path = f"./audio/user/{audio_file.filename}"
+    response = generate_ollama_response(model_name, prompt).strip().lower()
+    return response.startswith("yes")
 
-    with open(audio_path, "wb") as f:
-        f.write(await audio_file.read())    
+def detect_translation_request(user_input: str) -> Optional[str]:
+    # Regular expression to detect translation requests like "how do you say in english"
+    match = re.search(r'how (do|did|can|could|would|will|should) (you|i|we) say[,]? in english[,]?\s*(.*)', user_input, re.IGNORECASE)
+    if match and match.group(3):
+        return match.group(3).strip()  # Return the phrase to be translated
+    return None
 
-    denoised_audio_path = process_audio_file(audio_path, audio_file.filename) 
-    # save_user_audio(denoised_audio_path)
-    user_input = transcribe_audio(denoised_audio_path).strip()
+
+@app.post("/chat_conv")
+async def chat_with_brain(
+    choice: str = Form(...),
+    audio_file: UploadFile = File(...),
+    voice: str = "english_ljspeech_tacotron2-DDC",
+    db: Session = Depends(get_db),
+    current_user: int = Depends(get_current_user)
+):
+    global conversation_history
+    global conversation_start_time
+
+    user_id = current_user.id
+    category = get_category(choice)
+
+    user_audio_path = f"./audio/user/{audio_file.filename}"
+    with open(user_audio_path, "wb") as f:
+        f.write(await audio_file.read())
+
+    user_input = transcribe_audio(user_audio_path).strip().lower()
     print(user_input)
-    language = detect_language(user_input)
-    print(language)       
+    user_audio_base64 = file_to_base64(user_audio_path)
 
-    if user_input == "Thank you.":
+    phrase_to_translate = detect_translation_request(user_input)
+    print(phrase_to_translate)
+    if phrase_to_translate:
+        prompt = f"Traduire cette phrase en anglais sans ajouter des commentaires: {phrase_to_translate}"
+        translated_phrase = generate_phi3_response(prompt)
+        generated_response = f"{translated_phrase}"
+        audio_file_path = text_to_speech_audio(generated_response, voice)
+        audio_base64 = file_to_base64(audio_file_path)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64)
+        return {
+            "user_input": user_input,
+            "generated_response": generated_response,
+            "audio_base64": audio_base64,
+            "conversation_history": None,
+            "user_audio_base64": user_audio_base64
+        }
+    
+    if user_id in conversation_history:
+        user_history = conversation_history[user_id]
+    else:
+        user_history = []
+        conversation_history[user_id] = user_history
+        conversation_start_time[user_id] = time.time() 
+
+    if not user_history and user_input == alice_start_greetings:
+        pass
+    else:
+        user_history.append(user_input)
+    
+    language = detect_language(user_input)  
+
+    if time.time() - conversation_start_time[user_id] > 900:  # 900 seconds = 15 minutes
+        print(conversation_start_time)
+        generated_response = "Thanks for the exchange, I have to go soon!"
+        audio_file_path = text_to_speech_audio(generated_response, voice)
+        audio_base64 = file_to_base64(audio_file_path)
+        return {
+            "user_input": user_input,
+            "generated_response": generated_response,
+            "audio_base64": audio_base64,
+            "conversation_history": user_history,
+            "user_audio_base64": user_audio_base64
+        }
+
+    # Handle thank you case
+    if user_input == "thank you.":
         return {
             "user_input": user_input,
             "generated_response": None,
-            "audio_base64": None 
-        }
-    
-    log_file_path = './log/conversation_logs.txt'
-    if user_input.lower() in ["help", "help.", "help!", "help?","Help !"]:
-        return help_sugg(log_file_path, model_name, user_input)
-
-    if language == 'unknown':
-        return {
-            "error": "unknown_language",
-            "generated_response": "It appears you speak French. Please check your pronunciation.",
             "audio_base64": None,
+            "conversation_history": None,
+            "user_audio_base64": user_audio_base64
         }
     
-    if language == 'en':
-        print("promp2 english tommy")
-        prompt = prompt_tommy_en.format(user_input=user_input)
-        print(prompt)
-    elif language == 'fr':
-        print("user parle francais")
-        prompt = prompt_tommy_fr.format(user_input=user_input)
-        print(prompt)
+            # Check if user input is in French
+    if language in ['fr', 'unknown']:
+        generated_response = "Hum.. I don't speak French, please say it in English."
+        audio_file_path = text_to_speech_audio(generated_response, voice)
+        audio_base64 = file_to_base64(audio_file_path)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, None, user_audio_base64, None)
+        return {
+            "user_input": user_input,
+            "generated_response": generated_response,
+            "audio_base64": audio_base64,
+            "conversation_history": None,
+            "user_audio_base64": user_audio_base64
+        }
+    
 
-    generated_response = generate_phi3_response(prompt)
-    audio_file_path = text_to_speech_audio(generated_response, voice)           
-    audio_base64 = file_to_base64(audio_file_path)    
-    log_conversation(prompt, generated_response)    
+        # Check if user input is valid
+    if not evaluate_sentence_quality_phi3(user_input):
+        generated_response = "I didn't understand that. Could you please rephrase?"
+        audio_file_path = text_to_speech_audio(generated_response, voice)
+        audio_base64 = file_to_base64(audio_file_path)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64)
+        return {
+            "user_input": user_input,
+            "generated_response": generated_response,
+            "audio_base64": audio_base64,
+            "conversation_history": None,
+            "user_audio_base64": user_audio_base64
+        }
 
+    def generate_ai_response_alice(previous_input, user_history, context_sentences=2):
+        # Alice's biography
+        alice_intro = "You are alice" 
+        alice_main = "You are alice. your goal is just to answer the phrase naturally user without asking questions. Remember that you speak with a beginner in English and that you must use very simple sentences"
+
+        conversation_context = " ".join(user_history)
+        print(user_history)
+
+        if not user_history:
+            # If it's the first interaction, use the full introduction
+            full_prompt = f"{alice_intro}{previous_input}\n\n{conversation_context}"
+        else:
+            full_prompt = f"{alice_main}{previous_input}\n\n{conversation_context}"
+
+        model_name = 'phi3'
+        generated_response = generate_ollama_response(model_name, full_prompt)
+
+        if isinstance(generated_response, list):
+            generated_response = ' '.join(generated_response)
+
+        sentences = nltk.tokenize.sent_tokenize(generated_response)
+        limited_response = ' '.join(sentences[:context_sentences])  
+
+        return limited_response
+    
+    conversation_topics = [
+        ("{last_response} Nice to meet you. How are you?", generate_ai_response_alice),
+        ("{last_response} Where do you come from?", generate_ai_response_alice),
+        ("{last_response} I’m from an English-speaking country. How about you?", generate_ai_response_alice),
+        ("{last_response} That's interesting. What brings you here?", generate_ai_response_alice),
+        ("{last_response} That's great! How long have you been studying English?", generate_ai_response_alice),
+        ("{last_response} Do you live in this city?", generate_ai_response_alice),
+        ("{last_response} I just arrived here a few days ago. How long have you been here?", generate_ai_response_alice),
+        ("{last_response} What do you do during the day?", generate_ai_response_alice),
+        ("{last_response} I work as a teacher. And you?", generate_ai_response_alice),
+        ("{last_response} What do you enjoy doing in your free time?", generate_ai_response_alice),
+        ("{last_response} Do you have any hobbies?", generate_ai_response_alice),
+        ("{last_response} Tell me about your family.", generate_ai_response_alice),
+        ("{last_response} Do you have brothers or sisters?", generate_ai_response_alice),
+        ("{last_response} What’s your favorite dish?", generate_ai_response_alice),
+        ("{last_response} I love trying different cuisines. What about you?", generate_ai_response_alice),
+        ("{last_response} Do you enjoy traveling?", generate_ai_response_alice),
+        ("{last_response} What’s your favorite place you’ve visited?", generate_ai_response_alice),
+        ("{last_response} I would love to visit England. Any recommendations?", generate_ai_response_alice),
+        ("{last_response} Do you speak any other languages?", generate_ai_response_alice),
+        ("{last_response} I’m learning English. Do you want to practice together?", generate_ai_response_alice),
+        ("{last_response} It was nice talking to you!", generate_ai_response_alice),
+        ("{last_response} I hope we can chat again soon.", generate_ai_response_alice)
+    ]
+
+    user_response_index = len(user_history) - 1
+    ai_prompt, response_function = conversation_topics[user_response_index]
+
+    if response_function:
+        last_user_response = user_history[-1] if user_history else ""
+        initial_response = generate_ai_response_alice(last_user_response, user_history)
+        ai_prompt = ai_prompt.format(last_response=initial_response)
+
+    generated_response = ai_prompt
+
+    
+
+    audio_file_path = text_to_speech_audio(generated_response, voice)
+    audio_base64 = file_to_base64(audio_file_path)
+
+
+
+    log_conversation_and_message(db, user_id, category, ai_prompt, user_input, generated_response, user_audio_base64, audio_base64)
     return {
         "user_input": user_input,
         "generated_response": generated_response,
-        "audio_base64": audio_base64
+        "audio_base64": audio_base64,
+        "conversation_history": user_history,
+        "user_audio_base64": user_audio_base64
     }
 
 @app.post("/chat_repeat/start")
@@ -259,7 +450,7 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
     audio_base64 = file_to_base64(audio_file_path)        
     log_conversation_to_db(db, user_id, current_prompt, generated_response)
     conversation = create_or_get_conversation(db, user_id, choice)
-    log_message_to_db(db, user_id, conversation.id, current_prompt, generated_response)
+    log_message_to_db(db, user_id, conversation.id, current_prompt, generated_response, audio_base64)
         
     return {
             "generated_response": generated_response,
@@ -271,23 +462,25 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     global current_prompt
     user_id = current_user.id
     category = get_category(choice)
-    audio_path = f"./audio/user/{audio_file.filename}"
-    with open(audio_path, "wb") as f:
+    user_audio_path = f"./audio/user/{audio_file.filename}"
+    with open(user_audio_path, "wb") as f:
         f.write(await audio_file.read())
-    
-    user_input = transcribe_audio(audio_path).strip().lower()
+        
+    user_input = transcribe_audio(user_audio_path).strip().lower()
     user_input = user_input.rstrip("!?.")    
+    user_audio_base64 = file_to_base64(user_audio_path)
     print(f"User's voice input: {user_input}")
     expected_prompt = current_prompt.lower().strip()
     generated_response, current_prompt = handle_response(user_input, expected_prompt, category)    
     audio_file_path = text_to_speech_audio(generated_response, voice)
     audio_base64 = file_to_base64(audio_file_path)    
-    log_conversation_and_message(db, user_id, category, current_prompt, user_input, generated_response, audio_base64)
+    log_conversation_and_message(db, user_id, category, current_prompt, user_input, generated_response, user_audio_base64, audio_base64)
 
     return {
         "user_input": user_input,
         "generated_response": generated_response,
-        "audio_base64": audio_base64
+        "audio_base64": audio_base64,
+        "user_audio_base64": user_audio_base64
     }
 
 @app.post("/chat_repeat/stop")
@@ -360,7 +553,7 @@ async def send_message(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/user/conversations/{conversation_id}/messages", response_model=List[MessageSchema])
+@app.get("/user/r_a_m/{conversation_id}/messages", response_model=List[MessageSchema])
 def get_conversation_messages(
     conversation_id: int,
     category: Optional[str] = None,  # Ajouter une query parameter pour la catégorie

@@ -109,13 +109,13 @@ def log_conversation_to_db(db: Session, user_id: int, prompt: str, generated_res
     db.commit()
     db.refresh(log)
 
-def log_message_to_db(db: Session, user_id: int, conversation_id: int, prompt: str, generated_response: str) -> None:
-    message = Message(user_id=user_id, conversation_id=conversation_id, content=prompt, user_input=None, user_audio_base64=None, response=generated_response)
+def log_message_to_db(db: Session, user_id: int, conversation_id: int, prompt: str, generated_response: str, audio_base64: str) -> None:
+    message = Message(user_id=user_id, conversation_id=conversation_id, content=prompt, user_input=None, user_audio_base64=None, ia_audio_base64=audio_base64, response=generated_response)
     db.add(message)
     db.commit()
     db.refresh(message)
 
-def log_conversation_and_message(db: Session, user_id: int, category: str, current_prompt: str, user_input: str, generated_response: str, audio_base64: str) -> None:
+def log_conversation_and_message(db: Session, user_id: int, category: str, current_prompt: str, user_input: str, generated_response: str, user_audio_base64: str, audio_base64: str) -> None:
     conversation = db.query(Conversation).filter(
         (Conversation.user1_id == user_id),
         (Conversation.category == category),
@@ -131,7 +131,7 @@ def log_conversation_and_message(db: Session, user_id: int, category: str, curre
     db.commit()
     db.refresh(log)
 
-    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, user_audio_base64=audio_base64, user_input=user_input, response=generated_response)
+    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, ia_audio_base64=audio_base64, user_audio_base64=user_audio_base64, user_input=user_input, response=generated_response)
     db.add(message)
     db.commit()
     db.refresh(message)
