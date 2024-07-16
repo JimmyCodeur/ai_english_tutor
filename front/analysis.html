@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Report</title>
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <link rel="stylesheet" href="../static/assets/css/uikit.css">
+    <link rel="stylesheet" href="../static/assets/css/icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
+    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-100">
+    <div id="wrapper" class="is-verticle">
+        <!-- Barre de navigation -->
+        <header uk-sticky>
+            <div class="header_inner">
+                <div class="left-side">
+                    <div id="logo" class="logo-container">
+                        <a href="home.html">
+                            <img src="../static/assets/images/logo.png" class="logo-image" alt="">
+                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
+                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+                        </a>
+                    </div>
+                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active">
+                    </div>
+                </div>
+                <div class="right-side">
+                    <div>
+                        <a href="" class="flex items-center space-x-2">
+                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt="">
+                        </a>
+                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
+                            <ul>
+                                <li>
+                                    <a href="" class="user">
+                                        <div class="user_avatar">
+                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
+                                        </div>
+                                        <div class="user_name">
+                                            <div id="profile-name" class="info-name"></div>
+                                            <span id="profile-email" class="info-email"></span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="users-profile.html">
+                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
+                                        Mon Compte
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="users-profile.html">
+                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
+                                        Historique
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="profile-setting.html">
+                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
+                                        Configuration
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr>
+                                </li>
+                                <li>
+                                    <a href="#" id="logout-link" onclick="logout()">
+                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
+                                        Se déconnecter
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section avec l'image agrandie de l'avatar -->
+        <main class="flex-1 flex flex-col items-center justify-center">
+            <div class="w-full flex justify-center my-8">
+                <h1 class="text-2xl font-bold">Rapport de Fin de Session</h1>
+            </div>
+            <div id="analysisContainer" class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
+                <!-- Les résultats de l'analyse seront affichés ici -->
+            </div>
+            <div class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Sessions de conversation</h2>
+                    <div>
+                        <label for="sortOrder" class="mr-2">Trier par:</label>
+                        <select id="sortOrder" class="bg-gray-100 border border-gray-300 rounded-lg p-2" onchange="loadSessionReports()">
+                            <option value="desc">Plus récent</option>
+                            <option value="asc">Plus ancien</option>
+                        </select>
+                    </div>
+                </div>
+                <ul id="sessionReports" class="list-disc pl-6">
+                    <!-- Les rapports de session seront affichés ici -->
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="../static/assets/js/uikit.js"></script>
+    <script src="../static/assets/js/tippy.all.min.js"></script>
+    <script src="../static/assets/js/simplebar.js"></script>
+    <script src="../static/assets/js/custom.js"></script>
+    <script src="../static/assets/js/bootstrap-select.min.js"></script>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationId = urlParams.get('conversation_id');
+            if (conversationId) {
+                await displaySessionAnalysis(conversationId);
+            } else {
+                console.error("Conversation ID not found in URL.");
+            }
+
+            // Charger les rapports de session dans la barre latérale
+            await loadSessionReports();
+        });
+
+        async function displaySessionAnalysis(conversationId) {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) {
+                    throw new Error("Access token not found in localStorage.");
+                }
+
+                const response = await fetch(`/analyze_session/${conversationId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log(data); // Gérer les données d'analyse selon les besoins
+
+                // Afficher les résultats d'analyse dans l'interface utilisateur
+                const analysisContainer = document.getElementById('analysisContainer');
+
+                if (data.translations.length > 0) {
+                    const translationsDiv = document.createElement('div');
+                    translationsDiv.className = 'translations';
+                    translationsDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Traductions :</h2><ul class="list-disc pl-6">' + data.translations.map(translation => `<li>${translation}</li>`).join('') + '</ul>';
+                    analysisContainer.appendChild(translationsDiv);
+                }
+
+                if (data.unclear_responses.length > 0) {
+                    const unclearResponsesDiv = document.createElement('div');
+                    unclearResponsesDiv.className = 'unclear-responses mt-4';
+                    unclearResponsesDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Réponses Non Claires :</h2><ul class="list-disc pl-6">' + data.unclear_responses.map(response => `<li>${response}</li>`).join('') + '</ul>';
+                    analysisContainer.appendChild(unclearResponsesDiv);
+                }
+
+                if (data.french_responses.length > 0) {
+                    const frenchResponsesDiv = document.createElement('div');
+                    frenchResponsesDiv.className = 'french-responses mt-4';
+                    frenchResponsesDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Réponses en Français :</h2><ul class="list-disc pl-6">' + data.french_responses.map(response => `<li>${response}</li>`).join('') + '</ul>';
+                    analysisContainer.appendChild(frenchResponsesDiv);
+                }
+
+            } catch (err) {
+                console.error('Error fetching session analysis: ', err);
+                // Gérer l'erreur : afficher un message d'erreur ou logique de réessai
+            }
+        }
+
+        async function loadSessionReports() {
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) {
+                console.error("Access token not found in localStorage.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/user/conversations', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const conversations = await response.json();
+                const sortOrder = document.getElementById('sortOrder').value;
+
+                if (sortOrder === 'desc') {
+                    conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                } else {
+                    conversations.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+                }
+
+                const sessionReportsContainer = document.getElementById('sessionReports');
+                sessionReportsContainer.innerHTML = ''; // Clear existing content
+
+                conversations.forEach(conversation => {
+                    const listItem = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.href = `analysis.html?conversation_id=${conversation.id}`;
+                    link.textContent = `Session du ${new Date(conversation.start_time).toLocaleString()}`;
+                    listItem.appendChild(link);
+                    sessionReportsContainer.appendChild(listItem);
+                });
+            } catch (err) {
+                console.error('Error loading session reports: ', err);
+            }
+        }
+    </script>
+</body>
+
+</html>

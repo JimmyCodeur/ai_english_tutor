@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import asc
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
-from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest
+from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest, AnalysisResponse
 from pydantic import EmailStr, constr, BaseModel
 from datetime import date
 from bdd.database import get_db
@@ -70,6 +70,10 @@ def get_users_profile():
 @app.get("/conversation.html")
 def get_users_profile():
     return FileResponse('./front/conversation.html')
+
+@app.get("/analysis.html")
+def get_users_profile():
+    return FileResponse('./front/analysis.html')
 
 @app.get("/users/me", response_model=User)
 def read_current_user(current_user: User = Depends(get_current_user)):
@@ -193,6 +197,36 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return {"message": "Utilisateur supprimé avec succès"}
 
+@app.get("/analyze_session/{conversation_id}", response_model=AnalysisResponse)
+def analyze_session(conversation_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    translations = db.query(Message).filter(
+        Message.conversation_id == conversation_id,
+        Message.user_input.like("how did you say in english%")
+    ).all()
+    print(translations)
+
+    unclear_responses = db.query(Message).filter(
+        Message.conversation_id == conversation_id,
+        Message.response == "I didn't understand that. Could you please rephrase?"
+    ).all()
+
+    french_responses = db.query(Message).filter(
+        Message.conversation_id == conversation_id,
+        Message.response == "Hum.. I don't speak French, please say it in English."
+    ).all()
+
+    analysis_result = {
+        "translations": [msg.content for msg in translations],
+        "unclear_responses": [msg.content for msg in unclear_responses],
+        "french_responses": [msg.content for msg in french_responses]
+    }
+    
+    return analysis_result
+
 conversation_history = {}
 conversation_start_time = {}
 alice_start_greetings = "Hi! My name is Alice. What's your name?"
@@ -286,7 +320,7 @@ async def chat_with_brain(
         generated_response = f"{translated_phrase}"
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="translations")
         return {
             "user_input": user_input,
             "generated_response": generated_response,
@@ -309,9 +343,9 @@ async def chat_with_brain(
     
     language = detect_language(user_input)  
 
-    if time.time() - conversation_start_time[user_id] > 900:  # 900 seconds = 15 minutes
+    if time.time() - conversation_start_time[user_id] > 60:  # 900 seconds = 15 minutes
         print(conversation_start_time)
-        generated_response = "Thanks for the exchange, I have to go soon!"
+        generated_response = "Thanks for the exchange, I have to go soon! Bye."
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
         return {
@@ -337,7 +371,7 @@ async def chat_with_brain(
         generated_response = "Hum.. I don't speak French, please say it in English."
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, None, user_audio_base64, None)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, None, user_audio_base64, None, marker="french_responses")
         return {
             "user_input": user_input,
             "generated_response": generated_response,
@@ -352,7 +386,7 @@ async def chat_with_brain(
         generated_response = "I didn't understand that. Could you please rephrase?"
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses")
         return {
             "user_input": user_input,
             "generated_response": generated_response,
@@ -484,7 +518,7 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     }
 
 @app.post("/chat_repeat/stop")
-async def stop_chat(current_user: int = Depends(get_current_user), db: Session = Depends(get_db)):
+async def stop_chat(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         user_id = current_user.id
         active_conversation = db.query(Conversation).filter(
@@ -495,8 +529,7 @@ async def stop_chat(current_user: int = Depends(get_current_user), db: Session =
 
         if active_conversation:
             active_conversation.end_session(db)
-
-            return {"message": "Chat session ended successfully."}
+            return {"message": "Chat session ended successfully.", "conversation_id": active_conversation.id}
         else:
             return {"error": "No active chat session found or already ended."}
 
