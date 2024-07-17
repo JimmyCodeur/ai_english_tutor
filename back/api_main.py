@@ -6,7 +6,7 @@ from sqlalchemy import asc
 from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
 from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest, AnalysisResponse
 from pydantic import EmailStr, constr, BaseModel
-from datetime import date
+from datetime import date, datetime
 from bdd.database import get_db
 from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role, log_conversation_to_db, log_message_to_db, log_conversation_and_message
 from bdd.models import Message, User as DBUser, Role
@@ -205,27 +205,59 @@ def analyze_session(conversation_id: int, db: Session = Depends(get_db), current
     
     translations = db.query(Message).filter(
         Message.conversation_id == conversation_id,
-        Message.user_input.like("how did you say in english%")
+        Message.marker == "translations"
     ).all()
-    print(translations)
 
     unclear_responses = db.query(Message).filter(
         Message.conversation_id == conversation_id,
-        Message.response == "I didn't understand that. Could you please rephrase?"
+        Message.marker == "unclear_responses"
     ).all()
 
     french_responses = db.query(Message).filter(
         Message.conversation_id == conversation_id,
-        Message.response == "Hum.. I don't speak French, please say it in English."
+        Message.marker == "french_responses"
     ).all()
 
+    all_messages = db.query(Message).filter(Message.conversation_id == conversation_id).all()
+    correct_phrases_count = len([msg for msg in all_messages if msg.marker not in ["unclear_responses", "french_responses"]])
+
+    # Calculate session duration
+    if conversation.end_time:
+        duration = conversation.end_time - conversation.start_time
+    else:
+        duration = datetime.utcnow() - conversation.start_time
+    
+    duration_str = str(duration).split('.')[0]  # Remove microseconds
+
+    # Total number of messages
+    total_messages = len(all_messages)
+
     analysis_result = {
-        "translations": [msg.content for msg in translations],
-        "unclear_responses": [msg.content for msg in unclear_responses],
-        "french_responses": [msg.content for msg in french_responses]
+        "translations": [(msg.user_input, msg.response) for msg in translations],
+        "unclear_responses": [{"response": msg.content, "suggestion": msg.suggestion} for msg in unclear_responses],
+        "french_responses": [msg.content for msg in french_responses],
+        "french_responses_count": len(french_responses),
+        "unclear_responses_count": len(unclear_responses),
+        "translations_count": len(translations),
+        "correct_phrases_count": correct_phrases_count,
+        "duration": duration_str,
+        "category": conversation.category,
+        "total_messages": total_messages,
     }
     
     return analysis_result
+
+@app.post("/get_suggestions")
+def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    unclear_response = request.get('unclear_response', '')
+
+    if unclear_response:
+        prompt = f"Improve the following unclear response in one sentence easy: {unclear_response}"
+        suggestion = generate_phi3_response(prompt)
+        return {"suggestion": suggestion}
+    else:
+        raise HTTPException(status_code=400, detail="Unclear response not provided.")
+
 
 conversation_history = {}
 conversation_start_time = {}
@@ -343,8 +375,15 @@ async def chat_with_brain(
     
     language = detect_language(user_input)  
 
-    if time.time() - conversation_start_time[user_id] > 60:  # 900 seconds = 15 minutes
-        print(conversation_start_time)
+    current_time = time.time()
+    start_time = conversation_start_time[user_id]
+    elapsed_time = current_time - start_time
+
+    print(f"Current time: {current_time}")
+    print(f"Conversation start time: {start_time}")
+    print(f"Elapsed time: {elapsed_time} seconds")
+
+    if elapsed_time > 90:  # 900 seconds = 15 minutes
         generated_response = "Thanks for the exchange, I have to go soon! Bye."
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
@@ -381,18 +420,24 @@ async def chat_with_brain(
         }
     
 
-        # Check if user input is valid
+    # Check if user input is valid
     if not evaluate_sentence_quality_phi3(user_input):
         generated_response = "I didn't understand that. Could you please rephrase?"
+        suggestion_prompt = f"Improve the following unclear response in one sentence easy: {user_input}"
+        suggestion = generate_phi3_response(suggestion_prompt)
+
         audio_file_path = text_to_speech_audio(generated_response, voice)
         audio_base64 = file_to_base64(audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses")
+
+        # Log the conversation and message, including the suggestion
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses", suggestion=suggestion)
         return {
             "user_input": user_input,
             "generated_response": generated_response,
             "audio_base64": audio_base64,
             "conversation_history": None,
-            "user_audio_base64": user_audio_base64
+            "user_audio_base64": user_audio_base64,
+            "suggestion": suggestion
         }
 
     def generate_ai_response_alice(previous_input, user_history, context_sentences=2):

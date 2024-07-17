@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +10,6 @@
     <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
 </head>
-
 <body class="flex flex-col min-h-screen bg-gray-100">
     <div id="wrapper" class="is-verticle">
         <!-- Barre de navigation -->
@@ -25,8 +23,7 @@
                             <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
                         </a>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active">
-                    </div>
+                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"></div>
                 </div>
                 <div class="right-side">
                     <div>
@@ -48,29 +45,23 @@
                                 </li>
                                 <li>
                                     <a href="users-profile.html">
-                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
-                                        Mon Compte
+                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon> Mon Compte
                                     </a>
                                 </li>
                                 <li>
                                     <a href="users-profile.html">
-                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
-                                        Historique
+                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon> Historique
                                     </a>
                                 </li>
                                 <li>
                                     <a href="profile-setting.html">
-                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
-                                        Configuration
+                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon> Configuration
                                     </a>
                                 </li>
-                                <li>
-                                    <hr>
-                                </li>
+                                <li><hr></li>
                                 <li>
                                     <a href="#" id="logout-link" onclick="logout()">
-                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
-                                        Se déconnecter
+                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon> Se déconnecter
                                     </a>
                                 </li>
                             </ul>
@@ -83,12 +74,13 @@
         <!-- Section avec l'image agrandie de l'avatar -->
         <main class="flex-1 flex flex-col items-center justify-center">
             <div class="w-full flex justify-center my-8">
-                <h1 class="text-2xl font-bold">Rapport de Fin de Session</h1>
+                <h1 class="text-2xl font-bold">Rapports</h1>
             </div>
-            <div id="analysisContainer" class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
+            <div id="analysisContainer" class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg hidden">
+                <h1 class="text-2xl font-bold">Rapport de Fin de Session</h1>
                 <!-- Les résultats de l'analyse seront affichés ici -->
             </div>
-            <div class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
+            <div class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg ">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Sessions de conversation</h2>
                     <div>
@@ -99,7 +91,7 @@
                         </select>
                     </div>
                 </div>
-                <ul id="sessionReports" class="list-disc pl-6">
+                <ul id="sessionReports" class="pl-6">
                     <!-- Les rapports de session seront affichés ici -->
                 </ul>
             </div>
@@ -107,7 +99,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
     <script src="../static/assets/js/uikit.js"></script>
     <script src="../static/assets/js/tippy.all.min.js"></script>
     <script src="../static/assets/js/simplebar.js"></script>
@@ -116,10 +108,17 @@
     <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
 
     <script>
+        const categoryMapping = {
+            "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Repeat after me)",
+            "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport (Repeat after me)",
+            "conv_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Conversation)"
+        };
+
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const conversationId = urlParams.get('conversation_id');
             if (conversationId) {
+                document.getElementById('analysisContainer').classList.remove('hidden');
                 await displaySessionAnalysis(conversationId);
             } else {
                 console.error("Conversation ID not found in URL.");
@@ -149,37 +148,57 @@
                 }
 
                 const data = await response.json();
-                console.log(data); // Gérer les données d'analyse selon les besoins
+                console.log(data);
 
                 // Afficher les résultats d'analyse dans l'interface utilisateur
                 const analysisContainer = document.getElementById('analysisContainer');
+                analysisContainer.innerHTML = ''; // Clear existing content
 
-                if (data.translations.length > 0) {
-                    const translationsDiv = document.createElement('div');
-                    translationsDiv.className = 'translations';
-                    translationsDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Traductions :</h2><ul class="list-disc pl-6">' + data.translations.map(translation => `<li>${translation}</li>`).join('') + '</ul>';
-                    analysisContainer.appendChild(translationsDiv);
-                }
+                const categoryDescription = categoryMapping[data.category] || data.category;
 
-                if (data.unclear_responses.length > 0) {
-                    const unclearResponsesDiv = document.createElement('div');
-                    unclearResponsesDiv.className = 'unclear-responses mt-4';
-                    unclearResponsesDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Réponses Non Claires :</h2><ul class="list-disc pl-6">' + data.unclear_responses.map(response => `<li>${response}</li>`).join('') + '</ul>';
-                    analysisContainer.appendChild(unclearResponsesDiv);
-                }
+                const baseInfoDiv = document.createElement('div');
+                baseInfoDiv.className = 'base-info';
+                baseInfoDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📃 Informations de Base</h2>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2"><strong>Catégorie :</strong> <p>${categoryDescription}</p></div>
+                        <div class="flex items-center gap-2"><strong>Durée de la session :</strong> ${data.duration}</div>
+                        <div class="flex items-center gap-2"></div>
+                        <div class="flex items-center gap-2"></div>
+                    </div>`;
+                analysisContainer.appendChild(baseInfoDiv);
 
-                if (data.french_responses.length > 0) {
-                    const frenchResponsesDiv = document.createElement('div');
-                    frenchResponsesDiv.className = 'french-responses mt-4';
-                    frenchResponsesDiv.innerHTML = '<h2 class="text-xl font-bold mb-2">Réponses en Français :</h2><ul class="list-disc pl-6">' + data.french_responses.map(response => `<li>${response}</li>`).join('') + '</ul>';
-                    analysisContainer.appendChild(frenchResponsesDiv);
-                }
+                const sessionStatsDiv = document.createElement('div');
+                sessionStatsDiv.className = 'session-stats';
+                sessionStatsDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📈 Statistiques de la Session</h2>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2"><strong>Nombre total de messages :</strong> ${data.total_messages}</div>
+                        <div class="flex items-center gap-2"><strong>Nombre de traductions demandées:</strong> ${data.translations_count}</div>
+                        <div class="flex items-center gap-2"><strong>Nombre de réponses en français :</strong> ${data.french_responses_count}</div>
+                        <div class="flex items-center gap-2"><strong>Nombre d'incompréhensions par l'IA :</strong> ${data.unclear_responses_count}</div>
+                        <div class="flex items-center gap-2"><strong>Nombre de phrases correctes :</strong> ${data.correct_phrases_count}</div>
+                        <div class="flex items-center gap-2"><strong>Temps moyen de réponse de l'IA :</strong> ${data.avg_ia_response_time}</div>
+                        <div class="flex items-center gap-2"><strong>Temps moyen de réponse de l'utilisateur :</strong> ${data.avg_user_response_time}</div>
+                        <div class="flex items-center gap-2"><strong>Analyse de sentiment :</strong> ${data.sentiment_analysis}</div>
+                        <div class="flex items-center gap-2"></div>
+                        <div class="flex items-center gap-2"></div>
+                    </div>`;
+                analysisContainer.appendChild(sessionStatsDiv);
+
+                const contentAnalysisDiv = document.createElement('div');
+                contentAnalysisDiv.className = 'content-analysis';
+                contentAnalysisDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📊 Analyse de Contenu</h2>
+                    <div class="flex flex-col gap-2">
+                        ${data.translations && data.translations.length > 0 ? '<div><strong>Demande de traductions :</strong><div class="flex flex-col gap-2">' + data.translations.map(([user_input, response]) => `<div class="flex items-center gap-2">${user_input} -> ${response}</div>`).join('') + '</div></div>' : ''}
+                        ${data.unclear_responses.length > 0 ? '<div><strong>Réponses non claires :</strong><div class="flex flex-col gap-2">' + data.unclear_responses.map(({ response, suggestion }) => `<div class="flex items-center gap-2">${response} <strong>Suggestion:</strong> ${suggestion}</div>`).join('') + '</div></div>' : ''}
+                        ${data.french_responses && data.french_responses.length > 0 ? '<div><strong>Réponses en français :</strong><div class="flex flex-col gap-2">' + data.french_responses.map(response => `<div class="flex items-center gap-2">${response}</div>`).join('') + '</div></div>' : ''}
+                    </div>`;
+                analysisContainer.appendChild(contentAnalysisDiv);
 
             } catch (err) {
                 console.error('Error fetching session analysis: ', err);
-                // Gérer l'erreur : afficher un message d'erreur ou logique de réessai
             }
         }
+
 
         async function loadSessionReports() {
             const accessToken = localStorage.getItem("accessToken");
@@ -215,8 +234,12 @@
                 conversations.forEach(conversation => {
                     const listItem = document.createElement('li');
                     const link = document.createElement('a');
-                    link.href = `analysis.html?conversation_id=${conversation.id}`;
+                    link.href = `#`;
                     link.textContent = `Session du ${new Date(conversation.start_time).toLocaleString()}`;
+                    link.addEventListener('click', async () => {
+                        document.getElementById('analysisContainer').classList.remove('hidden');
+                        await displaySessionAnalysis(conversation.id);
+                    });
                     listItem.appendChild(link);
                     sessionReportsContainer.appendChild(listItem);
                 });
@@ -226,5 +249,4 @@
         }
     </script>
 </body>
-
 </html>

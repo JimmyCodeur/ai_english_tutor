@@ -72,6 +72,7 @@ class Message(Base):
     ia_audio_base64 = Column(String)
     response = Column(String)
     marker = Column(String, nullable=True)
+    suggestion = Column(String, nullable=True)
 
     user = relationship("User")
     conversation = relationship("Conversation")

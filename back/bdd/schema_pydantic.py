@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, date
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from fastapi import Query
 
 class TokenData(BaseModel):
@@ -89,6 +89,7 @@ class MessageSchema(BaseModel):
     ia_audio_base64: Optional[str]
     response: Optional[str]
     marker: Optional[str]
+    suggestion: Optional[str]
 
     class Config:
         orm_mode = True
@@ -96,7 +97,23 @@ class MessageSchema(BaseModel):
 class StartChatRequest(BaseModel):
     choice: Optional[str] = Query(None)
 
+class UnclearResponse(BaseModel):
+    response: str
+    suggestion: str
+
 class AnalysisResponse(BaseModel):
-    translations: List[str]
-    unclear_responses: List[str]
+    translations: List[Tuple[str, str]]
+    unclear_responses: List[UnclearResponse]
     french_responses: List[str]
+    french_responses_count: int
+    unclear_responses_count: int
+    translations_count: int
+    correct_phrases_count: int
+    duration: str
+    category: str
+    total_messages: int
+
+class SuggestionRequest(BaseModel):
+    unclear_response: str
+
+

@@ -116,7 +116,7 @@ def log_message_to_db(db: Session, user_id: int, conversation_id: int, prompt: s
     db.commit()
     db.refresh(message)
 
-def log_conversation_and_message(db: Session, user_id: int, category: str, current_prompt: str, user_input: str, generated_response: str, user_audio_base64: str, audio_base64: str, marker: str = None) -> None:
+def log_conversation_and_message(db: Session, user_id: int, category: str, current_prompt: str, user_input: str, generated_response: str, user_audio_base64: str, audio_base64: str, marker: str = None, suggestion: str = None) -> None:
     conversation = db.query(Conversation).filter(
         (Conversation.user1_id == user_id),
         (Conversation.category == category),
@@ -132,7 +132,7 @@ def log_conversation_and_message(db: Session, user_id: int, category: str, curre
     db.commit()
     db.refresh(log)
 
-    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, ia_audio_base64=audio_base64, user_audio_base64=user_audio_base64, user_input=user_input, response=generated_response, marker=marker)
+    message = Message(user_id=user_id, conversation_id=conversation.id, content=current_prompt, ia_audio_base64=audio_base64, user_audio_base64=user_audio_base64, user_input=user_input, response=generated_response, marker=marker, suggestion=suggestion)
     db.add(message)
     db.commit()
     db.refresh(message)
