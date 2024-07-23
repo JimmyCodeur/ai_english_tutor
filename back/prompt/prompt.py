@@ -525,8 +525,4 @@ prompt_tommy_en = (
 #     "User :{user_input}\n"
 # )
 
-alice_greetings_fr = (
-    "Whenever the user speaks in French, you should respond that you don't understand and ask them to speak in English. \n "
-    "You must always respond in English.\n"
-    "User: {user_input}\n"
-)
+

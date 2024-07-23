@@ -2,7 +2,8 @@ from TTS.api import TTS
 import numpy as np
 import wave
 from datetime import datetime
-from filters_audio import lowpass_filter
+from audio_utils import lowpass_filter
+from pydub import AudioSegment
 
 voices = {
     "xtts_v2": "tts_models/multilingual/multi-dataset/xtts_v2",
@@ -119,4 +120,7 @@ def text_to_speech_audio(generated_response, voice_key):
         wf.setframerate(22050)
         wf.writeframes(wav_data_pcm.tobytes())
 
-    return audio_file_path
+    audio = AudioSegment.from_file(audio_file_path)
+    duration = len(audio) / 1000.0
+
+    return audio_file_path, duration

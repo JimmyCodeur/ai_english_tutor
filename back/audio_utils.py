@@ -6,6 +6,7 @@ import os
 import subprocess
 import soundfile as sf
 import noisereduce
+from scipy.signal import butter, lfilter
 
 def save_audio(audio, file_path, fs=16000):
     with wave.open(file_path, 'wb') as wf:
@@ -40,4 +41,19 @@ def process_audio_file(audio_path, filename):
     sf.write(denoised_audio_path, reduced_noise, sr)
 
     return denoised_audio_path
+
+def is_valid_audio_file(file: UploadFile) -> bool:
+    valid_extensions = ['wav', 'mp3', 'flac', 'ogg']
+    return file.filename.split('.')[-1].lower() in valid_extensions
+
+def butter_lowpass(cutoff, fs, order=5):
+    nyquist = 0.5 * fs
+    normal_cutoff = cutoff / nyquist
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
 

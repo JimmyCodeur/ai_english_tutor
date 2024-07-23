@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Enum as SqlEnum, func, DateTime, ForeignKey
-from sqlalchemy import Boolean
+from sqlalchemy import Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
@@ -73,6 +73,7 @@ class Message(Base):
     response = Column(String)
     marker = Column(String, nullable=True)
     suggestion = Column(String, nullable=True)
+    ia_audio_duration = Column(Float, nullable=True)
 
     user = relationship("User")
     conversation = relationship("Conversation")

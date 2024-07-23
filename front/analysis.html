@@ -176,13 +176,21 @@
                         <div class="flex items-center gap-2"><strong>Nombre de réponses en français :</strong> ${data.french_responses_count}</div>
                         <div class="flex items-center gap-2"><strong>Nombre d'incompréhensions par l'IA :</strong> ${data.unclear_responses_count}</div>
                         <div class="flex items-center gap-2"><strong>Nombre de phrases correctes :</strong> ${data.correct_phrases_count}</div>
-                        <div class="flex items-center gap-2"><strong>Temps moyen de réponse de l'IA :</strong> ${data.avg_ia_response_time}</div>
+                        <div class="flex items-center gap-2"></div>
+                        <div class="flex items-center gap-2"></div>
+                    </div>`;
+                analysisContainer.appendChild(sessionStatsDiv);
+
+                const sessionStatsPerfDiv = document.createElement('div');
+                sessionStatsPerfDiv.className = 'session-stats-perf';
+                sessionStatsPerfDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">🎉 Analyse de Performance</h2>
+                    <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-2"><strong>Temps moyen de réponse de l'utilisateur :</strong> ${data.avg_user_response_time}</div>
                         <div class="flex items-center gap-2"><strong>Analyse de sentiment :</strong> ${data.sentiment_analysis}</div>
                         <div class="flex items-center gap-2"></div>
                         <div class="flex items-center gap-2"></div>
                     </div>`;
-                analysisContainer.appendChild(sessionStatsDiv);
+                analysisContainer.appendChild(sessionStatsPerfDiv);
 
                 const contentAnalysisDiv = document.createElement('div');
                 contentAnalysisDiv.className = 'content-analysis';

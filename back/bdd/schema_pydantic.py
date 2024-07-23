@@ -112,6 +112,7 @@ class AnalysisResponse(BaseModel):
     duration: str
     category: str
     total_messages: int
+    avg_user_response_time: str
 
 class SuggestionRequest(BaseModel):
     unclear_response: str
