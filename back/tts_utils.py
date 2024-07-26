@@ -1,9 +1,13 @@
 from TTS.api import TTS
 import numpy as np
-import wave
 from datetime import datetime
 from audio_utils import lowpass_filter
 from pydub import AudioSegment
+import time
+import asyncio
+import aiofiles
+import wave
+from metrics import log_custom_metric
 
 voices = {
     "xtts_v2": "tts_models/multilingual/multi-dataset/xtts_v2",
@@ -98,14 +102,23 @@ vocoder_models = {
     "be_common-voice_hifigan": "vocoder_models/be/common-voice/hifigan"
 }
 
-def text_to_speech_audio(generated_response, voice_key):
+async def text_to_speech_audio(generated_response, voice_key):
     if voice_key not in voices:
         raise ValueError(f"Invalid voice key: {voice_key}")
 
     model_name = voices[voice_key]
     tts = TTS(model_name=model_name, progress_bar=False, gpu=True)
 
-    wav_data = tts.tts(generated_response)
+    # Start measuring the TTS generation time
+    start_time_total = time.time()
+
+    # TTS generation
+    start_time_tts = time.time()
+    wav_data = await asyncio.to_thread(tts.tts, generated_response)
+    tts_time = time.time() - start_time_tts
+    await log_custom_metric("Generate TTS audio time", tts_time)
+
+    # Normalizing and filtering the audio data
     wav_data_np = np.array(wav_data, dtype=np.float32)
     wav_data_np = wav_data_np / np.max(np.abs(wav_data_np))
     cutoff_freq = 8000

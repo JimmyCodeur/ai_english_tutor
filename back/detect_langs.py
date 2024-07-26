@@ -21,10 +21,7 @@ def detect_language(text):
             langdetect_confidence = best_guess.prob
         
         confidence_threshold = 0.3
-
-        print(f"Langid detected: {langid_lang} with confidence {langid_confidence}")
-        print(f"Langdetect detected: {langdetect_lang} with confidence {langdetect_confidence}")
-        
+       
         if langid_confidence >= confidence_threshold and langdetect_confidence >= confidence_threshold:
             if langid_lang == langdetect_lang:
                 return langid_lang

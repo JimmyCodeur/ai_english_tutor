@@ -6,17 +6,31 @@ from back.metrics import log_response_time_phi3
 import time
 import nltk
 
-def generate_ai_response_alice(previous_input, user_history, context_sentences=2):
-    alice_intro = "You are alice"
-    alice_main = "You are alice. your goal is just to answer the phrase naturally user without asking questions. Remember that you speak with a beginner in English and that you must use very simple sentences"
+# questions = [
+#     "How are you?",
+#     "How about you?",
+#     "What's new?",
+#     "Did you have a good day?",
+#     "How was your week?",
+#     "What did you do this weekend?",
+#     "Do you have any plans for tonight?",
+#     "Do you have any plans for the holidays?",
+#     "What do you like to do in your free time?",
+#     "How was your trip/vacation?",
+#     "Have you seen any good movies recently?"
+# ]
 
-    conversation_context = " ".join(user_history)
-    print(user_history)
+def generate_ai_response_alice(previous_input, user_history, context_sentences=4):
+    alice_main = (
+        "You are Alice, an English-speaking AI. You are meeting a French person who has just arrived in England and is a beginner in English. "
+        "You should introduce yourself and have a friendly conversation. Use simple and short sentences. Continue the conversation by asking about "
+        "the user's experience in England and offering help."
+    )
 
-    if not user_history:
-        full_prompt = f"{alice_intro}{previous_input}\n\n{conversation_context}"
-    else:
-        full_prompt = f"{alice_main}{previous_input}\n\n{conversation_context}"
+    conversation_context = "\n".join(f"{entry['input']}{entry['response']}" for entry in user_history)
+    print(f"conversation contexte : {conversation_context}")
+
+    full_prompt = f"{alice_main}\n\n{conversation_context}\n{previous_input}\n"
 
     model_name = 'phi3'
     start_time_phi3 = time.time()
@@ -31,28 +45,3 @@ def generate_ai_response_alice(previous_input, user_history, context_sentences=2
     limited_response = ' '.join(sentences[:context_sentences])
 
     return limited_response, phi3_response_time
-
-conversation_topics = [
-    ("{last_response} How are you?", generate_ai_response_alice),
-    ("{last_response} Where do you come from?", generate_ai_response_alice),
-    ("{last_response} I’m from an English-speaking country. How about you?", generate_ai_response_alice),
-    ("{last_response} That's interesting. What brings you here?", generate_ai_response_alice),
-    ("{last_response} That's great! How long have you been studying English?", generate_ai_response_alice),
-    ("{last_response} Do you live in this city?", generate_ai_response_alice),
-    ("{last_response} I just arrived here a few days ago. How long have you been here?", generate_ai_response_alice),
-    ("{last_response} What do you do during the day?", generate_ai_response_alice),
-    ("{last_response} I work as a teacher. And you?", generate_ai_response_alice),
-    ("{last_response} What do you enjoy doing in your free time?", generate_ai_response_alice),
-    ("{last_response} Do you have any hobbies?", generate_ai_response_alice),
-    ("{last_response} Tell me about your family.", generate_ai_response_alice),
-    ("{last_response} Do you have brothers or sisters?", generate_ai_response_alice),
-    ("{last_response} What’s your favorite dish?", generate_ai_response_alice),
-    ("{last_response} I love trying different cuisines. What about you?", generate_ai_response_alice),
-    ("{last_response} Do you enjoy traveling?", generate_ai_response_alice),
-    ("{last_response} What’s your favorite place you’ve visited?", generate_ai_response_alice),
-    ("{last_response} I would love to visit England. Any recommendations?", generate_ai_response_alice),
-    ("{last_response} Do you speak any other languages?", generate_ai_response_alice),
-    ("{last_response} I’m learning English. Do you want to practice together?", generate_ai_response_alice),
-    ("{last_response} It was nice talking to you!", generate_ai_response_alice),
-    ("{last_response} I hope we can chat again soon.", generate_ai_response_alice)
-]
