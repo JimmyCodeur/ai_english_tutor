@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from bdd.models import ConversationLog, Message, Conversation
+from back.bdd.models import ConversationLog, Message, Conversation
 
 def create_or_get_conversation(db: Session, user_id: int, category: str) -> Conversation:
     existing_conversation = db.query(Conversation).filter(

@@ -3,25 +3,25 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import asc
-from bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
-from bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest, AnalysisResponse
-from bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role
-from bdd.models import Message, User as DBUser, Role
-from bdd.models import Conversation
-from bdd.log_conversation import create_or_get_conversation, log_conversation_to_db, log_message_to_db, log_conversation_and_message
-from bdd.database import get_db
-from prompt.alice_conv import generate_ai_response_alice 
-from prompt.prompt import generate_response_variation, get_prompt, get_category, handle_response, category_mapping
+from back.bdd.schema_pydantic import UserCreate, User, CreateAdminRequest as PydanticUser
+from back.bdd.schema_pydantic import TokenInBody, UserLoginResponse, TranslationRequest, ChatRequest, ConversationSchema, MessageSchema, StartChatRequest, AnalysisResponse
+from back.bdd.crud import create_user, delete_user, update_user, get_user_by_id, update_user_role
+from back.bdd.models import Message, User as DBUser, Role
+from back.bdd.models import Conversation
+from back.bdd.log_conversation import create_or_get_conversation, log_conversation_to_db, log_message_to_db, log_conversation_and_message
+from back.bdd.database import get_db
+from back.prompt.alice_conv import generate_ai_response_alice 
+from back.prompt.prompt import generate_response_variation, get_prompt, get_category, handle_response, category_mapping
 from pydantic import EmailStr, constr, BaseModel
-from metrics import log_total_time, log_response_time_phi3, log_custom_metric, log_metrics_transcription_time
-from token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
-from load_model import generate_phi3_response, generate_ollama_response
-from help_suggestion import help_sugg
-from tts_utils import text_to_speech_audio
-from transcribe_audio import transcribe_audio
-from audio_utils import file_to_base64, is_valid_audio_file
-from detect_langs import detect_language
-from cors import add_middleware
+from back.metrics import log_total_time, log_response_time_phi3, log_custom_metric, log_metrics_transcription_time
+from back.token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
+from back.load_model import generate_phi3_response, generate_ollama_response
+from back.help_suggestion import help_sugg
+from back.tts_utils import text_to_speech_audio
+from back.transcribe_audio import transcribe_audio
+from back.audio_utils import file_to_base64, is_valid_audio_file
+from back.detect_langs import detect_language
+from back.cors import add_middleware
 from typing import List ,Optional
 from datetime import timezone, timedelta, date, datetime
 import nltk
@@ -712,4 +712,4 @@ def get_conversation_messages(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api_main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("api_main:app", host="0.0.0.0", port=8000, reload=True)

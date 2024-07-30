@@ -1,4 +1,4 @@
-from load_model import generate_phi3_response
+from back.load_model import generate_phi3_response
 
 def help_sugg(log_file_path: str, model_name: str, user_input: str) -> dict:
     print("Detected help request.")

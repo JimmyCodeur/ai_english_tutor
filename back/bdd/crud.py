@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from bdd.schema_pydantic import UserCreate, User
+from back.bdd.schema_pydantic import UserCreate, User
 from datetime import datetime
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
 from fastapi import HTTPException
-from bdd.models import User as DBUser
+from back.bdd.models import User as DBUser
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -2,8 +2,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from bdd.models import User as DBUser, Role
-from bdd.database import get_db
+from back.bdd.models import User as DBUser, Role
+from back.bdd.database import get_db
 from datetime import datetime, timedelta
 from typing import Set
 from passlib.context import CryptContext

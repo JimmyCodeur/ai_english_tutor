@@ -1,6 +1,7 @@
 .conda
 __pycache__
 .pytest_cache
+.github
 *.mp3
 *.txt
 __init__.py
@@ -13,4 +14,4 @@ config.py
 *.eot
 *.png
 *.jpg
-
+.env

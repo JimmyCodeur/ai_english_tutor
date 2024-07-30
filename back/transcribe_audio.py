@@ -1,7 +1,7 @@
 from faster_whisper import WhisperModel
 import re
 import time
-from metrics import log_metrics_transcription_time
+from back.metrics import log_metrics_transcription_time
 import asyncio
 
 async def transcribe_audio(file_path):
@@ -9,7 +9,7 @@ async def transcribe_audio(file_path):
     model_size = "large-v2"  # Example smaller model for faster performance
     asr_model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
-    # Make this part async-compatible if your ASR model supports async calls
+    # Remove the repetition_penalty argument
     segments, info = await asyncio.to_thread(asr_model.transcribe,
                                              file_path,
                                              language="en",
@@ -17,8 +17,6 @@ async def transcribe_audio(file_path):
                                              temperature=[0.0],
                                              patience=0.4,
                                              length_penalty=0.9,
-                                             repetition_penalty=1,
-                                             no_repeat_ngram_size=0,
                                              suppress_blank=False,
                                              word_timestamps=True,
                                              condition_on_previous_text=True)
