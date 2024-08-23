@@ -17,10 +17,12 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    consent: bool
 
 class User(UserBase):
     id: int
-    date_creation: datetime  
+    date_creation: datetime
+    consent: bool
     
     class Config:
         orm_mode = True

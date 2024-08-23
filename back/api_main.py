@@ -129,19 +129,23 @@ def create_user_endpoint(
     nom: str = Form(...),
     date_naissance: date = Form(..., description="Format attendu : YYYY-MM-DD"),
     password: constr(min_length=6) = Form(..., description="Mot de passe de l'utilisateur (minimum 6 caractères)"),
+    consent: bool = Form(..., description="Consentement de l'utilisateur"),
     db: Session = Depends(get_db)
 ):
+    print(f"Reçu : email={email}, nom={nom}, date_naissance={date_naissance}, password={password}, consent={consent}")
+    
     user_data = UserCreate(
         email=email,
         nom=nom,
-        date_naissance=date_naissance.isoformat(),
-        password=password
+        date_naissance=date_naissance,
+        password=password,
+        consent=consent
     )
     try:
         db_user = create_user(db=db, user=user_data)
         return db_user
     except ValueError as ve:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+        raise HTTPException(status_code=400, detail=str(ve))
 
 @app.post("/token", response_model=dict)
 def login_for_access_token(

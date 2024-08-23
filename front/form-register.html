@@ -1,5 +1,5 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,6 @@
     }
   </style>
 </head>
-
 <body>
   <div id="wrapper" class="flex flex-col justify-between h-screen">
       <div class="bg-white py-4 shadow dark:bg-gray-800">
@@ -37,7 +36,7 @@
       </div>
       <div>
           <div class="lg:p-12 max-w-xl lg:my-0 my-12 mx-auto p-6 space-y-">
-              <form class="lg:p-10 p-6 space-y-3 relative bg-white shadow-xl rounded-md">
+              <form id="register-form" class="lg:p-10 p-6 space-y-3 relative bg-white shadow-xl rounded-md">
                   <h1 class="lg:text-2xl text-xl font-semibold mb-6"> S'enregistrer </h1>
                   <div>
                       <label class="mb-0" for="username"> Nom d'utilisateur </label>
@@ -52,33 +51,18 @@
                       <input type="password" placeholder="******" id="password" class="bg-gray-100 h-12 mt-2 px-3 rounded-md w-full">
                   </div>
                   <div>
-                    <label class="mb-0" for="date"> Date de naissance </label>
+                    <label class="mb-0" for="date_naissance"> Date de naissance </label>
                     <input type="date" id="date_naissance" class="bg-gray-100 h-12 mt-2 px-3 rounded-md w-full">
                   </div>
-                  <div class="grid lg:grid-cols-2 gap-3">
-                      <!-- <div>
-                          <label class="mb-0"> Gender </label>
-                          <select class="selectpicker mt-2">
-                              <option>Male</option>
-                              <option>Female</option>
-                          </select>
-
-                      </div> -->
-                      <!-- <div>
-                          <label class="mb-0"> Phone: optional  </label>
-                          <input type="text" placeholder="+543 5445 0543" class="bg-gray-100 h-12 mt-2 px-3 rounded-md w-full">
-                      </div> -->
-                  </div>
-
                   <div class="checkbox">
-                      <input type="checkbox" id="chekcbox1" checked="">
-                      <label for="chekcbox1"><span class="checkbox-icon"></span> J'accepte les <a href="pages-terms.html" target="_blank" class="uk-text-bold uk-text-small uk-link-reset"> termes et conditions générales </a>
+                    <input type="checkbox" id="consent" required>
+                      <label for="consent"><span class="checkbox-icon"></span> J'accepte les <a href="pages-terms.html" target="_blank" class="uk-text-bold uk-text-small uk-link-reset"> termes et conditions générales </a>
                       </label>
                   </div>
-
                   <div>
-                      <button type="button" class="bg-blue-600 font-semibold p-2 mt-5 rounded-md text-center text-white w-full" onclick="register()">
-                          OK </button>
+                      <button type="submit" class="bg-blue-600 font-semibold p-2 mt-5 rounded-md text-center text-white w-full">
+                          OK
+                      </button>
                   </div>
               </form>
           </div>
@@ -106,6 +90,5 @@
   <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule="" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
   <script src="../static/assets/js/register.js"></script>
-
 </body>
 </html>

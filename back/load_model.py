@@ -1,9 +1,14 @@
 import ollama
 import nltk
+import httpx
 
 def generate_ollama_response(model_name, prompt):
+    # url = "http://ollama:11434"  # Utilisez le nom du service ici
+    # print(f"Connecting to: {url} with model: {model_name} and prompt: {prompt}")
+        
     response = ollama.generate(model=model_name, prompt=prompt)
     return response['response']
+
 
 def generate_phi3_response(prompt):
     model_name = 'phi3'

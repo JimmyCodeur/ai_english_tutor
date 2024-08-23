@@ -41,7 +41,8 @@ def create_user(db: Session, user: UserCreate) -> User:
         hashed_password=hashed_password,
         nom=user.nom,
         date_naissance=user.date_naissance,
-        date_creation=datetime.utcnow()
+        date_creation=datetime,
+        consent=user.consent
     )
     
     try:
@@ -55,7 +56,7 @@ def create_user(db: Session, user: UserCreate) -> User:
             nom=db_user.nom,
             date_naissance=db_user.date_naissance,
             date_creation=db_user.date_creation,
-            consent=user.consent
+            consent=db_user.consent
         )
     
     except IntegrityError as e:

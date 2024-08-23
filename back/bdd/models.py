@@ -18,7 +18,8 @@ class User(Base):
     hashed_password = Column(String)
     nom = Column(String)
     date_naissance = Column(Date)
-    date_creation = Column(Date, server_default=func.current_date())
+    date_creation = Column(DateTime)
+    consent = Column(Boolean, nullable=False)
     role = Column(SqlEnum(Role), default=Role.UTILISATEUR.name, nullable=False)
     avatar = Column(String, nullable=True)
 
