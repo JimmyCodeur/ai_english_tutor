@@ -13,13 +13,12 @@ from back.bdd.database import get_db
 from back.prompt.alice_conv import generate_ai_response_alice 
 from back.prompt.prompt import generate_response_variation, get_prompt, get_category, handle_response, category_mapping
 from pydantic import EmailStr, constr, BaseModel
-from back.metrics import log_total_time, log_response_time_phi3, log_custom_metric, log_metrics_transcription_time
 from back.token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from back.load_model import generate_phi3_response, generate_ollama_response
 from back.help_suggestion import help_sugg
 from back.tts_utils import text_to_speech_audio
 from back.transcribe_audio import transcribe_audio
-from back.audio_utils import file_to_base64, is_valid_audio_file
+from back.audio_utils import file_to_base64, is_valid_audio_file, delete_audio_file
 from back.detect_langs import detect_language
 from back.cors import add_middleware
 from typing import List ,Optional
@@ -30,7 +29,6 @@ import re
 import spacy
 import aiofiles
 import asyncio
-
 
 app = FastAPI()
 add_middleware(app)
@@ -129,7 +127,7 @@ def create_user_endpoint(
     nom: str = Form(...),
     date_naissance: date = Form(..., description="Format attendu : YYYY-MM-DD"),
     password: constr(min_length=6) = Form(..., description="Mot de passe de l'utilisateur (minimum 6 caractères)"),
-    consent: bool = Form(..., description="Consentement de l'utilisateur"),
+    # consent: bool = Form(..., description="Consentement de l'utilisateur"),
     db: Session = Depends(get_db)
 ):
     print(f"Reçu : email={email}, nom={nom}, date_naissance={date_naissance}, password={password}, consent={consent}")
@@ -139,7 +137,7 @@ def create_user_endpoint(
         nom=nom,
         date_naissance=date_naissance,
         password=password,
-        consent=consent
+        # consent=consent
     )
     try:
         db_user = create_user(db=db, user=user_data)
@@ -209,15 +207,11 @@ def calculate_avg_user_response_time(messages):
     if not messages:
         return "N/A"
 
-    # Sort messages by timestamp
-    messages.sort(key=lambda msg: msg.timestamp)
-    
-    # Calculate time differences between consecutive user messages
+    messages.sort(key=lambda msg: msg.timestamp)    
     time_differences = []
     for i in range(1, len(messages)):
-        if messages[i].user_id == messages[i-1].user_id:  # Ensure it's the same user
+        if messages[i].user_id == messages[i-1].user_id: 
             time_diff = (messages[i].timestamp - messages[i-1].timestamp).total_seconds()
-            # Subtract the AI audio duration
             if messages[i-1].ia_audio_duration:
                 time_diff -= messages[i-1].ia_audio_duration
             time_differences.append(time_diff)
@@ -253,18 +247,13 @@ def analyze_session(conversation_id: int, db: Session = Depends(get_db), current
     all_messages = db.query(Message).filter(Message.conversation_id == conversation_id).all()
     correct_phrases_count = len([msg for msg in all_messages if msg.marker not in ["unclear_responses", "french_responses"]])
 
-    # Calculate session duration
     if conversation.end_time:
         duration = conversation.end_time - conversation.start_time
     else:
         duration = datetime.utcnow() - conversation.start_time
     
-    duration_str = str(duration).split('.')[0]  # Remove microseconds
-
-    # Total number of messages
+    duration_str = str(duration).split('.')[0]
     total_messages = len(all_messages)
-
-    # Calculate average user response time
     avg_user_response_time = calculate_avg_user_response_time(all_messages)
 
     analysis_result = {
@@ -313,17 +302,16 @@ async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "en
     else:
         user_history = conversation_history[user_id]
 
-    alice_start_greetings = "Hello! My name is Alice. I'm really happy to meet you. How are you?"
-    user_history.append({'input': "", 'response': alice_start_greetings})  # Add the initial message to the history
+    alice_start_greetings = "Hello! I'm really happy to meet you. How are you?"
+    user_history.append({'input': "", 'response': alice_start_greetings})
 
     audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
     audio_base64 = file_to_base64(audio_file_path)
+    delete_audio_file(audio_file_path)
 
     log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings)
     conversation = create_or_get_conversation(db, user_id, choice)
     log_message_to_db(db, user_id, conversation.id, alice_start_greetings, alice_start_greetings, audio_base64, ia_audio_duration=duration)
-
-    print(user_history)  # Print the history for debugging
 
     return {
         "generated_response": alice_start_greetings,
@@ -332,17 +320,31 @@ async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "en
     }
 
 def evaluate_sentence_quality_phi3(sentence: str) -> bool:
-    prompt = f"Is the following sentence well-constructed and grammatically correct? Answer with 'yes' or 'no':\n\n{sentence}"
+    print("Début sentence")
+    # Demander explicitement au modèle d'ignorer ponctuation et majuscules
+    prompt = f"Is the following sentence understandable and acceptable for simple conversation, ignoring small grammar mistakes, capitalization, and punctuation? Answer 'yes' or 'no' only:\n\n{sentence}"
+    print(prompt)
+    
     model_name = 'phi3'
     response = generate_ollama_response(model_name, prompt).strip().lower()
-    print(f"Response from model: {response}")  # Ajoutez cette ligne pour journaliser la réponse
-    return response.startswith("yes")
+    response_short = response.split(".")[0]  # Ne garder que la première phrase avant un point
+    print(f"Response from model: {response_short}")
+    
+    # Si le modèle mentionne uniquement la capitalisation ou la ponctuation, on accepte la phrase
+    if "capitalization" in response or "punctuation" in response or "comma" in response:
+        print("Ignoring minor errors in capitalization or punctuation")
+        return True
+
+    # Si la réponse contient une critique sur la grammaire mais est tout de même compréhensible
+    if "yes" in response_short or "understandable" in response:
+        return True
+    
+    return response_short.startswith("yes")
 
 def detect_translation_request(user_input: str) -> Optional[str]:
-    # Regular expression to detect translation requests like "how do you say in english"
     match = re.search(r'how (do|did|can|could|would|will|should) (you|i|we) say[,]? in english[,]?\s*(.*)', user_input, re.IGNORECASE)
     if match and match.group(3):
-        return match.group(3).strip()  # Return the phrase to be translated
+        return match.group(3).strip()
     return None
 
 @app.post("/chat_conv")
@@ -357,54 +359,32 @@ async def chat_with_brain(
     global conversation_start_time
 
     user_id = current_user.id
-    category = get_category(choice)
-    
+    category = get_category(choice)  
+
     if not is_valid_audio_file(audio_file):
         raise HTTPException(status_code=400, detail="Invalid audio file format")
 
-    start_time_total = time.time()
-
-    # Step 1: Save audio file
-    start_time_step = time.time()
     user_audio_path = f"./audio/user/{audio_file.filename}"
     async with aiofiles.open(user_audio_path, "wb") as f:
         await f.write(await audio_file.read())
-    await log_custom_metric("1 Save audio file time", time.time() - start_time_step)
-
-    # Step 2: Transcribe audio
+    print("Début transcription audio")
     transcription_task = asyncio.create_task(transcribe_audio(user_audio_path))
-
-    # Step 3: Convert audio to base64
-    start_time_step = time.time()
-    user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)
-    await log_custom_metric("3 Convert audio to base64 time", time.time() - start_time_step)
+    user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)    
 
     user_input, transcription_time = await transcription_task
+    print(f"Transcription terminée en secondes")
     user_input = user_input.strip().lower()
-
-    # Step 4: Detect translation request
-    start_time_step = time.time()
     phrase_to_translate = detect_translation_request(user_input)
-    await log_custom_metric("4 Detect translation request time", time.time() - start_time_step)
+    print(f"detect terminée en secondes")
     
     if phrase_to_translate:
-        # Step 5: Generate translation response
         prompt = f"Traduire cette phrase en anglais sans ajouter des commentaires: {phrase_to_translate}"
-        start_time_step = time.time()
-        start_time_phi3 = time.time()
         translated_phrase = await asyncio.to_thread(generate_phi3_response, prompt)
-        phi3_response_time = log_response_time_phi3(start_time_phi3, time.time())
-        await log_custom_metric("5 Generate translation response time", time.time() - start_time_step)
-        generated_response = f"{translated_phrase}"
-        
-        # Step 6: Generate TTS audio
+        generated_response = f"{translated_phrase}"      
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await log_custom_metric("6 Generate TTS audio time", time.time() - start_time_step)
-
+        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path) 
+        await asyncio.to_thread(delete_audio_file, audio_file_path)
         log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="translations", ia_audio_duration=duration)
-        end_time_total = time.time()
-        total_processing_time = log_total_time(start_time_total, end_time_total)
         
         return {
             "user_input": user_input,
@@ -414,8 +394,6 @@ async def chat_with_brain(
             "user_audio_base64": user_audio_base64,
             "metrics": {
                 "transcription_time": transcription_time,
-                "response_time_phi3": phi3_response_time,
-                "total_processing_time": total_processing_time
             }
         }
 
@@ -423,28 +401,17 @@ async def chat_with_brain(
         conversation_history[user_id] = []
         conversation_start_time[user_id] = time.time()
 
-    user_history = conversation_history[user_id]
-    
-    # Step 7: Detect language
-    start_time_step = time.time()
-    language = detect_language(user_input)
-    await log_custom_metric("7 Detect language time", time.time() - start_time_step)
-    
+    user_history = conversation_history[user_id]    
+    language = detect_language(user_input)    
     current_time = time.time()
     start_time = conversation_start_time[user_id]
     elapsed_time = current_time - start_time
 
     if elapsed_time > 300:
-        generated_response = "Thanks for the exchange, I have to go soon! Bye."
-        
-        # Step 8: Generate TTS audio for goodbye message
+        generated_response = "Thanks for the exchange, I have to go soon! Bye."        
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await log_custom_metric("8 Generate TTS audio for goodbye time", time.time() - start_time_step)
-
-        end_time_total = time.time()
-        total_processing_time = log_total_time(start_time_total, end_time_total)
-        
+        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)  
+        await asyncio.to_thread(delete_audio_file, audio_file_path)      
         conversation_history.pop(user_id, None)
         conversation_start_time.pop(user_id, None)
         
@@ -456,13 +423,10 @@ async def chat_with_brain(
             "user_audio_base64": user_audio_base64,
             "metrics": {
                 "transcription_time": transcription_time,
-                "total_processing_time": total_processing_time
             }
         }
 
     if user_input == "thank you.":
-        end_time_total = time.time()
-        total_processing_time = log_total_time(start_time_total, end_time_total)
         conversation_history.pop(user_id, None)
         conversation_start_time.pop(user_id, None)
         
@@ -474,21 +438,14 @@ async def chat_with_brain(
             "user_audio_base64": user_audio_base64,
             "metrics": {
                 "transcription_time": transcription_time,
-                "total_processing_time": total_processing_time
             }
         }
 
     if language in ['fr', 'unknown']:
-        generated_response = "Hum.. I don't speak French, please say it in English."
-        
-        # Step 9: Generate TTS audio for non-French response
+        generated_response = "Hum.. I don't speak French, please say it in English."      
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await log_custom_metric("9 Generate TTS audio for non-French response time", time.time() - start_time_step)
-
-        end_time_total = time.time()
-        total_processing_time = log_total_time(start_time_total, end_time_total)
-
+        await asyncio.to_thread(delete_audio_file, audio_file_path)
         log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="french_responses", ia_audio_duration=duration)
         
         return {
@@ -499,32 +456,19 @@ async def chat_with_brain(
             "user_audio_base64": user_audio_base64,
             "metrics": {
                 "transcription_time": transcription_time,
-                "total_processing_time": total_processing_time
             }
         }
 
-    # Step 10: Evaluate sentence quality
-    start_time_step = time.time()
     is_quality_sentence = evaluate_sentence_quality_phi3(user_input)
-    await log_custom_metric("10 Evaluate sentence quality time", time.time() - start_time_step)
+    print("fin sentence")
     
     if not is_quality_sentence:
         generated_response = "I didn't understand that. Could you please rephrase?"
         suggestion_prompt = f"Improve the following unclear response in one sentence easy: {user_input}"
-        start_time_step = time.time()
-        start_time_phi3 = time.time()
-        suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)
-        phi3_response_time = log_response_time_phi3(start_time_phi3, time.time())
-        await log_custom_metric("11 Generate suggestion for unclear response time", time.time() - start_time_step)
-        
-        # Step 11: Generate TTS audio for unclear response
+        suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)       
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await log_custom_metric("12 Generate TTS audio for unclear response time", time.time() - start_time_step)
-
-        end_time_total = time.time()
-        total_processing_time = log_total_time(start_time_total, end_time_total)
-
+        await asyncio.to_thread(delete_audio_file, audio_file_path)
         log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses", suggestion=suggestion, ia_audio_duration=duration)
         
         return {
@@ -536,27 +480,19 @@ async def chat_with_brain(
             "suggestion": suggestion,
             "metrics": {
                 "transcription_time": transcription_time,
-                "response_time_phi3": phi3_response_time,
-                "total_processing_time": total_processing_time
             }
         }
 
-    # Step 12: Generate AI response
-    start_time_step = time.time()
-    generated_response, phi3_response_time = await asyncio.to_thread(generate_ai_response_alice, user_input, user_history)
-    await log_custom_metric("13 Generate AI response time", time.time() - start_time_step)
     
+    generated_response = await asyncio.to_thread(generate_ai_response_alice, user_input, user_history)  
+    print(f"Réponse générée en secondes")  
     user_history.append({'input': user_input, 'response': generated_response})
-
-    # Step 13: Generate TTS audio for AI response
     audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
     audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-    await log_custom_metric("14 Generate TTS audio for AI response time", time.time() - start_time_step)
-
-    end_time_total = time.time()
-    total_processing_time = log_total_time(start_time_total, end_time_total)
-
     log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, ia_audio_duration=duration)
+    await asyncio.to_thread(delete_audio_file, user_audio_path)
+    await asyncio.to_thread(delete_audio_file, audio_file_path)
+    
     
     return {
         "user_input": user_input,
@@ -566,8 +502,6 @@ async def chat_with_brain(
         "user_audio_base64": user_audio_base64,
         "metrics": {
             "transcription_time": transcription_time,
-            "response_time_phi3": phi3_response_time,
-            "total_processing_time": total_processing_time
         }
     }
 
@@ -689,7 +623,7 @@ async def send_message(request: ChatRequest):
 @app.get("/user/r_a_m/{conversation_id}/messages", response_model=List[MessageSchema])
 def get_conversation_messages(
     conversation_id: int,
-    category: Optional[str] = None,  # Ajouter une query parameter pour la catégorie
+    category: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -701,14 +635,11 @@ def get_conversation_messages(
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # Créer une requête de base pour filtrer par conversation_id et trier par timestamp ascendant
     query = db.query(Message).filter(Message.conversation_id == conversation.id).order_by(asc(Message.timestamp))
 
-    # Filtrer par catégorie si une catégorie est spécifiée
     if category:
         query = query.filter(Message.category == category)
 
-    # Exécuter la requête et récupérer les résultats
     messages = query.all()
     print(messages)
     return messages

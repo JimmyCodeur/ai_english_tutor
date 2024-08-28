@@ -378,7 +378,18 @@
         function displayMessage(message, sender, audioBase64, isError = false) {
             const chatBox = document.getElementById('chatBox');
 
-            if (["Thank you.", "Obrigado.", "Tchau.", "E a",".","Bye."].includes(message.trim())) {
+            if (Array.isArray(message)) {
+                console.warn('The message is a tuple, extracting the first element:', message);
+                message = message[0]; // Utiliser le premier élément du tableau, qui est le texte
+            }
+
+            // Ensure message is a string before calling trim
+            if (typeof message !== 'string') {
+                console.error('The message is not a string:', message);
+                message = ''; // Default to an empty string if it's not a valid string
+            }
+
+            if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
                 const errorMessageDiv = document.createElement('div');
                 errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
                 errorMessageDiv.textContent = "🗣️ Aucun audio détecté, recommencez.";
@@ -386,7 +397,8 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
                 return;
             }
-            if (!message) return; 
+
+            if (!message) return; // If the message is empty, don't proceed
 
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container mb-2';
@@ -395,19 +407,14 @@
             if (isError) {
                 messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
             } else if (message.startsWith('Traduction :')) {
-                // Pour le message traduit, changer la couleur de fond en orange
                 messageDiv.className = 'message bg-green-200 text-black rounded-lg p-2 max-w-xs';
             } else {
-            if (sender === 'bot') {
-                messageDiv.className = 'message bg-gray-200 rounded-lg text-black';
-            } else {
-                messageDiv.className = 'message self bg-blue-500 text-white rounded-lg';
+                messageDiv.className = sender === 'bot' ? 'message bg-gray-200 rounded-lg text-black' : 'message self bg-blue-500 text-white rounded-lg';
             }
-        }
+
             messageDiv.textContent = message;
             messageContainer.appendChild(messageDiv);
-            
-            // Add translate icon only if message does not start with 'translated_message'
+
             if (!message.startsWith('Traduction :') && sender === 'bot') {
                 const iconSVG = `
                     <svg class="h-6 w-6 text-pink-500 inline-block ml-2 cursor-pointer translate-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" data-message="${message}">
@@ -429,28 +436,23 @@
                 });
 
                 // Add event listeners to change avatar
-                audioElement.onplay = () => {
-                    changeAvatarToGif(); // Change avatar to GIF when audio starts
-                };
-                audioElement.onpause = () => {
-                    changeAvatarToPng(); // Change avatar to PNG when audio pauses
-                };
-                audioElement.onended = () => {
-                    changeAvatarToPng(); // Change avatar to PNG when audio ends
-                };
+                audioElement.onplay = () => changeAvatarToGif(); // Change avatar to GIF when audio starts
+                audioElement.onpause = () => changeAvatarToPng(); // Change avatar to PNG when audio pauses
+                audioElement.onended = () => changeAvatarToPng(); // Change avatar to PNG when audio ends
 
                 messageContainer.appendChild(audioElement);
+
                 const replayIconSVG = `
-                    <svg class="h-6 w-6 text-zinc-500 cursor-pointer replay-icon"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-6 w-6 text-zinc-500 cursor-pointer replay-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
                     </svg>
                 `;
                 messageContainer.insertAdjacentHTML('beforeend', replayIconSVG);
-            } 
-            
+            }
+
             chatBox.appendChild(messageContainer);
             chatBox.scrollTop = chatBox.scrollHeight;
-            
+
             const translateIcon = messageContainer.querySelector('.translate-icon');
             if (translateIcon) {
                 translateIcon.addEventListener('click', () => {
@@ -460,6 +462,7 @@
                     translateIcon.remove();
                 });
             }
+
             const replayIcon = messageContainer.querySelector('.replay-icon');
             if (replayIcon) {
                 replayIcon.addEventListener('click', () => {
@@ -468,11 +471,11 @@
                         audioPlayer.play();
                     }
                 });
-            }   
-            // Check if the session should be stopped
+            }
+
             if (sender === 'bot') {
-            checkAndStopSession(message);
-            }  
+                checkAndStopSession(message);
+            }
         }
 
 

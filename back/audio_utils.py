@@ -28,6 +28,17 @@ def file_to_base64(file_path):
         audio_bytes = f.read()
     return base64.b64encode(audio_bytes).decode("utf-8")
 
+def delete_audio_file(file_path):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"File {file_path} deleted successfully.")
+        else:
+            print(f"File {file_path} does not exist.")
+    except OSError as e:
+        print(f"Error: {e.strerror}. Could not delete the file: {file_path}")
+
+
 def process_audio_file(audio_path, filename):
     converted_audio_path = f"./audio/user/converted_{filename}"
     if os.path.exists(converted_audio_path):
