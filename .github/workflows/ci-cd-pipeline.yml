@@ -4,30 +4,51 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  build-test-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up Python 3.11
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
+      - name: Download NLTK Data
+        run: |
+          python -m nltk.downloader punkt
+
+      # 5. Build and Start Docker Compose services
+      - name: Build and Start Docker Compose
+        run: docker-compose -f docker-compose.yml up -d --build
+
+      # 6. Wait for services to be ready
+      - name: Wait for services to be ready
+        run: |
+          while ! nc -z localhost 8000; do   
+            sleep 1
+          done
+
+      # 7. Run tests
       - name: Run tests
-        run: pytest
+        run: |
+          pytest back/test_ai_model.py
 
-      - name: Build Docker image
-        run: docker build -t my-docker-repo/my-app:latest .
-
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Push Docker image
-        run: docker push my-docker-repo/my-app:latest
+      # 8. Stop Docker Compose services
+      - name: Stop Docker services
+        run: docker-compose -f docker-compose.yml down
