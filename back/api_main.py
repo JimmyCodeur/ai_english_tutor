@@ -36,6 +36,8 @@ app.mount("/static", StaticFiles(directory="./front/static"), name="static")
 nltk.download('punkt')
 current_prompt = None
 nlp = spacy.load("en_core_web_sm")
+conversation_history = {}
+conversation_start_time = {}
 
 @app.get('/')
 def index():
@@ -283,10 +285,6 @@ def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: 
     else:
         raise HTTPException(status_code=400, detail="Unclear response not provided.")
 
-
-conversation_history = {}
-conversation_start_time = {}
-
 @app.post("/chat_conv/start")
 async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     global conversation_history
@@ -321,21 +319,18 @@ async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "en
 
 def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     print("Début sentence")
-    # Demander explicitement au modèle d'ignorer ponctuation et majuscules
     prompt = f"Is the following sentence understandable and acceptable for simple conversation, ignoring small grammar mistakes, capitalization, and punctuation? Answer 'yes' or 'no' only:\n\n{sentence}"
     print(prompt)
     
     model_name = 'phi3'
     response = generate_ollama_response(model_name, prompt).strip().lower()
-    response_short = response.split(".")[0]  # Ne garder que la première phrase avant un point
+    response_short = response.split(".")[0]
     print(f"Response from model: {response_short}")
     
-    # Si le modèle mentionne uniquement la capitalisation ou la ponctuation, on accepte la phrase
     if "capitalization" in response or "punctuation" in response or "comma" in response:
         print("Ignoring minor errors in capitalization or punctuation")
         return True
 
-    # Si la réponse contient une critique sur la grammaire mais est tout de même compréhensible
     if "yes" in response_short or "understandable" in response:
         return True
     

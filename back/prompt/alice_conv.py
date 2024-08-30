@@ -7,22 +7,7 @@ import time
 import nltk
 import re
 
-# questions = [
-#     "How are you?",
-#     "How about you?",
-#     "What's new?",
-#     "Did you have a good day?",
-#     "How was your week?",
-#     "What did you do this weekend?",
-#     "Do you have any plans for tonight?",
-#     "Do you have any plans for the holidays?",
-#     "What do you like to do in your free time?",
-#     "How was your trip/vacation?",
-#     "Have you seen any good movies recently?"
-# ]
-
 def generate_ai_response_alice(previous_input, user_history, context_sentences=1):
-    # Alice est une personne normale qui répond directement aux questions posées.
     alice_personality = (
         "You are Alice, a 25-year-old person from England. You are having a simple conversation with someone for the first time. "
         "You love singing and traveling. You are **not** an AI, but a real person. "
@@ -34,7 +19,6 @@ def generate_ai_response_alice(previous_input, user_history, context_sentences=1
         "Keep your responses short, simple, and to the point. Do not offer information unless it is specifically requested."
     )
 
-    # Construire le contexte de la conversation
     conversation_context = "\n".join(f"{entry['input']}{entry['response']}" for entry in user_history)
 
     full_prompt = f"{alice_personality}\n\n{conversation_context}\n{previous_input}\n"
