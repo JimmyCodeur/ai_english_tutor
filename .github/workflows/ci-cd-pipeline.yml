@@ -26,8 +26,8 @@ jobs:
 
       - name: Install Docker Compose
         run: |
-            sudo apt-get update
-            sudo apt-get install -y docker-compose
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
       - name: Install dependencies
         run: |
@@ -38,8 +38,12 @@ jobs:
         run: |
           python -m nltk.downloader punkt
 
-      - name: Build and Start Docker Compose
-        run: docker-compose -f docker-compose.yml up -d --build
+      - name: Build Docker Image if not exists
+        run: |
+          docker-compose -f docker-compose.yml build --pull
+
+      - name: Start Docker Compose Services
+        run: docker-compose -f docker-compose.yml up -d
 
       - name: Wait for services to be ready
         run: |

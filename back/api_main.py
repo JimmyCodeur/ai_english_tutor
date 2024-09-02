@@ -373,7 +373,7 @@ async def chat_with_brain(
     print(f"detect terminée en secondes")
     
     if phrase_to_translate:
-        prompt = f"Traduire cette phrase en anglais sans ajouter des commentaires: {phrase_to_translate}"
+        prompt = f"Translate this sentence into English without adding comments: {phrase_to_translate}"
         translated_phrase = await asyncio.to_thread(generate_phi3_response, prompt)
         generated_response = f"{translated_phrase}"      
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
@@ -402,7 +402,7 @@ async def chat_with_brain(
     start_time = conversation_start_time[user_id]
     elapsed_time = current_time - start_time
 
-    if elapsed_time > 300:
+    if elapsed_time > 600:
         generated_response = "Thanks for the exchange, I have to go soon! Bye."        
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)  
