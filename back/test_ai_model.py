@@ -24,7 +24,8 @@ def test_generate_phi3_response_none():
         assert response is None
         mock_generate.assert_called_once_with('phi3', prompt)
 
-def test_transcribe_audio():
+@pytest.mark.asyncio
+async def test_transcribe_audio():
     file_path = "test_audio.wav"
     
     mock_segments = [MagicMock(text="Hello world")]
@@ -34,11 +35,10 @@ def test_transcribe_audio():
          patch('metrics.log_metrics_transcription_time', return_value=0.1) as mock_log:
         
         start_time = time.time()
-        response, transcription_time = transcribe_audio(file_path)
+        response, transcription_time = await transcribe_audio(file_path)
         end_time = time.time()
 
         assert response == "Hello world"
-        # Ajustement pour vérifier le temps de transcription
         assert end_time - start_time >= transcription_time
 
 
