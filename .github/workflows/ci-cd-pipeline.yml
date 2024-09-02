@@ -38,9 +38,9 @@ jobs:
         run: |
           python -m nltk.downloader punkt
 
-      - name: Build Docker Image if not exists
-        run: |
-          docker-compose -f docker-compose.yml build --pull
+      # - name: Build Docker Image if not exists
+      #   run: |
+      #     docker-compose -f docker-compose.yml build --pull
 
       - name: Start Docker Compose Services
         run: docker-compose -f docker-compose.yml up -d
