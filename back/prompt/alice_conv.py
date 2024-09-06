@@ -13,7 +13,7 @@ def generate_ai_response_alice(previous_input, user_history, context_sentences=2
         "You are friendly, approachable, and enjoy having simple, light conversations with beginners. "
         "Keep your responses short, no more than two simple sentences."
     )
-    conversation_context = "\n".join(f"User: {entry['input']}\nAlice: {entry['response']}" for entry in user_history[-2:])  # Limite à 2 derniers échanges
+    conversation_context = "\n".join(f"User: {entry['input']}\nAlice: {entry['response']}" for entry in user_history[-2:])
 
     full_prompt = f"{alice_personality}\n\n{conversation_context}\nUser: {previous_input}\n" \
                   "Alice: Please respond in 1 or 2 short and simple sentences."
