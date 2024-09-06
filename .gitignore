@@ -1,17 +1,20 @@
-# .conda
-# __pycache__
-# .pytest_cache
-# .github
-# *.mp3
-# *.txt
-# __init__.py
-# config.py
-# *.wav
-# *.svg
-# *.ttf
-# *.woff
-# *.woff2
-# *.eot
-# *.png
-# *.jpg
-# .env
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.conda/
+.env
+.github/
+*.mp3
+*.wav
+*.png
+*.jpg
+*.svg
+*.ttf
+*.woff
+*.woff2
+*.eot
+config.py
+__init__.py
+*.txt
+back/bdd/config.py

@@ -41,6 +41,5 @@ async def test_transcribe_audio():
         assert response == "Hello world"
         assert end_time - start_time >= transcription_time
 
-
 if __name__ == '__main__':
     pytest.main()

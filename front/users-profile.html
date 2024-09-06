@@ -231,7 +231,7 @@
                     fetchConversations(sortOrderSelect.value);
                 });
 
-                fetchConversations('recent'); // Fetch conversations initially sorted by recent
+                fetchConversations('recent'); 
 
                 function fetchConversations(sortOrder) {
                     fetch('/user/conversations', {
@@ -246,7 +246,6 @@
                         return response.json();
                     })
                     .then(conversations => {
-                        // Sort conversations based on the selected order
                         if (sortOrder === 'recent') {
                             conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
                         } else if (sortOrder === 'oldest') {

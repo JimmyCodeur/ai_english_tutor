@@ -38,7 +38,6 @@ def delete_audio_file(file_path):
     except OSError as e:
         print(f"Error: {e.strerror}. Could not delete the file: {file_path}")
 
-
 def process_audio_file(audio_path, filename):
     converted_audio_path = f"./audio/user/converted_{filename}"
     if os.path.exists(converted_audio_path):

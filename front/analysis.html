@@ -124,7 +124,6 @@
                 console.error("Conversation ID not found in URL.");
             }
 
-            // Charger les rapports de session dans la barre latérale
             await loadSessionReports();
         });
 
@@ -150,9 +149,8 @@
                 const data = await response.json();
                 console.log(data);
 
-                // Afficher les résultats d'analyse dans l'interface utilisateur
                 const analysisContainer = document.getElementById('analysisContainer');
-                analysisContainer.innerHTML = ''; // Clear existing content
+                analysisContainer.innerHTML = ''; 
 
                 const categoryDescription = categoryMapping[data.category] || data.category;
 
@@ -237,7 +235,7 @@
                 }
 
                 const sessionReportsContainer = document.getElementById('sessionReports');
-                sessionReportsContainer.innerHTML = ''; // Clear existing content
+                sessionReportsContainer.innerHTML = '';
 
                 conversations.forEach(conversation => {
                     const listItem = document.createElement('li');

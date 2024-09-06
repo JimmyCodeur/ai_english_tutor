@@ -13,9 +13,7 @@ def help_sugg(log_file_path: str, model_name: str, user_input: str) -> dict:
         user_input = last_line
 
     prompt_for_suggestions = f"User input: {user_input}\nPlease respond with very short messages and at an easy level."
-
     print(prompt_for_suggestions)
-
     generated_suggestions = generate_phi3_response(prompt_for_suggestions)
 
     if isinstance(generated_suggestions, list):

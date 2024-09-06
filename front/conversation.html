@@ -124,21 +124,18 @@
                 if (messagesContainer) {
                     messagesContainer.innerHTML = '';
 
-                    // Sort messages by timestamp in ascending order (assuming timestamp is correctly retrieved)
                     messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
                     messages.forEach(message => {
                         const messageDiv = document.createElement('div');
                         messageDiv.className = 'message';
 
-                        // Check if user_input exists and add it
                         if (message.user_input !== null && message.user_input !== undefined) {
                             const userInputParagraph = document.createElement('p');
                             userInputParagraph.innerHTML = `<strong>Me:</strong> ${message.user_input}`;
                             messageDiv.appendChild(userInputParagraph);
                         }
 
-                        // Check if response exists and add it
                         if (message.response !== null && message.response !== undefined) {
                             const responseParagraph = document.createElement('p');
                             responseParagraph.innerHTML = `<strong>IA:</strong> ${message.response}`;

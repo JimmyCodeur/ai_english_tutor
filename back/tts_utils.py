@@ -108,26 +108,21 @@ async def text_to_speech_audio(generated_response, voice_key):
     model_name = voices[voice_key]
     tts = TTS(model_name=model_name, progress_bar=False, gpu=True)
 
-    # Vérifier si le texte est bien une chaîne de caractères
     if isinstance(generated_response, tuple):
         print(f"Le texte est un tuple: {generated_response}, extraction du premier élément")
-        generated_response = generated_response[0]  # Extraire la première valeur si c'est un tuple
+        generated_response = generated_response[0]
 
-    # Start measuring the TTS generation time
     start_time_total = time.time()
 
-    # TTS generation
     start_time_tts = time.time()
-    wav_data = await asyncio.to_thread(tts.tts, generated_response)  # wav_data est généré ici
+    wav_data = await asyncio.to_thread(tts.tts, generated_response)
     tts_time = time.time() - start_time_tts
     await log_custom_metric("Generate TTS audio time", tts_time)
 
-    # Vérifier si wav_data est un tuple et extraire la partie audio si nécessaire
     if isinstance(wav_data, tuple):
         print(f"wav_data est un tuple, contenu : {wav_data}")
-        wav_data = wav_data[0]  # Si c'est un tuple, extraire la première valeur, qui devrait être les données audio.
+        wav_data = wav_data[0]
 
-    # Normalizing and filtering the audio data
     wav_data_np = np.array(wav_data, dtype=np.float32)
     wav_data_np = wav_data_np / np.max(np.abs(wav_data_np))
     cutoff_freq = 8000

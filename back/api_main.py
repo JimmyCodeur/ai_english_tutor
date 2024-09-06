@@ -122,7 +122,6 @@ def logout(token_data: TokenInBody, db: Session = Depends(get_db)):
     revoked_tokens.add(token)
     return {"message": "Successfully logged out"}
 
-
 @app.post("/users/", response_model=User)
 def create_user_endpoint(
     email: EmailStr = Form(...),
@@ -321,20 +320,18 @@ def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     print("Début sentence")
     prompt = f"Is the following sentence understandable and acceptable for simple conversation, ignoring small grammar mistakes, capitalization, and punctuation? Answer 'yes' or 'no' only:\n\n{sentence}"
     print(prompt)
-    
     model_name = 'phi3'
     response = generate_ollama_response(model_name, prompt).strip().lower()
-    response_short = response.split(".")[0]
+    response_short = response.split(".")[0].strip()
     print(f"Response from model: {response_short}")
     
-    if "capitalization" in response or "punctuation" in response or "comma" in response:
-        print("Ignoring minor errors in capitalization or punctuation")
+    if "yes" in response_short or "understandable" in response_short:
         return True
-
-    if "yes" in response_short or "understandable" in response:
-        return True
-    
-    return response_short.startswith("yes")
+    elif "no" in response_short:
+        return False
+    else:
+        print("Unexpected response format from model.")
+        return False
 
 def detect_translation_request(user_input: str) -> Optional[str]:
     match = re.search(r'how (do|did|can|could|would|will|should) (you|i|we) say[,]? in english[,]?\s*(.*)', user_input, re.IGNORECASE)
@@ -459,13 +456,13 @@ async def chat_with_brain(
     
     if not is_quality_sentence:
         generated_response = "I didn't understand that. Could you please rephrase?"
-        suggestion_prompt = f"Improve the following unclear response in one sentence easy: {user_input}"
+        suggestion_prompt = f"Improve the following unclear response in one sentence, making it easy to understand: {user_input}"
         suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)       
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
         await asyncio.to_thread(delete_audio_file, audio_file_path)
         log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses", suggestion=suggestion, ia_audio_duration=duration)
-        
+            
         return {
             "user_input": user_input,
             "generated_response": generated_response,
@@ -499,7 +496,6 @@ async def chat_with_brain(
             "transcription_time": transcription_time,
         }
     }
-
 
 @app.post("/chat_repeat/start")
 async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
@@ -638,7 +634,6 @@ def get_conversation_messages(
     messages = query.all()
     print(messages)
     return messages
-
 
 if __name__ == "__main__":
     import uvicorn
