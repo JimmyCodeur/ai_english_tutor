@@ -4,7 +4,7 @@ Ce projet est une application web pour un service d'IA qui utilise des modèles 
 
 ## Interface de l'application
 
-![Capture d'écran de l'IA](./front/static/assets/images/Screen%20IA.PNG)
+![Capture d'écran de l'IA](./front/static/assets/images/Screen_20IA.PNG)
 
 ## Démo Vidéo
 
