@@ -2,6 +2,10 @@
 
 Ce projet est une application web pour un service d'IA qui utilise des modèles de traitement du langage naturel (NLP) pour engager des conversations interactives. Le système comprend une API backend, un modèle d'IA pour la génération de texte, et des outils de transcription audio. Le projet est construit avec **FastAPI** et **Docker** pour une mise en œuvre continue via une pipeline CI/CD.
 
+## Interface de l'application
+
+![Capture d'écran de l'IA](./front/static/assets/images/Screen%20IA.PNG)
+
 ## Démo Vidéo
 
 Regardez la démo vidéo de l'application en cliquant sur le lien suivant :
