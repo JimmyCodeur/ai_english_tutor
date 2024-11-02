@@ -44,3 +44,5 @@ def generate_phi3_response(prompt):
     sentences = nltk.tokenize.sent_tokenize(generated_response)    
     limited_response = ' '.join(sentences[:2])    
     return limited_response
+
+

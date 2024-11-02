@@ -16,6 +16,7 @@ from pydantic import EmailStr, constr, BaseModel
 from back.token_security import get_current_user, authenticate_user, create_access_token, revoked_tokens
 from back.load_model import generate_phi3_response, generate_ollama_response
 from back.help_suggestion import help_sugg
+from back.metrics import log_error, log_response_time_phi3
 from back.tts_utils import text_to_speech_audio
 from back.transcribe_audio import transcribe_audio
 from back.audio_utils import file_to_base64, is_valid_audio_file, delete_audio_file
@@ -286,35 +287,41 @@ def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: 
 
 @app.post("/chat_conv/start")
 async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
-    global conversation_history
-    global conversation_start_time
+    try:
+        global conversation_history
+        global conversation_start_time
 
-    user_id = current_user.id
-    choice = request_data.choice
+        user_id = current_user.id
+        choice = request_data.choice
 
-    if user_id not in conversation_history:
-        user_history = []
-        conversation_history[user_id] = user_history
-        conversation_start_time[user_id] = time.time()
-    else:
-        user_history = conversation_history[user_id]
+        if user_id not in conversation_history:
+            user_history = []
+            conversation_history[user_id] = user_history
+            conversation_start_time[user_id] = time.time()
+        else:
+            user_history = conversation_history[user_id]
 
-    alice_start_greetings = "Hello! I'm really happy to meet you. How are you?"
-    user_history.append({'input': "", 'response': alice_start_greetings})
+        alice_start_greetings = "Hello! I'm really happy to meet you. How are you?"
+        user_history.append({'input': "", 'response': alice_start_greetings})
 
-    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
-    audio_base64 = file_to_base64(audio_file_path)
-    delete_audio_file(audio_file_path)
+        audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)       
+        audio_base64 = file_to_base64(audio_file_path)
+        delete_audio_file(audio_file_path)
 
-    log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings)
-    conversation = create_or_get_conversation(db, user_id, choice)
-    log_message_to_db(db, user_id, conversation.id, alice_start_greetings, alice_start_greetings, audio_base64, ia_audio_duration=duration)
+        log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings)
+        conversation = create_or_get_conversation(db, user_id, choice)
+        log_message_to_db(db, user_id, conversation.id, alice_start_greetings, alice_start_greetings, audio_base64, ia_audio_duration=duration)
 
-    return {
-        "generated_response": alice_start_greetings,
-        "audio_base64": audio_base64,
-        "conversation_history": user_history
-    }
+        return {
+            "generated_response": alice_start_greetings,
+            "audio_base64": audio_base64,
+            "conversation_history": user_history
+        }
+    
+    except Exception as e:
+        log_error(e)
+        raise HTTPException(status_code=500, detail="An error occurred while starting the conversation.")
+
 
 def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     print("Début sentence")
@@ -330,6 +337,7 @@ def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     elif "no" in response_short:
         return False
     else:
+        log_error(f"Unexpected response format from model: {response}")
         print("Unexpected response format from model.")
         return False
 
@@ -347,65 +355,147 @@ async def chat_with_brain(
     db: Session = Depends(get_db),
     current_user: int = Depends(get_current_user)
 ):
-    global conversation_history
-    global conversation_start_time
+    try:
+        global conversation_history
+        global conversation_start_time
 
-    user_id = current_user.id
-    category = get_category(choice)  
+        user_id = current_user.id
+        category = get_category(choice)  
 
-    if not is_valid_audio_file(audio_file):
-        raise HTTPException(status_code=400, detail="Invalid audio file format")
+        if not is_valid_audio_file(audio_file):
+            raise HTTPException(status_code=400, detail="Invalid audio file format")
 
-    user_audio_path = f"./audio/user/{audio_file.filename}"
-    async with aiofiles.open(user_audio_path, "wb") as f:
-        await f.write(await audio_file.read())
-    print("Début transcription audio")
-    transcription_task = asyncio.create_task(transcribe_audio(user_audio_path))
-    user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)    
+        user_audio_path = f"./audio/user/{audio_file.filename}"
+        async with aiofiles.open(user_audio_path, "wb") as f:
+            await f.write(await audio_file.read())
+        print("Début transcription audio")
+        transcription_task = asyncio.create_task(transcribe_audio(user_audio_path))
+        user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)    
 
-    user_input, transcription_time = await transcription_task
-    print(f"Transcription terminée en secondes")
-    user_input = user_input.strip().lower()
-    phrase_to_translate = detect_translation_request(user_input)
-    print(f"detect terminée en secondes")
-    
-    if phrase_to_translate:
-        prompt = f"Translate this sentence into English without adding comments: {phrase_to_translate}"
-        translated_phrase = await asyncio.to_thread(generate_phi3_response, prompt)
-        generated_response = f"{translated_phrase}"      
-        audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path) 
-        await asyncio.to_thread(delete_audio_file, audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="translations", ia_audio_duration=duration)
-        
-        return {
-            "user_input": user_input,
-            "generated_response": generated_response,
-            "audio_base64": audio_base64,
-            "conversation_history": None,
-            "user_audio_base64": user_audio_base64,
-            "metrics": {
-                "transcription_time": transcription_time,
+        user_input, transcription_time = await transcription_task
+        print(f"Transcription terminée en secondes")
+        user_input = user_input.strip().lower()
+        phrase_to_translate = detect_translation_request(user_input)
+        print(f"detect terminée en secondes")
+
+        if phrase_to_translate:
+            prompt = f"Translate this sentence into English without adding comments: {phrase_to_translate}"
+            start_time = time.time()
+            translated_phrase = await asyncio.to_thread(generate_phi3_response, prompt)
+            end_time = time.time()
+            log_response_time_phi3(start_time, end_time)
+            generated_response = f"{translated_phrase}"      
+            audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+            audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path) 
+            await asyncio.to_thread(delete_audio_file, audio_file_path)
+            log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="translations", ia_audio_duration=duration)
+            
+            return {
+                "user_input": user_input,
+                "generated_response": generated_response,
+                "audio_base64": audio_base64,
+                "conversation_history": None,
+                "user_audio_base64": user_audio_base64,
+                "metrics": {
+                    "transcription_time": transcription_time,
+                }
             }
-        }
 
-    if user_id not in conversation_history:
-        conversation_history[user_id] = []
-        conversation_start_time[user_id] = time.time()
+        if user_id not in conversation_history:
+            conversation_history[user_id] = []
+            conversation_start_time[user_id] = time.time()
 
-    user_history = conversation_history[user_id]    
-    language = detect_language(user_input)    
-    current_time = time.time()
-    start_time = conversation_start_time[user_id]
-    elapsed_time = current_time - start_time
+        user_history = conversation_history[user_id]    
+        language = detect_language(user_input)    
+        current_time = time.time()
+        start_time = conversation_start_time[user_id]
+        elapsed_time = current_time - start_time
 
-    if elapsed_time > 600:
-        generated_response = "Thanks for the exchange, I have to go soon! Bye."        
+        if elapsed_time > 600:
+            generated_response = "Thanks for the exchange, I have to go soon! Bye."        
+            audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+            audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)  
+            await asyncio.to_thread(delete_audio_file, audio_file_path)      
+            conversation_history.pop(user_id, None)
+            conversation_start_time.pop(user_id, None)
+            
+            return {
+                "user_input": user_input,
+                "generated_response": generated_response,
+                "audio_base64": audio_base64,
+                "conversation_history": user_history,
+                "user_audio_base64": user_audio_base64,
+                "metrics": {
+                    "transcription_time": transcription_time,
+                }
+            }
+
+        if user_input == "thank you.":
+            conversation_history.pop(user_id, None)
+            conversation_start_time.pop(user_id, None)
+            
+            return {
+                "user_input": user_input,
+                "generated_response": None,
+                "audio_base64": None,
+                "conversation_history": None,
+                "user_audio_base64": user_audio_base64,
+                "metrics": {
+                    "transcription_time": transcription_time,
+                }
+            }
+
+        if language in ['fr', 'unknown']:
+            generated_response = "Hum.. I don't speak French, please say it in English."      
+            audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+            audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
+            await asyncio.to_thread(delete_audio_file, audio_file_path)
+            log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="french_responses", ia_audio_duration=duration)
+            
+            return {
+                "user_input": user_input,
+                "generated_response": generated_response,
+                "audio_base64": audio_base64,
+                "conversation_history": None,
+                "user_audio_base64": user_audio_base64,
+                "metrics": {
+                    "transcription_time": transcription_time,
+                }
+            }
+
+        is_quality_sentence = evaluate_sentence_quality_phi3(user_input)
+        print("fin sentence")
+        
+        if not is_quality_sentence:
+            generated_response = "I didn't understand that. Could you please rephrase?"
+            suggestion_prompt = f"Improve the following unclear response in one sentence, making it easy to understand: {user_input}"
+            suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)       
+            audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+            audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
+            await asyncio.to_thread(delete_audio_file, audio_file_path)
+            log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses", suggestion=suggestion, ia_audio_duration=duration)
+                
+            return {
+                "user_input": user_input,
+                "generated_response": generated_response,
+                "audio_base64": audio_base64,
+                "conversation_history": None,
+                "user_audio_base64": user_audio_base64,
+                "suggestion": suggestion,
+                "metrics": {
+                    "transcription_time": transcription_time,
+                }
+            }
+
+        generated_response = await asyncio.to_thread(generate_ai_response_alice, user_input, user_history)          
+        print(f"Réponse générée en secondes")  
+        user_history.append({'input': user_input, 'response': generated_response})
         audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)  
-        await asyncio.to_thread(delete_audio_file, audio_file_path)      
-        conversation_history.pop(user_id, None)
-        conversation_start_time.pop(user_id, None)
+        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
+        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, ia_audio_duration=duration)
+        await asyncio.to_thread(delete_audio_file, user_audio_path)
+        await asyncio.to_thread(delete_audio_file, audio_file_path)
+        
         
         return {
             "user_input": user_input,
@@ -417,85 +507,10 @@ async def chat_with_brain(
                 "transcription_time": transcription_time,
             }
         }
-
-    if user_input == "thank you.":
-        conversation_history.pop(user_id, None)
-        conversation_start_time.pop(user_id, None)
-        
-        return {
-            "user_input": user_input,
-            "generated_response": None,
-            "audio_base64": None,
-            "conversation_history": None,
-            "user_audio_base64": user_audio_base64,
-            "metrics": {
-                "transcription_time": transcription_time,
-            }
-        }
-
-    if language in ['fr', 'unknown']:
-        generated_response = "Hum.. I don't speak French, please say it in English."      
-        audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await asyncio.to_thread(delete_audio_file, audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="french_responses", ia_audio_duration=duration)
-        
-        return {
-            "user_input": user_input,
-            "generated_response": generated_response,
-            "audio_base64": audio_base64,
-            "conversation_history": None,
-            "user_audio_base64": user_audio_base64,
-            "metrics": {
-                "transcription_time": transcription_time,
-            }
-        }
-
-    is_quality_sentence = evaluate_sentence_quality_phi3(user_input)
-    print("fin sentence")
     
-    if not is_quality_sentence:
-        generated_response = "I didn't understand that. Could you please rephrase?"
-        suggestion_prompt = f"Improve the following unclear response in one sentence, making it easy to understand: {user_input}"
-        suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)       
-        audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-        await asyncio.to_thread(delete_audio_file, audio_file_path)
-        log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, marker="unclear_responses", suggestion=suggestion, ia_audio_duration=duration)
-            
-        return {
-            "user_input": user_input,
-            "generated_response": generated_response,
-            "audio_base64": audio_base64,
-            "conversation_history": None,
-            "user_audio_base64": user_audio_base64,
-            "suggestion": suggestion,
-            "metrics": {
-                "transcription_time": transcription_time,
-            }
-        }
-
-    
-    generated_response = await asyncio.to_thread(generate_ai_response_alice, user_input, user_history)  
-    print(f"Réponse générée en secondes")  
-    user_history.append({'input': user_input, 'response': generated_response})
-    audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
-    audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
-    log_conversation_and_message(db, user_id, category, user_input, user_input, generated_response, user_audio_base64, audio_base64, ia_audio_duration=duration)
-    await asyncio.to_thread(delete_audio_file, user_audio_path)
-    await asyncio.to_thread(delete_audio_file, audio_file_path)
-    
-    
-    return {
-        "user_input": user_input,
-        "generated_response": generated_response,
-        "audio_base64": audio_base64,
-        "conversation_history": user_history,
-        "user_audio_base64": user_audio_base64,
-        "metrics": {
-            "transcription_time": transcription_time,
-        }
-    }
+    except Exception as e:
+        log_error(e)
+        raise HTTPException(status_code=500, detail="An error occurred during the conversation.")
 
 @app.post("/chat_repeat/start")
 async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):

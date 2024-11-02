@@ -1,60 +1,60 @@
-# name: CI/CD Pipeline
+name: CI/CD Pipeline
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# jobs:
-#   build-test-deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-#       - name: Set up Docker Buildx
-#         uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-#       - name: Set up Python 3.11
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.11'
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
 
-#       - name: Install Docker Compose
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y docker-compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
-#       - name: Install dependencies
-#         run: |
-#           pip install -r requirements.txt
-#           pip install pytest pytest-asyncio
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
-#       - name: Download NLTK Data
-#         run: |
-#           python -m nltk.downloader punkt
+      - name: Download NLTK Data
+        run: |
+          python -m nltk.downloader punkt
 
-#       - name: Build Docker Image if not exists
-#         run: |
-#           docker-compose -f docker-compose.yml build --pull
+      - name: Build Docker Image if not exists
+        run: |
+          docker-compose -f docker-compose.yml build --pull
 
-#       - name: Start Docker Compose Services
-#         run: docker-compose -f docker-compose.yml up -d
+      - name: Start Docker Compose Services
+        run: docker-compose -f docker-compose.yml up -d
 
-#       - name: Wait for services to be ready
-#         run: |
-#           while ! nc -z localhost 8000; do   
-#             sleep 1
-#           done
+      - name: Wait for services to be ready
+        run: |
+          while ! nc -z localhost 8000; do   
+            sleep 1
+          done
 
-#       - name: Run tests
-#         run: |
-#           pytest back/test_ai_model.py
-#           pytest back/tests_unitaires.py
+      - name: Run tests
+        run: |
+          pytest back/test_ai_model.py
+          pytest back/tests_unitaires.py
 
-#       - name: Stop Docker services
-#         run: docker-compose -f docker-compose.yml down
+      - name: Stop Docker services
+        run: docker-compose -f docker-compose.yml down

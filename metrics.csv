@@ -14,3 +14,141 @@
 2024-09-06T09:26:39.110959,def Transcription faster whisper time,2.056727409362793,53.8,1.9
 2024-09-06T09:26:54.531910,def Phi 3 response generation time,12.330775022506714,53.8,10.0
 2024-09-06T09:26:57.692489,Generate TTS audio time,2.0461530685424805,53.8,22.8
+2024-09-16T08:21:51.746162,Generate TTS audio time,1.836489200592041,28.9,8.8,4.073234558105469,6.3
+2024-09-16T08:22:12.477535,Transcription Time,4.214630126953125,51.4,3.9,7.567314147949219,6.3
+2024-09-16T08:22:19.506643,Response Generation Time,0.48958706855773926,54.3,7.9,7.922695159912109,6.3
+2024-09-16T08:22:19.514907,Response Generation Time,0.4980800151824951,54.3,0.0,7.9229278564453125,6.3
+2024-09-16T08:22:21.221886,Generate TTS audio time,0.7762978076934814,54.3,22.8,7.927085876464844,6.3
+2024-09-16T08:22:53.100679,Transcription Time,9.062105178833008,54.5,4.3,7.948631286621094,6.3
+2024-09-16T08:22:58.256854,Response Generation Time,1.4093677997589111,54.6,9.2,7.95904541015625,6.3
+2024-09-16T08:22:58.257681,Response Generation Time,1.4104032516479492,54.6,0.0,7.95904541015625,6.3
+2024-09-16T08:23:00.168537,Generate TTS audio time,1.1223399639129639,54.6,20.5,7.959072113037109,6.3
+2024-09-16T08:23:28.361685,Transcription Time,2.0926742553710938,54.6,2.0,7.970996856689453,6.3
+2024-09-16T08:23:32.676246,Response Generation Time,1.5997247695922852,54.7,10.4,7.975818634033203,6.3
+2024-09-16T08:23:32.676972,Response Generation Time,1.6006510257720947,54.7,0.0,7.975818634033203,6.3
+2024-09-16T08:23:35.232002,Error,Error: Calculated padded input size per channel: (4). Kernel size: (5). Kernel size can't be greater than actual input size,N/A,N/A,N/A,N/A
+2024-09-16T08:23:35.232002,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 497, in chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 118, in text_to_speech_audio
+    wav_data = await asyncio.to_thread(tts.tts, generated_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/asyncio/threads.py"", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/api.py"", line 543, in tts
+    wav = self.synthesizer.tts(
+          ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/utils/synthesizer.py"", line 374, in tts
+    outputs = synthesis(
+              ^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/utils/synthesis.py"", line 213, in synthesis
+    outputs = run_model_torch(
+              ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/utils/synthesis.py"", line 50, in run_model_torch
+    outputs = _func(
+              ^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/utils/_contextlib.py"", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/models/tacotron2.py"", line 248, in inference
+    encoder_outputs = self.encoder.inference(embedded_inputs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/layers/tacotron/tacotron2.py"", line 108, in inference
+    o = layer(o)
+        ^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/layers/tacotron/tacotron2.py"", line 40, in forward
+    o = self.convolution1d(x)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/conv.py"", line 308, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/conv.py"", line 304, in _conv_forward
+    return F.conv1d(input, weight, bias, self.stride,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Calculated padded input size per channel: (4). Kernel size: (5). Kernel size can't be greater than actual input size
+",N/A,N/A,N/A,N/A
+2024-09-16T08:24:13.507382,Transcription Time,2.1557400226593018,54.6,2.7,7.9589080810546875,6.3
+2024-09-16T08:24:16.674857,Response Generation Time,1.3605983257293701,54.6,9.6,7.963386535644531,6.3
+2024-09-16T08:24:16.675610,Response Generation Time,1.361586332321167,54.6,0.0,7.963386535644531,6.3
+2024-09-16T08:24:20.283264,Error,Error: Calculated padded input size per channel: (4). Kernel size: (5). Kernel size can't be greater than actual input size,N/A,N/A,N/A,N/A
+2024-09-16T08:24:20.283264,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 497, in chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 118, in text_to_speech_audio
+    wav_data = await asyncio.to_thread(tts.tts, generated_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/asyncio/threads.py"", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/api.py"", line 543, in tts
+    wav = self.synthesizer.tts(
+          ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/utils/synthesizer.py"", line 374, in tts
+    outputs = synthesis(
+              ^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/utils/synthesis.py"", line 213, in synthesis
+    outputs = run_model_torch(
+              ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/utils/synthesis.py"", line 50, in run_model_torch
+    outputs = _func(
+              ^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/utils/_contextlib.py"", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/models/tacotron2.py"", line 248, in inference
+    encoder_outputs = self.encoder.inference(embedded_inputs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/layers/tacotron/tacotron2.py"", line 108, in inference
+    o = layer(o)
+        ^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/TTS/tts/layers/tacotron/tacotron2.py"", line 40, in forward
+    o = self.convolution1d(x)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py"", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/conv.py"", line 308, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/torch/nn/modules/conv.py"", line 304, in _conv_forward
+    return F.conv1d(input, weight, bias, self.stride,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Calculated padded input size per channel: (4). Kernel size: (5). Kernel size can't be greater than actual input size
+",N/A,N/A,N/A,N/A
+2024-10-04T08:07:56.486371,Generate TTS audio time,1.871182918548584,24.4,3.8,3.3786964416503906,6.3
+2024-10-30T15:18:25.514987,Generate TTS audio time,1.3699257373809814,19.1,0.5,2.582416534423828,6.3
+2024-10-30T15:18:42.798782,Transcription Time,3.5178451538085938,41.8,3.2,6.103496551513672,6.3
+2024-10-30T15:20:24.896340,Response Generation Time,94.66982746124268,44.6,8.8,6.451526641845703,6.3
+2024-10-30T15:20:26.591750,Generate TTS audio time,0.8715548515319824,44.7,20.7,6.456398010253906,6.3
+2024-10-30T15:22:15.128311,Transcription Time,6.1952965259552,44.8,0.9,6.481861114501953,6.3
+2024-10-30T15:23:35.458679,Generate TTS audio time,0.6360297203063965,44.9,9.1,6.488941192626953,6.3
