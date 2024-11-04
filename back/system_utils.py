@@ -8,7 +8,7 @@ def check_cuda():
         if not torch.backends.cudnn.enabled:
             raise RuntimeError("cuDNN is not enabled.")
     except Exception as e:
-        print("cuDNN could not be loaded. Please check your cuDNN installation.")
+        print("cuDN could not be loaded. Please check your cuDNN installation.")
         print(e)
         return False
     return True
