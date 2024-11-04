@@ -193,3 +193,126 @@ RuntimeError: Calculated padded input size per channel: (4). Kernel size: (5). K
 2024-11-02T15:17:27.141445,Generate TTS audio time,1.5492863655090332,52.8,10.7,7.600070953369141,6.3
 2024-11-02T15:17:37.523555,Response Generation Time,66.19377517700195,52.8,9.5,7.604686737060547,6.3
 2024-11-02T15:17:40.447105,Generate TTS audio time,1.9047348499298096,52.8,19.4,7.605381011962891,6.3
+2024-11-04T09:02:27.277707,Generate TTS audio time,3.3770599365234375,40.4,6.4,5.843936920166016,4.8
+2024-11-04T09:02:27.289841,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090227.wav',N/A,N/A,N/A,N/A
+2024-11-04T09:02:27.289841,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090227.wav'
+",N/A,N/A,N/A,N/A
+2024-11-04T09:03:19.649545,Generate TTS audio time,0.6862566471099854,41.0,1.6,5.92694091796875,4.8
+2024-11-04T09:03:19.658076,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090319.wav',N/A,N/A,N/A,N/A
+2024-11-04T09:03:19.658076,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090319.wav'
+",N/A,N/A,N/A,N/A
+2024-11-04T09:03:34.827472,Generate TTS audio time,0.6382558345794678,41.3,3.9,5.972282409667969,4.8
+2024-11-04T09:03:34.836203,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090334.wav',N/A,N/A,N/A,N/A
+2024-11-04T09:03:34.836203,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090334.wav'
+",N/A,N/A,N/A,N/A
+2024-11-04T09:03:39.043997,Generate TTS audio time,0.6813840866088867,41.2,10.7,5.967327117919922,4.8
+2024-11-04T09:03:39.053304,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090339.wav',N/A,N/A,N/A,N/A
+2024-11-04T09:03:39.053304,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20241104_090339.wav'
+",N/A,N/A,N/A,N/A
+2024-11-04T09:06:42.688935,Generate TTS audio time,3.357090711593628,41.0,5.9,5.93316650390625,4.8
+2024-11-04T09:09:02.505003,Error,"Error: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.",N/A,N/A,N/A,N/A
+2024-11-04T09:09:02.505003,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 375, in chat_with_brain
+    user_input, transcription_time = await transcription_task
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/transcribe_audio.py"", line 10, in transcribe_audio
+    asr_model = WhisperModel(model_size, device=""cuda"", compute_type=""float16"")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/transcribe.py"", line 120, in __init__
+    self.model = ctranslate2.models.Whisper(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.
+",N/A,N/A,N/A,N/A
+2024-11-04T09:11:18.615838,Error,"Error: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.",N/A,N/A,N/A,N/A
+2024-11-04T09:11:18.615838,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 375, in chat_with_brain
+    user_input, transcription_time = await transcription_task
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/transcribe_audio.py"", line 10, in transcribe_audio
+    asr_model = WhisperModel(model_size, device=""cuda"", compute_type=""float16"")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/transcribe.py"", line 120, in __init__
+    self.model = ctranslate2.models.Whisper(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.
+",N/A,N/A,N/A,N/A
+2024-11-04T09:11:24.299011,Error,"Error: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.",N/A,N/A,N/A,N/A
+2024-11-04T09:11:24.299011,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 375, in chat_with_brain
+    user_input, transcription_time = await transcription_task
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/transcribe_audio.py"", line 10, in transcribe_audio
+    asr_model = WhisperModel(model_size, device=""cuda"", compute_type=""float16"")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/transcribe.py"", line 120, in __init__
+    self.model = ctranslate2.models.Whisper(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.
+",N/A,N/A,N/A,N/A
+2024-11-04T09:11:31.729639,Generate TTS audio time,0.6535563468933105,41.3,7.4,5.973392486572266,5.1
+2024-11-04T09:14:02.122396,Generate TTS audio time,3.102874755859375,40.7,8.0,5.891735076904297,5.1
+2024-11-04T09:14:29.407558,Error,"Error: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.",N/A,N/A,N/A,N/A
+2024-11-04T09:14:29.407558,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 375, in chat_with_brain
+    user_input, transcription_time = await transcription_task
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/transcribe_audio.py"", line 10, in transcribe_audio
+    asr_model = WhisperModel(model_size, device=""cuda"", compute_type=""float16"")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/transcribe.py"", line 120, in __init__
+    self.model = ctranslate2.models.Whisper(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Requested float16 compute type, but the target device or backend do not support efficient float16 computation.
+",N/A,N/A,N/A,N/A

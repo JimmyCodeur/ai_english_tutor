@@ -194,6 +194,7 @@
 
                 const data = await response.json();
 
+                // Vérifiez si les données nécessaires sont définies
                 if (!data.generated_response || !data.audio_base64) {
                     throw new Error(`Missing expected data in response.`);
                 }
@@ -208,7 +209,9 @@
                     audioElement.style.display = "block";
                     audioElement.className = 'audio-player hidden-audio';
 
+                    // Lecture automatique dès que la source est définie
                     audioElement.play().then(() => {
+                        // Actions supplémentaires lors de la lecture
                         document.getElementById('avatarGif').src = "../static/assets/images/ai/brain.gif";
                     }).catch((error) => {
                         console.error('Error playing audio:', error);
@@ -365,6 +368,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // Ajoutez cette fonction pour vérifier la réponse de l'IA et arrêter la session si nécessaire
         function checkAndStopSession(generated_response) {
             if (generated_response === "Thanks for the exchange, I have to go soon! Bye.") {
                 stopChatSession();
@@ -376,12 +380,13 @@
 
             if (Array.isArray(message)) {
                 console.warn('The message is a tuple, extracting the first element:', message);
-                message = message[0];
+                message = message[0]; // Utiliser le premier élément du tableau, qui est le texte
             }
 
+            // Ensure message is a string before calling trim
             if (typeof message !== 'string') {
                 console.error('The message is not a string:', message);
-                message = ''; 
+                message = ''; // Default to an empty string if it's not a valid string
             }
 
             if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
@@ -393,7 +398,7 @@
                 return;
             }
 
-            if (!message) return; 
+            if (!message) return; // If the message is empty, don't proceed
 
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container mb-2';
@@ -430,9 +435,10 @@
                     audioElement.play();
                 });
 
-                audioElement.onplay = () => changeAvatarToGif(); 
-                audioElement.onpause = () => changeAvatarToPng(); 
-                audioElement.onended = () => changeAvatarToPng(); 
+                // Add event listeners to change avatar
+                audioElement.onplay = () => changeAvatarToGif(); // Change avatar to GIF when audio starts
+                audioElement.onpause = () => changeAvatarToPng(); // Change avatar to PNG when audio pauses
+                audioElement.onended = () => changeAvatarToPng(); // Change avatar to PNG when audio ends
 
                 messageContainer.appendChild(audioElement);
 
@@ -452,6 +458,7 @@
                 translateIcon.addEventListener('click', () => {
                     const message = translateIcon.getAttribute('data-message');
                     translateMessage(message);
+                    messageContainer.style.color = 'black'; // Change text color on translate click
                     translateIcon.remove();
                 });
             }
@@ -476,10 +483,12 @@
         function translateMessage(message) {
             const translateUrl = '/translate';
 
+            // Corps de la requête à envoyer à FastAPI
             const requestBody = {
                 message: message
             };
 
+            // Options de la requête fetch
             const fetchOptions = {
                 method: 'POST',
                 headers: {
@@ -488,6 +497,7 @@
                 body: JSON.stringify(requestBody)
             };
 
+            // Envoyer la requête à FastAPI pour la traduction
             fetch(translateUrl, fetchOptions)
                 .then(response => {
                     if (response.ok) {
@@ -496,17 +506,20 @@
                     throw new Error('Erreur lors de la traduction');
                 })
                 .then(data => {
+                    // Réussite de la requête, afficher la traduction
                     const translatedMessage = data.translated_message;
                     console.log(`Message traduit: "${translatedMessage}"`);
                     
+                    // Trouver le dernier message affiché dans le chat
                     const messageContainer = document.querySelector('.message-container:last-child');
 
+                    // Mettre à jour l'interface utilisateur avec le message traduit
                     if (messageContainer) {
                         displayMessage(`Traduction : ${translatedMessage}`, 'bot');
                         
                         const translateIcon = messageContainer.querySelector('.translate-icon');
                         if (translateIcon) {
-                            translateIcon.remove();  
+                            translateIcon.remove();  // Retirer l'icône de traduction du message traduit
                         }
                     } else {
                         console.error('Erreur lors de la traduction: Aucun messageContainer trouvé.');
@@ -514,6 +527,7 @@
                 })
                 .catch(error => {
                     console.error('Erreur lors de la traduction:', error);
+                    // Gérer les erreurs ici, par exemple afficher un message d'erreur à l'utilisateur
                 });
         }
 
@@ -585,12 +599,12 @@
        
         function changeAvatarToGif() {
             const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.gif"; 
+            avatarImg.src = "../static/assets/images/ai/brain.gif"; // Assurez-vous que ce chemin est correct
         }
 
         function changeAvatarToPng() {
             const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.png"; 
+            avatarImg.src = "../static/assets/images/ai/brain.png"; // Assurez-vous que ce chemin est correct
         }
         
         function toggleTextArea() {
@@ -640,8 +654,8 @@
     
 
                 window.addEventListener('beforeunload', async function(event) {
-                event.preventDefault(); 
-                await stopChatSession(); 
+                event.preventDefault(); // Annuler l'événement pour éviter le déchargement immédiat
+                await stopChatSession(); // Appel de la fonction pour arrêter la session de chat
             });
 
             async function stopChatSession() {
@@ -664,8 +678,9 @@
                     }
 
                     const data = await response.json();
-                    console.log(data); 
+                    console.log(data); // Gérer le message de succès ou d'erreur selon les besoins
 
+                    // Rediriger vers la page d'analyse après l'arrêt du chat
                     if (data.message === "Chat session ended successfully.") {
                         const conversationId = data.conversation_id;
                         window.location.href = `analysis.html?conversation_id=${conversationId}`;
@@ -673,8 +688,13 @@
 
                 } catch (err) {
                     console.error('Error stopping chat session: ', err);
+                    // Gérer l'erreur : afficher un message d'erreur ou logique de réessai
                 }
             }
+
+
+            
+
 
     </script>
 </body>
