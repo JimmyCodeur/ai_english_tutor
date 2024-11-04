@@ -16,6 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Check disk usage before build
+        run: df -h
+
+      - name: Clean up Docker system
+        run: |
+          docker system prune -af
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -31,8 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir pytest pytest-asyncio
 
       - name: Download NLTK Data
         run: |
@@ -58,3 +65,6 @@ jobs:
 
       - name: Stop Docker services
         run: docker-compose -f docker-compose.yml down
+
+      - name: Check disk usage after build
+        run: df -h

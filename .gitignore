@@ -3,7 +3,7 @@ __pycache__/
 *.pyo
 .pytest_cache/
 .conda/
-.env
+# .env
 .github/
 *.mp3
 *.wav
