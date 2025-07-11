@@ -1,372 +1,589 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head> 
-    <title>TalkAI</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TalkAI tutor">
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkAI - Configuration</title>
+    <meta name="description" content="TalkAI - Configuration de votre compte">
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-    <link rel="stylesheet" href="../static/assets/css/icons.css">
-    <link rel="stylesheet" href="../static/assets/css/uikit.css">
-    <link rel="stylesheet" href="../static/assets/css/style.css">
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">   
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration Tailwind personnalisée -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f4ff',
+                            100: '#e0eaff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#667eea',
+                            600: '#5a67d8',
+                            700: '#4c51bf',
+                            800: '#434190',
+                            900: '#3c366b',
+                        },
+                        secondary: {
+                            500: '#764ba2',
+                            600: '#6b46c1',
+                            700: '#553c9a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f8fafc;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-backdrop {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .mobile-menu-open {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu-closed {
+            transform: translateX(-100%);
+        }
+    </style>
 </head>
-
-<body>
-    <div id="wrapper" class="is-verticle">
-        <header uk-sticky> 
-            <div class="header_inner">
-                <div class="left-side">
-                        <div id="logo">
-                        <a href="home.html">
-                            <img src="../static/assets/images/logo.png" alt="">
-                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
-                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+<body class="min-h-screen bg-gray-50">
+    
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 z-40 sidebar-backdrop hidden lg:hidden"></div>
+    
+    <!-- Container principal -->
+    <div class="min-h-screen">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-50 glass-effect border-b border-gray-200/20 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo et menu mobile -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Bouton menu mobile -->
+                        <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Logo -->
+                        <a href="home.html" class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <span class="text-2xl font-bold text-white">T</span>
+                            </div>
+                            <span class="text-gray-900 font-bold text-xl hidden sm:block">TalkAI</span>
                         </a>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
-                    </div>
-                    </div>
-                <div class="right-side">                        
-                    <div> 
-                        <a href="users-profile.html" class="flex items-center space-x-2">
-                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
+                    
+                    <!-- Navigation desktop -->
+                    <nav class="hidden lg:flex items-center space-x-8">
+                        <a href="home.html" class="text-gray-600 hover:text-primary-600 transition-colors font-medium">
+                            Cours
                         </a>
-                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
-                            <ul>   
-                                <li>
-                                    <a href="users-profile.html" class="user">
-                                        <div class="user_avatar">
-                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
-                                        </div>
-                                        <div class="user_name">
-                                            <div id="profile-name" class="info-name"></div>
-                                            <span id="profile-email" class="info-email"></span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
-                                         Mon Compte 
-                                    </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
-                                         Historique 
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="">
-                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
-                                        Configuration  
-                                    </a>
-                                </li>
-                                <li> 
-                                    <hr>
-                                </li>
-                                <li> 
-                                    <a href="#" id="logout-link" onclick="logout()">
-                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
-                                        Se déconnecter 
-                                    </a>
-                                </li>
-                            </ul>
-                        </div> 
-                    </div>    
+                        <a href="analysis.html" class="text-gray-600 hover:text-primary-600 transition-colors font-medium">
+                            Mes rapports
+                        </a>
+                        <a href="profile-setting.html" class="text-primary-600 font-semibold border-b-2 border-primary-500 pb-1">
+                            Configuration
+                        </a>
+                    </nav>
+                    
+                    <!-- Profil utilisateur -->
+                    <div class="relative">
+                        <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors">
+                            <img src="../static/assets/images/avatars/placeholder.png" 
+                                 class="w-8 h-8 rounded-full ring-2 ring-primary-500" alt="Avatar">
+                            <div class="hidden sm:block text-left">
+                                <div id="profile-name-header" class="text-sm font-semibold text-gray-900"></div>
+                                <div id="profile-email-header" class="text-xs text-gray-500"></div>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Menu profil -->
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl border border-gray-200/20 py-2 z-50">
+                            <div class="px-4 py-3 border-b border-gray-200/20">
+                                <div class="flex items-center space-x-3">
+                                    <img src="../static/assets/images/avatars/avatar-2.jpg" 
+                                         class="w-12 h-12 rounded-full" alt="Avatar">
+                                    <div>
+                                        <div id="profile-name" class="font-semibold text-gray-900 info-name"></div>
+                                        <div id="profile-email" class="text-sm text-gray-500 info-email"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="py-2">
+                                <a href="users-profile.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Mon Compte
+                                </a>
+                                <a href="users-profile.html#conversations-container" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Historique
+                                </a>
+                                <a href="profile-setting.html" class="flex items-center px-4 py-2 text-primary-600 bg-primary-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    Configuration
+                                </a>
+                                <hr class="my-2 border-gray-200/20">
+                                <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Se déconnecter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
-
-        <div class="main_content"> 
-            <div class="container">
-                <h3 class="text-2xl font-medium mb-5"> Configuration Compte </h3>
-                <nav class="cd-secondary-nav border-b md:m-0 -mx-4 nav-small">
-                    <ul>
-                        <li class="active"><a href="#" class="lg:px-2">Générale </a></li>
-                        <!-- <li><a href="#" class="lg:px-2"> Profile </a></li>
-                        <li><a href="#" class="lg:px-2"> Privacy </a></li>
-                        <li><a href="#" class="lg:px-2"> Notification </a></li>
-                        <li><a href="#" class="lg:px-2"> Social links </a></li>
-                        <li><a href="#" class="lg:px-2"> Billing </a></li>
-                        <li><a href="#" class="lg:px-2"> Security </a></li> -->
-                    </ul>
+        
+        <!-- Sidebar mobile -->
+        <div id="mobile-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 mobile-menu-closed transition-transform duration-300 lg:hidden">
+            <div class="h-full glass-effect border-r border-gray-200/20">
+                <div class="p-6">
+                    <nav class="space-y-3">
+                        <a href="home.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-xl transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Accueil
+                        </a>
+                        <a href="analysis.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-xl transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Mes rapports
+                        </a>
+                        <a href="profile-setting.html" class="flex items-center space-x-3 px-4 py-3 text-primary-600 bg-primary-50 rounded-xl font-semibold">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Configuration
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- En-tête -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Configuration du compte</h1>
+                <p class="text-gray-600">Gérez vos informations personnelles et préférences</p>
+            </div>
+            
+            <!-- Navigation des onglets -->
+            <div class="border-b border-gray-200 mb-8">
+                <nav class="flex space-x-8">
+                    <button class="tab-btn active py-2 px-1 border-b-2 border-primary-500 font-medium text-primary-600 text-sm">
+                        Général
+                    </button>
                 </nav>
-                
-                <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
-                    <div>
-                        <div uk-sticky="offset:100;bottom:true;media:992">
-                            <h3 class="text-lg mb-2 font-semibold"> Information principale</h3>
-                            <p> Toutes les informations générale de votre compte ce trouve ici</p>
+            </div>
+            
+            <!-- Section Information principale -->
+            <section class="mb-12">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Description -->
+                    <div class="lg:col-span-1">
+                        <div class="lg:sticky lg:top-24">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Information principale</h3>
+                            <p class="text-gray-600">Toutes les informations générales de votre compte se trouvent ici</p>
                         </div>
                     </div>
-                    <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
-
-                        <div class="grid grid-cols-2 gap-3 lg:p-6 p-4">
-                            <label for="system_info" class="font-medium">Photo</label>
-                            <div class="col-span-2 flex py-2 space-x-5">
-                                <img src="../static/assets/images/avatars/placeholder.png" alt="" class="h-12 rounded-full w-12">
-                                <a href="#" class="border font-medium px-3 py-1.5 rounded-md self-center shadow-sm text-center text-sm">Change</a>
-                            </div>
-                            <div>
-                                <label for="first-name"> Nom de compte<span class="text-red-600 ">*</span></label>
-                                <input type="text" placeholder="" id="first-name" class="shadow-none with-border info-name">
-                            </div>                           
-                            <div class="col-span-2">
-                                <label for="email"> Email <span class="text-red-600">*</span></label>
-                                <input type="text" placeholder="" id="email" class="shadow-none with-border info-email">
-                            </div>
-                            <div class="col-span-2">
-                                <label for="date"> Date de naissance <span class="text-red-600">*</span></label>
-                                <input type="text" placeholder="" id="email" class="shadow-none with-border info-date-naissance">
-                            </div>
-                            <div class="col-span-2">
-                                <label for="Location"> Pays<span class="text-red-600"></span></label>
-                                <input type="text" placeholder="" id="contry" class="shadow-none with-border info-country">
-                            </div>
-                            <div class="col-span-2">
-                                <label for="about">A Propos</label>  
-                                <textarea id="about" name="about" rows="3"  class="with-border info-about"></textarea>
-                            </div> 
-                            <button type="submit" class="bg-blue-600 btn btn-info font-semibold inline-block px-5 py-2 rounded-md submit text-white">Modifier</button>
-                        </div>                         
+                    
+                    <!-- Formulaire -->
+                    <div class="lg:col-span-2">
+                        <div class="card-hover bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                            <form class="space-y-6">
+                                <!-- Photo de profil -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-4">Photo de profil</label>
+                                    <div class="flex items-center space-x-6">
+                                        <img src="../static/assets/images/avatars/placeholder.png" 
+                                             alt="Avatar" class="w-20 h-20 rounded-full border-4 border-gray-100">
+                                        <button type="button" 
+                                                class="px-6 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                            Changer
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nom -->
+                                <div>
+                                    <label for="first-name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Nom de compte <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           id="first-name" 
+                                           class="info-name w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                </div>
+                                
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Email <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" 
+                                           id="email" 
+                                           class="info-email w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                </div>
+                                
+                                <!-- Date de naissance -->
+                                <div>
+                                    <label for="date" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Date de naissance <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" 
+                                           id="date" 
+                                           class="info-date-naissance w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                </div>
+                                
+                                <!-- Pays -->
+                                <div>
+                                    <label for="country" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Pays
+                                    </label>
+                                    <input type="text" 
+                                           id="country" 
+                                           class="info-country w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                </div>
+                                
+                                <!-- À propos -->
+                                <div>
+                                    <label for="about" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        À propos
+                                    </label>
+                                    <textarea id="about" 
+                                              rows="4"
+                                              class="info-about w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300 resize-none"
+                                              placeholder="Parlez-nous de vous..."></textarea>
+                                </div>
+                                
+                                <!-- Bouton -->
+                                <button type="submit" 
+                                        class="btn-primary text-white font-semibold px-8 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-500/50">
+                                    Modifier les informations
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-
-                <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
-                    <div>
-                        <div uk-sticky="offset:100;bottom:true;media:992">
-                            <h3 class="text-lg mb-2 font-semibold"> Changer Mot de passe</h3>
-                            <p> Modifications de mot de passe</p>
+            </section>
+            
+            <!-- Section Mot de passe -->
+            <section class="mb-12">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Description -->
+                    <div class="lg:col-span-1">
+                        <div class="lg:sticky lg:top-24">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Changer le mot de passe</h3>
+                            <p class="text-gray-600">Modifiez votre mot de passe pour sécuriser votre compte</p>
                         </div>
                     </div>
-                    <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
-                        
-                        <div class="lg:p-6 p-4 space-y-4">
-                            <div>
-                                <label for="current_password"> Mot de passe actuel<span class="text-red-600">*</span></label>
-                                <input type="text" placeholder="" id="current_password" class="shadow-none with-border">
-                            </div>
-                            <div>
-                                <label for="new_password"> Nouveau mot de passe<span class="text-red-600">*</span></label>
-                                <input type="text" placeholder="" id="new_password" class="shadow-none with-border">
-                            </div>
-                            <div>
-                                <label for="confirm_new_password"> Confirmer nouveau mot de passe<span class="text-red-600">*</span></label>
-                                <input type="text" placeholder="" id="confirm_new_password" class="shadow-none with-border">
-                            </div>
-                            <button type="submit" class="bg-blue-600 btn btn-info font-semibold inline-block px-5 py-2 rounded-md submit text-white">Modifier</button>                            
+                    
+                    <!-- Formulaire -->
+                    <div class="lg:col-span-2">
+                        <div class="card-hover bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                            <form class="space-y-6">
+                                <!-- Mot de passe actuel -->
+                                <div>
+                                    <label for="current_password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Mot de passe actuel <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" 
+                                               id="current_password" 
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                        <button type="button" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nouveau mot de passe -->
+                                <div>
+                                    <label for="new_password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Nouveau mot de passe <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" 
+                                               id="new_password" 
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                        <button type="button" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <!-- Indicateur de force du mot de passe -->
+                                    <div class="mt-2">
+                                        <div class="flex space-x-1">
+                                            <div class="h-2 w-1/4 bg-gray-200 rounded"></div>
+                                            <div class="h-2 w-1/4 bg-gray-200 rounded"></div>
+                                            <div class="h-2 w-1/4 bg-gray-200 rounded"></div>
+                                            <div class="h-2 w-1/4 bg-gray-200 rounded"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">Le mot de passe doit contenir au moins 8 caractères</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Confirmer le mot de passe -->
+                                <div>
+                                    <label for="confirm_new_password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Confirmer le nouveau mot de passe <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" 
+                                               id="confirm_new_password" 
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none input-focus transition-all duration-300">
+                                        <button type="button" 
+                                                class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bouton -->
+                                <button type="submit" 
+                                        class="btn-primary text-white font-semibold px-8 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-500/50">
+                                    Modifier le mot de passe
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
-
-                <!-- Social Links-->
-                <!-- <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
-                    <div>
-                        <div uk-sticky="offset:100;bottom:true;media:992">
-                            <h3 class="text-lg mb-2 font-semibold"> Social Links</h3>
-                            <p> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
-                        
-                        <div class="lg:p-6 p-4 space-y-4">
-                            <div>
-                                <label for="facebook_link">Facebook link</label>
-                                <input type="text" placeholder="" id="facebook_link" class="shadow-none with-border">
-                            </div>
-                            <div>
-                                <label for="twitter_link"> Twitter link </label>
-                                <input type="text" placeholder="" id="twitter_link" class="shadow-none with-border">
-                            </div>
-                            <div>
-                                <label for="linkedin_link"> Linkedin link </label>
-                                <input type="text" placeholder="" id="linkedin_link" class="shadow-none with-border">
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
-                <!-- notification-->
-                <!-- <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
-                    <div>
-                        <div uk-sticky="offset:100;bottom:true;media:992">
-                            <h3 class="text-lg mb-2 font-semibold"> Notifications </h3>
-                            <p> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
-                        
-                        <div class="lg:p-6 p-4 space-y-6">
-                            <div>
-                                <h4 class="text-base mb-1 font-semibold">By Email</h4>
-                                <p> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p>
-
-                                <div class="space-y-3 mt-5">
-
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="chekcbox1" checked>
-                                        <label for="chekcbox1" class="ml-4">
-                                            <span class="checkbox-icon mt-1 -ml-4"></span> <span class="font-semibold text-base"> Comments </span>
-                                            <p class="text-gray-400 text-sm mt-1.5"> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p>
-                                        </label> 
-                                    </div>
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="chekcbox2">
-                                        <label for="chekcbox2" class="ml-4">
-                                            <span class="checkbox-icon mt-1 -ml-4"></span> <span class="font-semibold text-base"> Review </span> 
-                                            <p  class="text-gray-400 text-sm mt-1.5"> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p> 
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="chekcbox3">
-                                        <label for="chekcbox3" class="ml-4">
-                                            <span class="checkbox-icon mt-1 -ml-4"></span> <span class="font-semibold text-base"> Comments </span> 
-                                            <p  class="text-gray-400 text-sm mt-1.5"> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p> 
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="chekcbox4" checked>
-                                        <label for="chekcbox4" class="ml-4">
-                                            <span class="checkbox-icon mt-1 -ml-4"></span> <span class="font-semibold text-base"> Comments </span> 
-                                            <p  class="text-gray-400 text-sm mt-1.5"> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p> 
-                                        </label>
-                                    </div>
-                                </div>
-                                 
-                            </div> 
-                            <hr class="">
-                            <div>
-                                <h4 class="text-base mb-1 font-semibold">Push Notifications</h4>
-                                <p> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit</p>
-
-                                <div class="space-y-1 mt-5">
-
-                                    <div class="radio">
-                                        <input id="radio-1" name="radio" type="radio" checked>
-                                        <label for="radio-1"><span class="radio-label"></span> Everything</label>
-                                    </div>
-                                    <br>
-                                    <div class="radio">
-                                        <input id="radio-2" name="radio" type="radio">
-                                        <label for="radio-2"><span class="radio-label"></span> important Emails</label>
-                                    </div>
-                                    <br>
-                                    <div class="radio">
-                                        <input id="radio-3" name="radio" type="radio">
-                                        <label for="radio-3"><span class="radio-label"></span> Not Anymore</label>
-                                    </div>
-
-
-                                </div>
-
-                            </div>
-
-                        </div>
-                    </div>
-                </div> -->
-
-                <!-- Download-->
-                <!-- <div class="grid lg:grid-cols-3 gap-8 md:mt-12">
-                    <div>
-                        <div uk-sticky="offset:100;bottom:true;media:992">
-                            <h3 class="text-lg mb-2 font-semibold"> Downloads </h3>
-                            <p> Lorem ipsum dolor sit amet nibh consectetuer adipiscing elit </p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-md lg:shadow-md shadow col-span-2">
-                        
-                        <div class="lg:p-6 p-4 space-y-6">
-
-                            <div>
-                                <label for="video_quality" class="text-sm"> Video download quality </label>
-                                <select id="video_quality" name="video_quality" class="shadow-none selectpicker with-border ">
-                                    <option value="auto">auto</option> 
-                                    <option value="">360p ( smallest file size )</option> 
-                                    <option value="480p">480p</option> 
-                                    <option value="720p">720p</option> 
-                                    <option value="1080p" selected> 1080p ( best video quality)</option> 
-                                </select>
-
-                            </div> 
-                            <div class="flex justify-between items-center space-x-2">
-                                <div>
-                                    <h4 class="font-semibold mb-2"> Download over Wi-Fi only</h4>
-                                    <div class="text-sm"> Reduce data usage and download only Wi-Fi.  </div>
-                                </div>
-                                <div class="switches-list -mt-8 is-large">
-                                    <div class="switch-container">
-                                        <label class="switch"><input type="checkbox"><span class="switch-button"></span> </label>
-                                    </div>
-                                </div>
-                            </div>   
-                            <div class="flex justify-between items-center space-x-2">
-                                <div>
-                                    <h4 class="font-semibold mb-2">Ask before Downloading large lecture </h4>
-                                    <div class="text-sm"> downloading large lecture resource </div>
-                                </div>
-                                <div class="switches-list -mt-8 is-large">
-                                    <div class="switch-container">
-                                        <label class="switch"><input type="checkbox"><span class="switch-button"></span> </label>
-                                    </div>
-                                </div>
-                            </div>  
-                        </div>
-
-                    </div>
-                </div> -->
-            </div>          
-        </div>
-               
-            <div class="lg:mt-28 mt-10 mb-7 px-12 border-t pt-7">
-                <div class="flex flex-col items-center justify-between lg:flex-row max-w-6xl mx-auto lg:space-y-0 space-y-3">
-                    <p class="capitalize font-medium"> © copyright by TalkAI</p>
-                    <div class="lg:flex space-x-4 text-gray-700 capitalize hidden">
-                        <a href="#">À Propos |</a>
-                        <a href="#"> Aide |</a>
-                        <a href="#"> Condiditon |</a>
-                        <a href="#"> Confidentialité</a>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="border-t border-gray-200 bg-white mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0">
+                    <!-- Copyright -->
+                    <p class="text-gray-600 font-medium">© Copyright by TalkAI</p>
+                    
+                    <!-- Liens -->
+                    <div class="flex space-x-6 text-gray-600">
+                        <a href="#" class="hover:text-primary-600 transition-colors">À Propos</a>
+                        <a href="#" class="hover:text-primary-600 transition-colors">Aide</a>
+                        <a href="#" class="hover:text-primary-600 transition-colors">Conditions</a>
+                        <a href="#" class="hover:text-primary-600 transition-colors">Confidentialité</a>
                     </div>
                 </div>
             </div>
-        </div>
- 
-         <div class="sidebar">
-            <div class="sidebar_inner" data-simplebar>
-                <ul class="border-transparent">
-                    <li><a href="home.html">
-                            <ion-icon name="home-outline" class="side-icon"></ion-icon>
-                            <span> Accueil </span>
-                        </a>
-                    </li> 
-                    <li><a href="messages.html">
-                            <ion-icon name="chatbox-ellipses-outline" class="side-icon"></ion-icon>
-                            <span>S'entrainer</span>
-                        </a>
-                    </li>
-                    <li><a href="billing-history.html">
-                            <ion-icon name="reader-outline" class="side-icon"></ion-icon>
-                            <span> Mes rapports</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="side_overly" uk-toggle="target: #wrapper ; cls: is-collapse is-active"></div>
-        </div>       
+        </footer>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="../static/assets/js/uikit.js"></script>
-    <script src="../static/assets/js/tippy.all.min.js"></script>
-    <script src="../static/assets/js/simplebar.js"></script>
-    <script src="../static/assets/js/custom.js"></script>
-    <script src="../static/assets/js/bootstrap-select.min.js"></script>
-    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule="" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
+    
+    <!-- Scripts -->
     <script src="../static/assets/js/logout.js"></script>
     <script src="../static/assets/js/info_users.js" defer></script>
- 
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('mobile-menu-open');
+            mobileSidebar.classList.toggle('mobile-menu-closed');
+            mobileOverlay.classList.toggle('hidden');
+        }
+        
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        mobileOverlay.addEventListener('click', toggleMobileMenu);
+        
+        // Profile menu toggle
+        const profileBtn = document.getElementById('profile-btn');
+        const profileMenu = document.getElementById('profile-menu');
+        
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', () => {
+            profileMenu.classList.add('hidden');
+        });
+        
+        profileMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                
+                // Change icon
+                this.innerHTML = type === 'password' ? 
+                    '<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>' :
+                    '<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path></svg>';
+            });
+        });
+        
+        // Password strength indicator
+        document.getElementById('new_password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBars = this.parentElement.nextElementSibling.querySelector('div').children;
+            const strengthText = this.parentElement.nextElementSibling.querySelector('p');
+            
+            let strength = 0;
+            
+            // Check length
+            if (password.length >= 8) strength++;
+            
+            // Check for uppercase
+            if (/[A-Z]/.test(password)) strength++;
+            
+            // Check for lowercase
+            if (/[a-z]/.test(password)) strength++;
+            
+            // Check for numbers
+            if (/\d/.test(password)) strength++;
+            
+            // Update bars
+            for (let i = 0; i < strengthBars.length; i++) {
+                if (i < strength) {
+                    strengthBars[i].classList.remove('bg-gray-200');
+                    if (strength <= 1) {
+                        strengthBars[i].classList.add('bg-red-400');
+                    } else if (strength <= 2) {
+                        strengthBars[i].classList.add('bg-yellow-400');
+                    } else if (strength <= 3) {
+                        strengthBars[i].classList.add('bg-blue-400');
+                    } else {
+                        strengthBars[i].classList.add('bg-green-400');
+                    }
+                } else {
+                    strengthBars[i].className = 'h-2 w-1/4 bg-gray-200 rounded';
+                }
+            }
+            
+            // Update text
+            const messages = [
+                'Très faible',
+                'Faible',
+                'Moyen',
+                'Fort',
+                'Très fort'
+            ];
+            
+            if (password.length > 0) {
+                strengthText.textContent = `Force: ${messages[strength - 1] || 'Très faible'}`;
+            } else {
+                strengthText.textContent = 'Le mot de passe doit contenir au moins 8 caractères';
+            }
+        });
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Add your form submission logic here
+            console.log('Form submitted');
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50';
+            successMsg.textContent = 'Informations mises à jour avec succès!';
+            document.body.appendChild(successMsg);
+            
+            setTimeout(() => {
+                successMsg.remove();
+            }, 3000);
+        });
+    </script>
 </body>
 </html>

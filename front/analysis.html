@@ -1,139 +1,418 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Report</title>
-    <link rel="stylesheet" href="../static/assets/css/style.css">
-    <link rel="stylesheet" href="../static/assets/css/uikit.css">
-    <link rel="stylesheet" href="../static/assets/css/icons.css">
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
+    <title>TalkAI - Analyse & Rapports</title>
+    <meta name="description" content="TalkAI - Analyse de vos sessions d'apprentissage">
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Configuration Tailwind personnalisée -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f4ff',
+                            100: '#e0eaff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#667eea',
+                            600: '#5a67d8',
+                            700: '#4c51bf',
+                            800: '#434190',
+                            900: '#3c366b',
+                        },
+                        secondary: {
+                            500: '#764ba2',
+                            600: '#6b46c1',
+                            700: '#553c9a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-backdrop {
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .mobile-menu-open {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu-closed {
+            transform: translateX(-100%);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .session-item {
+            transition: all 0.3s ease;
+        }
+        
+        .session-item:hover {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            transform: translateX(8px);
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-100">
-    <div id="wrapper" class="is-verticle">
-        <!-- Barre de navigation -->
-        <header uk-sticky>
-            <div class="header_inner">
-                <div class="left-side">
-                    <div id="logo" class="logo-container">
-                        <a href="home.html">
-                            <img src="../static/assets/images/logo.png" class="logo-image" alt="">
-                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
-                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
+<body class="min-h-screen bg-gray-50">
+    
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 z-40 sidebar-backdrop hidden lg:hidden"></div>
+    
+    <!-- Container principal -->
+    <div class="min-h-screen">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-50 glass-effect border-b border-gray-200/20 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo et menu mobile -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Bouton menu mobile -->
+                        <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Logo -->
+                        <a href="home.html" class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <span class="text-2xl font-bold text-white">T</span>
+                            </div>
+                            <span class="text-gray-900 font-bold text-xl hidden sm:block">TalkAI</span>
                         </a>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"></div>
-                </div>
-                <div class="right-side">
-                    <div>
-                        <a href="" class="flex items-center space-x-2">
-                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt="">
+                    
+                    <!-- Navigation desktop -->
+                    <nav class="hidden lg:flex items-center space-x-8">
+                        <a href="home.html" class="text-gray-600 hover:text-primary-600 transition-colors font-medium">
+                            Cours
                         </a>
-                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
-                            <ul>
-                                <li>
-                                    <a href="" class="user">
-                                        <div class="user_avatar">
-                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
-                                        </div>
-                                        <div class="user_name">
-                                            <div id="profile-name" class="info-name"></div>
-                                            <span id="profile-email" class="info-email"></span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="users-profile.html">
-                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon> Mon Compte
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="users-profile.html">
-                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon> Historique
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="profile-setting.html">
-                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon> Configuration
-                                    </a>
-                                </li>
-                                <li><hr></li>
-                                <li>
-                                    <a href="#" id="logout-link" onclick="logout()">
-                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon> Se déconnecter
-                                    </a>
-                                </li>
-                            </ul>
+                        <a href="analysis.html" class="text-primary-600 font-semibold border-b-2 border-primary-500 pb-1">
+                            Rapports
+                        </a>
+                    </nav>
+                    
+                    <!-- Profil utilisateur -->
+                    <div class="relative">
+                        <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors">
+                            <img src="../static/assets/images/avatars/placeholder.png" 
+                                 class="w-8 h-8 rounded-full ring-2 ring-primary-500" alt="Avatar">
+                            <div class="hidden sm:block text-left">
+                                <div id="profile-name" class="text-sm font-semibold text-gray-900"></div>
+                                <div id="profile-email" class="text-xs text-gray-500"></div>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Menu profil -->
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl border border-gray-200/20 py-2 z-50">
+                            <div class="px-4 py-3 border-b border-gray-200/20">
+                                <div class="flex items-center space-x-3">
+                                    <img src="../static/assets/images/avatars/avatar-2.jpg" 
+                                         class="w-12 h-12 rounded-full" alt="Avatar">
+                                    <div>
+                                        <div id="profile-name-menu" class="font-semibold text-gray-900"></div>
+                                        <div id="profile-email-menu" class="text-sm text-gray-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="py-2">
+                                <a href="users-profile.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Mon Compte
+                                </a>
+                                <a href="users-profile.html#conversations-container" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Historique
+                                </a>
+                                <a href="profile-setting.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    Configuration
+                                </a>
+                                <hr class="my-2 border-gray-200/20">
+                                <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Se déconnecter
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
-
-        <!-- Section avec l'image agrandie de l'avatar -->
-        <main class="flex-1 flex flex-col items-center justify-center">
-            <div class="w-full flex justify-center my-8">
-                <h1 class="text-2xl font-bold">Rapports</h1>
+        
+        <!-- Sidebar mobile -->
+        <div id="mobile-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 mobile-menu-closed transition-transform duration-300 lg:hidden">
+            <div class="h-full glass-effect border-r border-gray-200/20">
+                <div class="p-6">
+                    <nav class="space-y-3">
+                        <a href="home.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-xl transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            Cours
+                        </a>
+                        <a href="analysis.html" class="flex items-center space-x-3 px-4 py-3 text-primary-600 bg-primary-50 rounded-xl font-semibold">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Rapports
+                        </a>
+                    </nav>
+                </div>
             </div>
-            <div id="analysisContainer" class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg hidden">
-                <h1 class="text-2xl font-bold">Rapport de Fin de Session</h1>
-                <!-- Les résultats de l'analyse seront affichés ici -->
+        </div>
+        
+        <!-- Contenu principal -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- En-tête -->
+            <div class="text-center mb-12 animate-fade-in">
+                <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full text-sm font-semibold mb-6">
+                    📊 Analyse de Performance
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                    Rapports & Analyses
+                </h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Suivez vos progrès et analysez vos performances d'apprentissage
+                </p>
             </div>
-            <div class="w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg ">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Sessions de conversation</h2>
-                    <div>
-                        <label for="sortOrder" class="mr-2">Trier par:</label>
-                        <select id="sortOrder" class="bg-gray-100 border border-gray-300 rounded-lg p-2" onchange="loadSessionReports()">
-                            <option value="desc">Plus récent</option>
-                            <option value="asc">Plus ancien</option>
-                        </select>
+            
+            <!-- Container de l'analyse détaillée -->
+            <div id="analysisContainer" class="hidden mb-12 animate-slide-up">
+                <!-- Le contenu sera généré dynamiquement -->
+            </div>
+            
+            <!-- Section des sessions -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 animate-slide-up">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Sessions de conversation</h2>
+                            <p class="text-gray-600">Historique complet de vos sessions d'apprentissage</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label for="sortOrder" class="text-sm font-medium text-gray-700">Trier par :</label>
+                            <select id="sortOrder" 
+                                    class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" 
+                                    onchange="loadSessionReports()">
+                                <option value="desc">Plus récent</option>
+                                <option value="asc">Plus ancien</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <ul id="sessionReports" class="pl-6">
-                    <!-- Les rapports de session seront affichés ici -->
-                </ul>
+                
+                <!-- Liste des sessions -->
+                <div class="p-6">
+                    <div id="sessionsLoading" class="space-y-4">
+                        <!-- Skeleton loading -->
+                        <div class="loading-skeleton h-16 rounded-xl"></div>
+                        <div class="loading-skeleton h-16 rounded-xl"></div>
+                        <div class="loading-skeleton h-16 rounded-xl"></div>
+                    </div>
+                    
+                    <div id="sessionReports" class="space-y-3 hidden">
+                        <!-- Les sessions seront ajoutées ici -->
+                    </div>
+                    
+                    <div id="noSessions" class="hidden text-center py-12">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucune session trouvée</h3>
+                        <p class="text-gray-600 mb-6">Commencez votre premier cours pour voir vos rapports ici</p>
+                        <a href="home.html" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Commencer un cours
+                        </a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
-
+    
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-    <script src="../static/assets/js/uikit.js"></script>
-    <script src="../static/assets/js/tippy.all.min.js"></script>
-    <script src="../static/assets/js/simplebar.js"></script>
-    <script src="../static/assets/js/custom.js"></script>
-    <script src="../static/assets/js/bootstrap-select.min.js"></script>
-    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
+    
     <script>
+        // Mapping des catégories
         const categoryMapping = {
             "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Repeat after me)",
             "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport (Repeat after me)",
-            "conv_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Conversation)"
+            "conv_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Conversation)",
+            "english_phrases": "😀 English Phrases (Repeat after me)"
         };
-
+        
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        function toggleMobileMenu() {
+            mobileSidebar.classList.toggle('mobile-menu-open');
+            mobileSidebar.classList.toggle('mobile-menu-closed');
+            mobileOverlay.classList.toggle('hidden');
+        }
+        
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
+        
+        // Profile menu toggle
+        const profileBtn = document.getElementById('profile-btn');
+        const profileMenu = document.getElementById('profile-menu');
+        
+        if (profileBtn) {
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+            });
+        }
+        
+        document.addEventListener('click', () => {
+            if (profileMenu) profileMenu.classList.add('hidden');
+        });
+        
+        if (profileMenu) {
+            profileMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        // Initialisation
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initialisation de la page d\'analyse...');
+            
             const urlParams = new URLSearchParams(window.location.search);
             const conversationId = urlParams.get('conversation_id');
+            
             if (conversationId) {
                 document.getElementById('analysisContainer').classList.remove('hidden');
                 await displaySessionAnalysis(conversationId);
-            } else {
-                console.error("Conversation ID not found in URL.");
             }
-
+            
             await loadSessionReports();
+            loadUserProfile();
         });
-
+        
+        // Affichage de l'analyse de session
         async function displaySessionAnalysis(conversationId) {
             try {
                 const accessToken = localStorage.getItem("accessToken");
                 if (!accessToken) {
-                    throw new Error("Access token not found in localStorage.");
+                    throw new Error("Token d'accès non trouvé");
                 }
-
+                
                 const response = await fetch(`/analyze_session/${conversationId}`, {
                     method: 'GET',
                     headers: {
@@ -141,78 +420,171 @@
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    throw new Error(`Erreur HTTP ${response.status}`);
                 }
-
+                
                 const data = await response.json();
-                console.log(data);
-
+                console.log('📊 Données d\'analyse reçues:', data);
+                
                 const analysisContainer = document.getElementById('analysisContainer');
-                analysisContainer.innerHTML = ''; 
-
-                const categoryDescription = categoryMapping[data.category] || data.category;
-
-                const baseInfoDiv = document.createElement('div');
-                baseInfoDiv.className = 'base-info';
-                baseInfoDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📃 Informations de Base</h2>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex items-center gap-2"><strong>Catégorie :</strong> <p>${categoryDescription}</p></div>
-                        <div class="flex items-center gap-2"><strong>Durée de la session :</strong> ${data.duration}</div>
-                        <div class="flex items-center gap-2"></div>
-                        <div class="flex items-center gap-2"></div>
-                    </div>`;
-                analysisContainer.appendChild(baseInfoDiv);
-
-                const sessionStatsDiv = document.createElement('div');
-                sessionStatsDiv.className = 'session-stats';
-                sessionStatsDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📈 Statistiques de la Session</h2>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex items-center gap-2"><strong>Nombre total de messages :</strong> ${data.total_messages}</div>
-                        <div class="flex items-center gap-2"><strong>Nombre de traductions demandées:</strong> ${data.translations_count}</div>
-                        <div class="flex items-center gap-2"><strong>Nombre de réponses en français :</strong> ${data.french_responses_count}</div>
-                        <div class="flex items-center gap-2"><strong>Nombre d'incompréhensions par l'IA :</strong> ${data.unclear_responses_count}</div>
-                        <div class="flex items-center gap-2"><strong>Nombre de phrases correctes :</strong> ${data.correct_phrases_count}</div>
-                        <div class="flex items-center gap-2"></div>
-                        <div class="flex items-center gap-2"></div>
-                    </div>`;
-                analysisContainer.appendChild(sessionStatsDiv);
-
-                const sessionStatsPerfDiv = document.createElement('div');
-                sessionStatsPerfDiv.className = 'session-stats-perf';
-                sessionStatsPerfDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">🎉 Analyse de Performance</h2>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex items-center gap-2"><strong>Temps moyen de réponse de l'utilisateur :</strong> ${data.avg_user_response_time}</div>
-                        <div class="flex items-center gap-2"><strong>Analyse de sentiment :</strong> ${data.sentiment_analysis}</div>
-                        <div class="flex items-center gap-2"></div>
-                        <div class="flex items-center gap-2"></div>
-                    </div>`;
-                analysisContainer.appendChild(sessionStatsPerfDiv);
-
-                const contentAnalysisDiv = document.createElement('div');
-                contentAnalysisDiv.className = 'content-analysis';
-                contentAnalysisDiv.innerHTML = `<h2 class="text-xl font-bold mb-2">📊 Analyse de Contenu</h2>
-                    <div class="flex flex-col gap-2">
-                        ${data.translations && data.translations.length > 0 ? '<div><strong>Demande de traductions :</strong><div class="flex flex-col gap-2">' + data.translations.map(([user_input, response]) => `<div class="flex items-center gap-2">${user_input} -> ${response}</div>`).join('') + '</div></div>' : ''}
-                        ${data.unclear_responses.length > 0 ? '<div><strong>Réponses non claires :</strong><div class="flex flex-col gap-2">' + data.unclear_responses.map(({ response, suggestion }) => `<div class="flex items-center gap-2">${response} <strong>Suggestion:</strong> ${suggestion}</div>`).join('') + '</div></div>' : ''}
-                        ${data.french_responses && data.french_responses.length > 0 ? '<div><strong>Réponses en français :</strong><div class="flex flex-col gap-2">' + data.french_responses.map(response => `<div class="flex items-center gap-2">${response}</div>`).join('') + '</div></div>' : ''}
-                    </div>`;
-                analysisContainer.appendChild(contentAnalysisDiv);
-
+                analysisContainer.innerHTML = '';
+                
+                // En-tête de l'analyse
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-t-2xl p-6';
+                headerDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">📋 Rapport de Session Détaillé</h2>
+                            <p class="text-primary-100">${categoryMapping[data.category] || data.category}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold">${data.duration}</div>
+                            <div class="text-primary-200 text-sm">Durée totale</div>
+                        </div>
+                    </div>
+                `;
+                analysisContainer.appendChild(headerDiv);
+                
+                // Container principal
+                const mainContainer = document.createElement('div');
+                mainContainer.className = 'bg-white rounded-b-2xl shadow-lg border border-gray-100';
+                
+                // Statistiques principales
+                const statsGrid = document.createElement('div');
+                statsGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6';
+                statsGrid.innerHTML = `
+                    <div class="stat-card border-blue-500 p-4 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">${data.total_messages}</div>
+                                <div class="text-sm text-gray-600">Messages totaux</div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card border-green-500 p-4 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">${data.correct_phrases_count}</div>
+                                <div class="text-sm text-gray-600">Phrases correctes</div>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card border-orange-500 p-4 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">${data.translations_count}</div>
+                                <div class="text-sm text-gray-600">Traductions</div>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card border-purple-500 p-4 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-gray-900">${data.avg_user_response_time}</div>
+                                <div class="text-sm text-gray-600">Temps de réponse</div>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContainer.appendChild(statsGrid);
+                
+                // Analyse de performance
+                const performanceSection = document.createElement('div');
+                performanceSection.className = 'px-6 pb-6';
+                performanceSection.innerHTML = `
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Analyse de Performance
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Sentiment général :</span>
+                                    <span class="font-semibold text-gray-900">${data.sentiment_analysis}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Réponses en français :</span>
+                                    <span class="font-semibold text-gray-900">${data.french_responses_count}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Incompréhensions :</span>
+                                    <span class="font-semibold text-gray-900">${data.unclear_responses_count}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                ${data.translations && data.translations.length > 0 ? `
+                                    <div>
+                                        <span class="text-gray-700 font-medium">Dernières traductions :</span>
+                                        <div class="mt-2 space-y-2">
+                                            ${data.translations.slice(0, 3).map(([user_input, response]) => `
+                                                <div class="bg-white p-3 rounded-lg border">
+                                                    <div class="text-sm text-gray-600">${user_input}</div>
+                                                    <div class="text-sm font-medium text-gray-900">→ ${response}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                mainContainer.appendChild(performanceSection);
+                
+                analysisContainer.appendChild(mainContainer);
+                
             } catch (err) {
-                console.error('Error fetching session analysis: ', err);
+                console.error('❌ Erreur lors du chargement de l\'analyse:', err);
+                const analysisContainer = document.getElementById('analysisContainer');
+                analysisContainer.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                        <svg class="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-red-900 mb-2">Erreur de chargement</h3>
+                        <p class="text-red-700">${err.message}</p>
+                    </div>
+                `;
             }
         }
-
-
+        
+        // Chargement des rapports de session
         async function loadSessionReports() {
             const accessToken = localStorage.getItem("accessToken");
             if (!accessToken) {
-                console.error("Access token not found in localStorage.");
+                console.error("Token d'accès non trouvé");
                 return;
             }
-
+            
             try {
                 const response = await fetch('/user/conversations', {
                     method: 'GET',
@@ -220,39 +592,188 @@
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    throw new Error(`Erreur HTTP ${response.status}`);
                 }
-
+                
                 const conversations = await response.json();
+                console.log('📋 Sessions chargées:', conversations);
+                
+                // Masquer le loading
+                document.getElementById('sessionsLoading').classList.add('hidden');
+                
                 const sortOrder = document.getElementById('sortOrder').value;
-
                 if (sortOrder === 'desc') {
                     conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
                 } else {
                     conversations.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
                 }
-
+                
                 const sessionReportsContainer = document.getElementById('sessionReports');
+                const noSessionsContainer = document.getElementById('noSessions');
+                
+                if (conversations.length === 0) {
+                    sessionReportsContainer.classList.add('hidden');
+                    noSessionsContainer.classList.remove('hidden');
+                    return;
+                }
+                
+                sessionReportsContainer.classList.remove('hidden');
+                noSessionsContainer.classList.add('hidden');
                 sessionReportsContainer.innerHTML = '';
-
-                conversations.forEach(conversation => {
-                    const listItem = document.createElement('li');
-                    const link = document.createElement('a');
-                    link.href = `#`;
-                    link.textContent = `Session du ${new Date(conversation.start_time).toLocaleString()}`;
-                    link.addEventListener('click', async () => {
-                        document.getElementById('analysisContainer').classList.remove('hidden');
-                        await displaySessionAnalysis(conversation.id);
+                
+                conversations.forEach((conversation, index) => {
+                    const sessionDiv = document.createElement('div');
+                    sessionDiv.className = 'session-item p-6 rounded-xl border border-gray-200 cursor-pointer hover:border-primary-300';
+                    sessionDiv.setAttribute('data-conversation-id', conversation.id);
+                    
+                    const date = new Date(conversation.start_time);
+                    const formattedDate = date.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
                     });
-                    listItem.appendChild(link);
-                    sessionReportsContainer.appendChild(listItem);
+                    
+                    sessionDiv.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center text-white font-bold">
+                                    ${index + 1}
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Session du ${formattedDate}</h3>
+                                    <p class="text-sm text-gray-600">Cliquez pour voir le rapport détaillé</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="pulse-dot w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-500">Terminée</span>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="viewSessionAnalysis('${conversation.id}')" 
+                                    class="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors text-sm font-medium">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Voir l'analyse
+                            </button>
+                            <button onclick="viewConversationDetail('${conversation.id}')" 
+                                    class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                Voir la conversation
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Event listener pour le clic sur la session (non sur les boutons)
+                    sessionDiv.addEventListener('click', async (e) => {
+                        // Vérifier si le clic n'est pas sur un bouton
+                        if (!e.target.closest('button')) {
+                            await viewSessionAnalysis(conversation.id);
+                        }
+                    });
+                    
+                    sessionReportsContainer.appendChild(sessionDiv);
                 });
+                
             } catch (err) {
-                console.error('Error loading session reports: ', err);
+                console.error('❌ Erreur lors du chargement des sessions:', err);
+                document.getElementById('sessionsLoading').classList.add('hidden');
+                document.getElementById('sessionReports').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                        <p class="text-gray-600">${err.message}</p>
+                    </div>
+                `;
+                document.getElementById('sessionReports').classList.remove('hidden');
             }
         }
+        
+        // Fonction pour voir l'analyse d'une session
+        async function viewSessionAnalysis(conversationId) {
+            // Scroll vers le haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Afficher l'analyse
+            document.getElementById('analysisContainer').classList.remove('hidden');
+            await displaySessionAnalysis(conversationId);
+            
+            // Mettre en évidence la session sélectionnée
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.classList.remove('bg-primary-50', 'border-primary-300');
+            });
+            
+            const sessionItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
+            if (sessionItem) {
+                sessionItem.classList.add('bg-primary-50', 'border-primary-300');
+            }
+        }
+        
+        // Fonction pour voir les détails de la conversation
+        function viewConversationDetail(conversationId) {
+            window.open(`conversation.html?id=${conversationId}`, '_blank');
+        }
+        
+        // Chargement du profil utilisateur
+        async function loadUserProfile() {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) return;
+                
+                const response = await fetch('http://127.0.0.1:8000/users/me', {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    console.log('👤 Utilisateur chargé:', user);
+                    
+                    const profileName = document.getElementById('profile-name');
+                    const profileEmail = document.getElementById('profile-email');
+                    const profileNameMenu = document.getElementById('profile-name-menu');
+                    const profileEmailMenu = document.getElementById('profile-email-menu');
+                    
+                    if (profileName) profileName.textContent = user.nom || 'Utilisateur';
+                    if (profileEmail) profileEmail.textContent = user.email || '';
+                    if (profileNameMenu) profileNameMenu.textContent = user.nom || 'Utilisateur';
+                    if (profileEmailMenu) profileEmailMenu.textContent = user.email || '';
+                    
+                } else if (response.status === 401) {
+                    console.warn('Token expiré, redirection vers login');
+                    logout();
+                }
+            } catch (error) {
+                console.error('Erreur profil:', error);
+            }
+        }
+        
+        // Fonction logout
+        function logout() {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("nom");
+            window.location.href = "form-login.html";
+        }
+        
+        console.log('📊 Page d\'analyse initialisée avec succès !');
     </script>
 </body>
 </html>
