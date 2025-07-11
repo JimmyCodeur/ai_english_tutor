@@ -17,12 +17,12 @@ from back.token_security import get_current_user, authenticate_user, create_acce
 from back.load_model import generate_phi3_response, generate_ollama_response
 from back.help_suggestion import help_sugg
 from back.metrics import log_error, log_response_time_phi3
-from back.tts_utils import text_to_speech_audio
+from back.tts_utils import text_to_speech_audio, ensure_audio_directories
 from back.transcribe_audio import transcribe_audio
 from back.audio_utils import file_to_base64, is_valid_audio_file, delete_audio_file
 from back.detect_langs import detect_language
 from back.cors import add_middleware
-from typing import List ,Optional
+from typing import List, Optional
 from datetime import timezone, timedelta, date, datetime
 import nltk
 import time
@@ -30,15 +30,24 @@ import re
 import spacy
 import aiofiles
 import asyncio
+import os
 
 app = FastAPI()
 add_middleware(app)
 app.mount("/static", StaticFiles(directory="./front/static"), name="static")
+
 nltk.download('punkt')
 current_prompt = None
 nlp = spacy.load("en_core_web_sm")
 conversation_history = {}
 conversation_start_time = {}
+
+# Événement de démarrage pour initialiser les répertoires
+@app.on_event("startup")
+async def startup_event():
+    print("Initialisation des répertoires audio...")
+    ensure_audio_directories()
+    print("Répertoires audio initialisés")
 
 @app.get('/')
 def index():
@@ -49,40 +58,49 @@ def get_users_profile():
     return FileResponse('./front/users-profile.html')
 
 @app.get("/form-register.html")
-def get_users_profile():
+def get_form_register():
     return FileResponse('./front/form-register.html')
 
 @app.get("/form-login.html")
-def get_users_profile():
+def get_form_login():
     return FileResponse('./front/form-login.html')
 
 @app.get("/profile-setting.html")
-def get_users_profile():
+def get_profile_setting():
     return FileResponse('./front/profile-setting.html')
 
 @app.get("/brain-info-course.html")
-def get_users_profile():
+def get_brain_info_course():
     return FileResponse('./front/brain-info-course.html')
 
 @app.get("/course.html")
-def get_users_profile():
+def get_course():
     return FileResponse('./front/course.html')
 
 @app.get("/home.html")
-def get_users_profile():
+def get_home():
     return FileResponse('./front/home.html')
 
 @app.get("/conversation.html")
-def get_users_profile():
+def get_conversation():
     return FileResponse('./front/conversation.html')
 
 @app.get("/analysis.html")
-def get_users_profile():
+def get_analysis():
     return FileResponse('./front/analysis.html')
 
 @app.get("/users/me", response_model=User)
-def read_current_user(current_user: User = Depends(get_current_user)):
-    return current_user
+def read_current_user(current_user: DBUser = Depends(get_current_user)):
+    # Créer un objet User avec tous les champs requis
+    return User(
+        id=current_user.id,
+        email=current_user.email,
+        nom=current_user.nom,
+        date_naissance=current_user.date_naissance,
+        date_creation=current_user.date_creation,
+        role=current_user.role,
+        consent=current_user.consent or False
+    )
 
 @app.get("/users/{user_id}", response_model=PydanticUser)
 def read_user_by_id(user_id: int, db: Session = Depends(get_db)):
@@ -119,7 +137,6 @@ def logout(token_data: TokenInBody, db: Session = Depends(get_db)):
     
     if token in revoked_tokens:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token already revoked")
-
     revoked_tokens.add(token)
     return {"message": "Successfully logged out"}
 
@@ -129,7 +146,7 @@ def create_user_endpoint(
     nom: str = Form(...),
     date_naissance: date = Form(..., description="Format attendu : YYYY-MM-DD"),
     password: constr(min_length=6) = Form(..., description="Mot de passe de l'utilisateur (minimum 6 caractères)"),
-    # consent: bool = Form(..., description="Consentement de l'utilisateur"),
+    consent: Optional[bool] = Form(False),
     db: Session = Depends(get_db)
 ):
     print(f"Reçu : email={email}, nom={nom}, date_naissance={date_naissance}, password={password}, consent={consent}")
@@ -139,16 +156,24 @@ def create_user_endpoint(
         nom=nom,
         date_naissance=date_naissance,
         password=password,
-        # consent=consent
+        consent=consent
     )
     try:
         db_user = create_user(db=db, user=user_data)
-        return db_user
+        return User(
+            id=db_user.id,
+            email=db_user.email,
+            nom=db_user.nom,
+            date_naissance=db_user.date_naissance,
+            date_creation=db_user.date_creation,
+            role=db_user.role,
+            consent=db_user.consent or False
+        )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
 
 @app.post("/token", response_model=dict)
-def login_for_access_token(
+def login_for_access_token_alt(
     email: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db)
@@ -208,7 +233,6 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
 def calculate_avg_user_response_time(messages):
     if not messages:
         return "N/A"
-
     messages.sort(key=lambda msg: msg.timestamp)    
     time_differences = []
     for i in range(1, len(messages)):
@@ -217,7 +241,6 @@ def calculate_avg_user_response_time(messages):
             if messages[i-1].ia_audio_duration:
                 time_diff -= messages[i-1].ia_audio_duration
             time_differences.append(time_diff)
-
     if not time_differences:
         return "N/A"
     
@@ -226,7 +249,7 @@ def calculate_avg_user_response_time(messages):
     return str(avg_response_time_delta).split('.')[0]
 
 @app.get("/analyze_session/{conversation_id}", response_model=AnalysisResponse)
-def analyze_session(conversation_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def analyze_session(conversation_id: int, db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
     conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -235,20 +258,16 @@ def analyze_session(conversation_id: int, db: Session = Depends(get_db), current
         Message.conversation_id == conversation_id,
         Message.marker == "translations"
     ).all()
-
     unclear_responses = db.query(Message).filter(
         Message.conversation_id == conversation_id,
         Message.marker == "unclear_responses"
     ).all()
-
     french_responses = db.query(Message).filter(
         Message.conversation_id == conversation_id,
         Message.marker == "french_responses"
     ).all()
-
     all_messages = db.query(Message).filter(Message.conversation_id == conversation_id).all()
     correct_phrases_count = len([msg for msg in all_messages if msg.marker not in ["unclear_responses", "french_responses"]])
-
     if conversation.end_time:
         duration = conversation.end_time - conversation.start_time
     else:
@@ -257,7 +276,6 @@ def analyze_session(conversation_id: int, db: Session = Depends(get_db), current
     duration_str = str(duration).split('.')[0]
     total_messages = len(all_messages)
     avg_user_response_time = calculate_avg_user_response_time(all_messages)
-
     analysis_result = {
         "translations": [(msg.user_input, msg.response) for msg in translations],
         "unclear_responses": [{"response": msg.content, "suggestion": msg.suggestion} for msg in unclear_responses],
@@ -275,9 +293,8 @@ def analyze_session(conversation_id: int, db: Session = Depends(get_db), current
     return analysis_result
 
 @app.post("/get_suggestions")
-def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
     unclear_response = request.get('unclear_response', '')
-
     if unclear_response:
         prompt = f"Improve the following unclear response in one sentence easy: {unclear_response}"
         suggestion = generate_phi3_response(prompt)
@@ -286,42 +303,95 @@ def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: 
         raise HTTPException(status_code=400, detail="Unclear response not provided.")
 
 @app.post("/chat_conv/start")
-async def start_chat_with_brain(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+async def start_chat_with_brain(
+    request_data: StartChatRequest, 
+    voice: str = "english_ljspeech_tacotron2-DDC", 
+    db: Session = Depends(get_db), 
+    current_user: DBUser = Depends(get_current_user)
+):
     try:
         global conversation_history
         global conversation_start_time
-
         user_id = current_user.id
         choice = request_data.choice
-
+        
+        print(f"Démarrage du chat pour l'utilisateur {user_id} avec le choix {choice}")
+        
+        # Initialiser l'historique de conversation
         if user_id not in conversation_history:
             user_history = []
             conversation_history[user_id] = user_history
             conversation_start_time[user_id] = time.time()
         else:
             user_history = conversation_history[user_id]
-
+        
         alice_start_greetings = "Hello! I'm really happy to meet you. How are you?"
         user_history.append({'input': "", 'response': alice_start_greetings})
-
-        audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)       
-        audio_base64 = file_to_base64(audio_file_path)
-        delete_audio_file(audio_file_path)
-
-        log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings)
-        conversation = create_or_get_conversation(db, user_id, choice)
-        log_message_to_db(db, user_id, conversation.id, alice_start_greetings, alice_start_greetings, audio_base64, ia_audio_duration=duration)
-
+        
+        # Générer l'audio avec la fonction async
+        try:
+            print("Génération de l'audio...")
+            # Appeler correctement la fonction async
+            audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+            print(f"Audio généré avec succès : {audio_file_path}")
+            
+            # Vérifier que le fichier existe
+            if not os.path.exists(audio_file_path):
+                raise FileNotFoundError(f"Le fichier audio n'a pas été créé : {audio_file_path}")
+                
+        except Exception as audio_error:
+            print(f"Erreur de génération audio : {audio_error}")
+            import traceback
+            print(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"Échec de la génération audio : {str(audio_error)}")
+        
+        # Convertir l'audio en base64
+        try:
+            print("Conversion du fichier audio en base64...")
+            audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
+            print("Conversion base64 réussie")
+        except Exception as file_error:
+            print(f"Erreur de conversion de fichier : {file_error}")
+            raise HTTPException(status_code=500, detail=f"Échec du traitement du fichier audio : {str(file_error)}")
+        
+        # Nettoyer le fichier audio
+        try:
+            await asyncio.to_thread(delete_audio_file, audio_file_path)
+            print("Fichier audio nettoyé")
+        except Exception as cleanup_error:
+            print(f"Avertissement de nettoyage de fichier : {cleanup_error}")
+            # Ne pas faire échouer la requête pour les problèmes de nettoyage
+        
+        # Opérations de base de données avec gestion d'erreurs
+        try:
+            print("Enregistrement en base de données...")
+            log_conversation_to_db(db, user_id, alice_start_greetings, alice_start_greetings)
+            conversation = create_or_get_conversation(db, user_id, choice)
+            log_message_to_db(
+                db, user_id, conversation.id, alice_start_greetings, 
+                alice_start_greetings, audio_base64, ia_audio_duration=duration
+            )
+            print("Enregistrement en base de données réussi")
+        except Exception as db_error:
+            print(f"Erreur de base de données : {db_error}")
+            raise HTTPException(status_code=500, detail=f"Échec de l'opération de base de données : {str(db_error)}")
+        
+        print("Chat démarré avec succès")
         return {
             "generated_response": alice_start_greetings,
             "audio_base64": audio_base64,
             "conversation_history": user_history
         }
     
+    except HTTPException:
+        # Relancer les exceptions HTTP
+        raise
     except Exception as e:
+        print(f"Erreur inattendue dans start_chat_with_brain : {e}")
+        import traceback
+        print(traceback.format_exc())
         log_error(e)
-        raise HTTPException(status_code=500, detail="An error occurred while starting the conversation.")
-
+        raise HTTPException(status_code=500, detail=f"Une erreur s'est produite lors du démarrage de la conversation : {str(e)}")
 
 def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     print("Début sentence")
@@ -353,31 +423,26 @@ async def chat_with_brain(
     audio_file: UploadFile = File(...),
     voice: str = "english_ljspeech_tacotron2-DDC",
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user)
+    current_user: DBUser = Depends(get_current_user)
 ):
     try:
         global conversation_history
         global conversation_start_time
-
         user_id = current_user.id
         category = get_category(choice)  
-
         if not is_valid_audio_file(audio_file):
             raise HTTPException(status_code=400, detail="Invalid audio file format")
-
         user_audio_path = f"./audio/user/{audio_file.filename}"
         async with aiofiles.open(user_audio_path, "wb") as f:
             await f.write(await audio_file.read())
         print("Début transcription audio")
         transcription_task = asyncio.create_task(transcribe_audio(user_audio_path))
         user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)    
-
         user_input, transcription_time = await transcription_task
         print(f"Transcription terminée en secondes")
         user_input = user_input.strip().lower()
         phrase_to_translate = detect_translation_request(user_input)
         print(f"detect terminée en secondes")
-
         if phrase_to_translate:
             prompt = f"Translate this sentence into English without adding comments: {phrase_to_translate}"
             start_time = time.time()
@@ -400,17 +465,14 @@ async def chat_with_brain(
                     "transcription_time": transcription_time,
                 }
             }
-
         if user_id not in conversation_history:
             conversation_history[user_id] = []
             conversation_start_time[user_id] = time.time()
-
         user_history = conversation_history[user_id]    
         language = detect_language(user_input)    
         current_time = time.time()
         start_time = conversation_start_time[user_id]
         elapsed_time = current_time - start_time
-
         if elapsed_time > 600:
             generated_response = "Thanks for the exchange, I have to go soon! Bye."        
             audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
@@ -429,7 +491,6 @@ async def chat_with_brain(
                     "transcription_time": transcription_time,
                 }
             }
-
         if user_input == "thank you.":
             conversation_history.pop(user_id, None)
             conversation_start_time.pop(user_id, None)
@@ -444,7 +505,6 @@ async def chat_with_brain(
                     "transcription_time": transcription_time,
                 }
             }
-
         if language in ['fr', 'unknown']:
             generated_response = "Hum.. I don't speak French, please say it in English."      
             audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
@@ -462,7 +522,6 @@ async def chat_with_brain(
                     "transcription_time": transcription_time,
                 }
             }
-
         is_quality_sentence = evaluate_sentence_quality_phi3(user_input)
         print("fin sentence")
         
@@ -486,7 +545,6 @@ async def chat_with_brain(
                     "transcription_time": transcription_time,
                 }
             }
-
         generated_response = await asyncio.to_thread(generate_ai_response_alice, user_input, user_history)          
         print(f"Réponse générée en secondes")  
         user_history.append({'input': user_input, 'response': generated_response})
@@ -513,18 +571,21 @@ async def chat_with_brain(
         raise HTTPException(status_code=500, detail="An error occurred during the conversation.")
 
 @app.post("/chat_repeat/start")
-async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
     global current_prompt
     user_id = current_user.id
     choice = request_data.choice    
     prompt = get_prompt(choice)
     current_prompt = prompt.rstrip("!?.")       
     generated_response = generate_response_variation(prompt)        
-    audio_file_path = text_to_speech_audio(generated_response, voice) 
-    audio_base64 = file_to_base64(audio_file_path)        
+    
+    # Corriger : utiliser await car text_to_speech_audio est async
+    audio_file_path, duration = await text_to_speech_audio(generated_response, voice) 
+    audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)        
+    
     log_conversation_to_db(db, user_id, current_prompt, generated_response)
     conversation = create_or_get_conversation(db, user_id, choice)
-    log_message_to_db(db, user_id, conversation.id, current_prompt, generated_response, audio_base64)
+    log_message_to_db(db, user_id, conversation.id, current_prompt, generated_response, audio_base64, ia_audio_duration=duration)
         
     return {
             "generated_response": generated_response,
@@ -532,24 +593,28 @@ async def start_chat(request_data: StartChatRequest, voice: str = "english_ljspe
     }
 
 @app.post("/chat_repeat")
-async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+async def chat_with_brain_repeat(choice: str = Form(...), audio_file: UploadFile = File(...), voice: str = "english_ljspeech_tacotron2-DDC", db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
     global current_prompt
     user_id = current_user.id
     category = get_category(choice)
     user_audio_path = f"./audio/user/{audio_file.filename}"
-    with open(user_audio_path, "wb") as f:
-        f.write(await audio_file.read())
+    
+    async with aiofiles.open(user_audio_path, "wb") as f:
+        await f.write(await audio_file.read())
         
-    user_input = transcribe_audio(user_audio_path).strip().lower()
-    user_input = user_input.rstrip("!?.")    
-    user_audio_base64 = file_to_base64(user_audio_path)
+    user_input, _ = await transcribe_audio(user_audio_path)
+    user_input = user_input.strip().lower().rstrip("!?.")    
+    user_audio_base64 = await asyncio.to_thread(file_to_base64, user_audio_path)
     print(f"User's voice input: {user_input}")
+    
     expected_prompt = current_prompt.lower().strip()
     generated_response, current_prompt = handle_response(user_input, expected_prompt, category)    
-    audio_file_path = text_to_speech_audio(generated_response, voice)
-    audio_base64 = file_to_base64(audio_file_path)    
-    log_conversation_and_message(db, user_id, category, current_prompt, user_input, generated_response, user_audio_base64, audio_base64)
-
+    
+    audio_file_path, duration = await text_to_speech_audio(generated_response, voice)
+    audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)    
+    
+    log_conversation_and_message(db, user_id, category, current_prompt, user_input, generated_response, user_audio_base64, audio_base64, ia_audio_duration=duration)
+    
     return {
         "user_input": user_input,
         "generated_response": generated_response,
@@ -558,7 +623,7 @@ async def chat_with_brain(choice: str = Form(...), audio_file: UploadFile = File
     }
 
 @app.post("/chat_repeat/stop")
-async def stop_chat(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def stop_chat(current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         user_id = current_user.id
         active_conversation = db.query(Conversation).filter(
@@ -566,13 +631,11 @@ async def stop_chat(current_user: User = Depends(get_current_user), db: Session 
             Conversation.start_time.isnot(None),
             Conversation.end_time.is_(None)
         ).first()
-
         if active_conversation:
             active_conversation.end_session(db)
             return {"message": "Chat session ended successfully.", "conversation_id": active_conversation.id}
         else:
             return {"error": "No active chat session found or already ended."}
-
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -581,7 +644,6 @@ async def translate_message(request: TranslationRequest):
     try:
         prompt = f"traduire ce message en français : \n {request.message}"
         generated_response = generate_phi3_response(prompt)
-
         return {
             "translated_message": generated_response
         }
@@ -598,17 +660,14 @@ def end_conversation(conversation_id: int, db: Session = Depends(get_db)):
         return {"error": "Conversation not found"}, 404
 
 @app.get("/user/conversations", response_model=List[ConversationSchema])
-def get_user_conversations(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_user_conversations(current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
     conversations = db.query(Conversation).filter(
         (Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)
     ).all()
-
     for conversation in conversations:
         conversation.start_time = conversation.start_time.replace(tzinfo=timezone.utc).isoformat()
-
     for conversation in conversations:
         conversation.category = category_mapping.get(conversation.category, conversation.category)
-
     return conversations
 
 @app.post("/chat/message")
@@ -616,9 +675,8 @@ async def send_message(request: ChatRequest):
     try:
         prompt = request.message
         generated_response = generate_phi3_response(prompt)
-        audio_file_path = text_to_speech_audio(generated_response, "english_ljspeech_tacotron2-DDC")
-        audio_base64 = file_to_base64(audio_file_path)
-
+        audio_file_path, duration = await text_to_speech_audio(generated_response, "english_ljspeech_tacotron2-DDC")
+        audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
         return {
             "generated_response": generated_response,
             "audio_base64": audio_base64
@@ -630,22 +688,18 @@ async def send_message(request: ChatRequest):
 def get_conversation_messages(
     conversation_id: int,
     category: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: DBUser = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     conversation = db.query(Conversation).filter(
         Conversation.id == conversation_id,
         ((Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id))
     ).first()
-
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
-
     query = db.query(Message).filter(Message.conversation_id == conversation.id).order_by(asc(Message.timestamp))
-
     if category:
         query = query.filter(Message.category == category)
-
     messages = query.all()
     print(messages)
     return messages

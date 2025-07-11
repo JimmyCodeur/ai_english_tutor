@@ -1,152 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brain Course</title>
+    <title>Brain Course - Chat IA</title>
     <link rel="stylesheet" href="../static/assets/css/style.css">
     <link rel="stylesheet" href="../static/assets/css/uikit.css">
     <link rel="stylesheet" href="../static/assets/css/icons.css">
     <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .avatar-container {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border-radius: 50%;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .message {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn-modern {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-modern:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-modern:hover:before {
+            left: 100%;
+        }
+        
+        .recording-pulse {
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 24px 24px 0 0;
+            padding: 20px 30px;
+        }
+        
+        .chat-box {
+            background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+            border: none;
+            max-height: 500px;
+        }
+        
+        .suggestion-item {
+            background: linear-gradient(135deg, #fef3c7, #fde047);
+            border: 1px solid #f59e0b;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, #fde047, #facc15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .loading-dots {
+            display: inline-block;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        
+        .audio-visualizer {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .audio-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .message-bot {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #374151;
+            border-radius: 18px 18px 18px 4px;
+        }
+        
+        .message-user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+            margin-left: auto;
+        }
+        
+        .message-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-radius: 18px;
+        }
+        
+        .message-translation {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 18px;
+        }
+        
+        .header_inner {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 #f7fafc;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f7fafc;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
 </head>
 
-
-
-<body class="flex flex-col min-h-screen bg-gray-100">
+<body class="flex flex-col min-h-screen">
     <div id="wrapper" class="is-verticle">
-        <!-- Barre de navigation -->
-        <header uk-sticky> 
-            <div class="header_inner">
-                <div class="left-side">
-                    <div id="logo" class="logo-container">
-                        <a href="home.html">
-                            <img src="../static/assets/images/logo.png" class="logo-image" alt="">
-                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
-                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
-                        </a>
+        <!-- Barre de navigation moderne -->
+        <header uk-sticky class="header_inner"> 
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div id="logo" class="logo-container">
+                            <a href="home.html" class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">B</span>
+                                </div>
+                                <span class="text-white font-semibold text-lg hidden md:block">Brain Course</span>
+                            </a>
+                        </div>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
-                    </div>
-                </div>
-                <div class="right-side">                        
-                    <div> 
-                        <a href="" class="flex items-center space-x-2">
-                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
-                        </a>
-                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
-                            <ul>   
-                                <li>
-                                    <a href="" class="user">
-                                        <div class="user_avatar">
-                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
-                                        </div>
-                                        <div class="user_name">
-                                            <div id="profile-name" class="info-name"></div>
-                                            <span id="profile-email" class="info-email"></span>
-                                        </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="status-indicator" data-tooltip="En ligne"></div>
+                        <div class="relative">
+                            <button class="flex items-center space-x-3 text-white hover:text-gray-200 transition-colors">
+                                <img src="../static/assets/images/avatars/placeholder.png" class="w-8 h-8 rounded-full border-2 border-white" alt="Profile"> 
+                                <span class="hidden md:block" id="profile-name-header">Utilisateur</span>
+                            </button>
+                            <div uk-drop="mode: click;offset:5" class="glass-effect p-4 w-64">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <img src="../static/assets/images/avatars/avatar-2.jpg" class="w-12 h-12 rounded-full" alt="">
+                                    <div>
+                                        <div id="profile-name" class="font-semibold text-gray-800"></div>
+                                        <span id="profile-email" class="text-sm text-gray-600"></span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <a href="users-profile.html" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white hover:bg-opacity-50 transition-colors">
+                                        <ion-icon name="person-circle-outline" class="text-lg"></ion-icon>
+                                        <span>Mon Compte</span>
                                     </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
-                                         Mon Compte 
+                                    <a href="users-profile.html" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white hover:bg-opacity-50 transition-colors">
+                                        <ion-icon name="folder-outline" class="text-lg"></ion-icon>
+                                        <span>Historique</span>
                                     </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
-                                         Historique 
+                                    <a href="profile-setting.html" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white hover:bg-opacity-50 transition-colors">
+                                        <ion-icon name="settings-outline" class="text-lg"></ion-icon>
+                                        <span>Configuration</span>
                                     </a>
-                                </li>
-                                <li>
-                                    <a href="profile-setting.html">
-                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
-                                        Configuration  
-                                    </a>
-                                </li>
-                                <li> 
-                                    <hr>
-                                </li>
-                                <li> 
-                                    <a href="#" id="logout-link" onclick="logout()">
-                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
-                                        Se déconnecter 
-                                    </a>
-                                </li>
-                            </ul>
-                        </div> 
+                                    <hr class="my-2 border-gray-300">
+                                    <button onclick="logout()" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-red-50 text-red-600 w-full text-left">
+                                        <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
+                                        <span>Se déconnecter</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </header>
-
-        <!-- Section avec l'image agrandie de l'avatar -->
-        <main class="flex-1 flex flex-col items-center justify-center">
-
-            <div class="w-full flex justify-center my-8">
-                <img id="avatarGif" src="../static/assets/images/ai/brain.png" class="w-64 h-64 rounded-full" alt="Avatar de l'IA">              
-
+        
+        <!-- Section Avatar avec animation -->
+        <main class="flex-1 flex flex-col items-center justify-center py-8">
+            <div class="avatar-container mb-8">
+                <img id="avatarGif" src="../static/assets/images/ai/brain.png" class="w-32 h-32 rounded-full" alt="Avatar IA">
+            </div>
+            
+            <!-- Indicateur de statut IA -->
+            <div class="flex items-center space-x-2 mb-6">
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-white font-medium">IA Active</span>
             </div>
         </main>
-
-        <!-- Chat Section -->
-        <section class="chat-container w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
-            <!-- Barre de titre -->
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="lg:text-2xl text-lg font-bold">Chat</h1>
-                <div id="loadingIndicator" class="loading-indicator hidden mt-4 flex items-center">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
-                    </svg>
-                    <span class="text-yellow-500">En cours</span>
-                </div>          
+        
+        <!-- Section Chat moderne -->
+        <section class="chat-container max-w-5xl mx-auto mb-8 mx-4">
+            <!-- En-tête du chat -->
+            <div class="chat-header">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <ion-icon name="chatbubbles" class="text-white text-lg"></ion-icon>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-semibold">Assistant Conversationnel</h1>
+                            <p class="text-sm opacity-80">Prêt à vous aider</p>
+                        </div>
+                    </div>
+                    <div id="loadingIndicator" class="hidden flex items-center space-x-2">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                        </div>
+                        <span class="text-sm">Traitement<span class="loading-dots"></span></span>
+                    </div>
+                </div>
             </div>
-        
-            <!-- Chat Box -->
-            <div id="chatBox" class="chat-box h-80 overflow-y-auto mb-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
-                <!-- <audio id="generatedAudio" controls></audio> -->
-
-            </div>    
-        
-            <!-- Suggestions Box -->
-            <div id="suggestionsBox" class="mb-4"></div>
-
-            <!-- <svg class="h-8 w-8 text-pink-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4" />  <path d="M11 19l4 -9l4 9m-.9 -2h-6.2" /></svg> -->
-
-        
-            <!-- Champ de texte pour parler -->
-            <!-- <textarea id="userInputField" class="user-input w-full p-1 border border-gray-300 rounded-lg mb-2 h-8 text-xs" rows="2" placeholder="Entrez votre message..."></textarea> -->
-
-        
-            <!-- Boutons d'action -->
-            <div class="action-buttons flex justify-between">
-                <button id="toggleRecording" class="btn-microphone bg-green-500 text-white py-2 px-4 rounded-lg mr-2 flex items-center" onclick="toggleRecording()">
-                    <svg class="h-6 w-6 text-white mr-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z"/>  
-                        <rect x="9" y="2" width="6" height="11" rx="3" />  
-                        <path d="M5 10a7 7 0 0 0 14 0" />  
-                        <line x1="8" y1="21" x2="16" y2="21" />  
-                        <line x1="12" y1="17" x2="12" y2="21" />
-                    </svg>
-                    Parler
-                </button>
-                <button id="toggleTextArea" class="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center" onclick="toggleTextArea()">
-                    <svg class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                    </svg>
-                    Clavier
-                </button>
+            
+            <!-- Zone de chat -->
+            <div class="p-6">
+                <div id="chatBox" class="chat-box custom-scrollbar h-96 overflow-y-auto p-4 rounded-2xl space-y-4">
+                    <!-- Message de bienvenue -->
+                    <div class="text-center text-gray-500 text-sm">
+                        <div class="inline-flex items-center space-x-2 bg-white rounded-full px-4 py-2 shadow-sm">
+                            <ion-icon name="sparkles" class="text-purple-500"></ion-icon>
+                            <span>Conversation démarrée</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone des suggestions -->
+                <div id="suggestionsBox" class="mt-4"></div>
+                
+                <!-- Contrôles de chat -->
+                <div class="mt-6 space-y-4">
+                    <!-- Zone de texte cachée -->
+                    <div class="hidden" id="textInputContainer">
+                        <div class="bg-gray-50 rounded-2xl p-4">
+                            <textarea 
+                                id="userInputField" 
+                                class="w-full bg-transparent border-none outline-none resize-none text-gray-800 placeholder-gray-500" 
+                                rows="3" 
+                                placeholder="Tapez votre message ici... (Ctrl+Entrée pour envoyer)">
+                            </textarea>
+                            <div class="flex justify-between items-center mt-3">
+                                <span class="text-xs text-gray-400">Ctrl+Entrée pour envoyer</span>
+                                <button 
+                                    id="sendTextMessage" 
+                                    onclick="sendTextMessage()" 
+                                    class="btn-modern bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center space-x-2">
+                                    <ion-icon name="send" class="text-lg"></ion-icon>
+                                    <span>Envoyer</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="flex items-center justify-center space-x-4">
+                        <button 
+                            id="toggleRecording" 
+                            onclick="toggleRecording()" 
+                            class="btn-modern bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300"
+                            data-tooltip="Cliquer pour parler">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                            </svg>
+                            <span class="font-medium">Parler</span>
+                        </button>
+                        
+                        <button 
+                            id="toggleTextArea" 
+                            onclick="toggleTextArea()" 
+                            class="btn-modern bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300"
+                            data-tooltip="Utiliser le clavier">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+                            </svg>
+                            <span class="font-medium">Clavier</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Raccourcis clavier -->
+                    <div class="text-center text-xs text-gray-400 space-x-4">
+                        <span><kbd class="px-2 py-1 bg-gray-200 rounded text-gray-600">Espace</kbd> Enregistrer</span>
+                        <span><kbd class="px-2 py-1 bg-gray-200 rounded text-gray-600">Ctrl+Enter</kbd> Envoyer</span>
+                    </div>
+                </div>
             </div>
-            <textarea id="userInputField" class="user-input w-full p-2 border border-gray-300 rounded-lg mb-2 hidden" rows="2" placeholder="Entrez votre message..."></textarea>
-            <button id="sendTextMessage" class="bg-yellow-500 text-white py-2 px-4 rounded-lg hidden" onclick="sendTextMessage()">Envoyer</button>
-            <!-- Indicateur de chargement -->
         </section>
-        
     </div>
-</body>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -156,29 +426,55 @@
     <script src="../static/assets/js/custom.js"></script>
     <script src="../static/assets/js/bootstrap-select.min.js"></script>
     <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
-
+    
     <script>
         let recorder;
         let audioChunks = [];
         let recording = false;
         let initialChatStarted = false;
 
+        // Initialisation au chargement de la page
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initialisation de l\'interface...');
+            addWelcomeAnimation();
             const urlParams = new URLSearchParams(window.location.search);
             const choice = urlParams.get('choice');
+            console.log('📋 Choix détecté:', choice);
             await startChat(choice);
         });
 
+        // Animation de bienvenue
+        function addWelcomeAnimation() {
+            const chatBox = document.getElementById('chatBox');
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = 'text-center py-8';
+            welcomeDiv.innerHTML = `
+                <div class="animate-bounce mb-4">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mx-auto flex items-center justify-center">
+                        <ion-icon name="chatbubble-ellipses" class="text-white text-2xl"></ion-icon>
+                    </div>
+                </div>
+                <p class="text-gray-500 font-medium">Préparation de votre assistant...</p>
+            `;
+            chatBox.appendChild(welcomeDiv);
+        }
+
+        // Fonction pour démarrer le chat
         async function startChat(choice) {
             const accessToken = localStorage.getItem("accessToken");
             if (!accessToken) {
-                console.error("Access token not found in localStorage.");
+                console.error("❌ Token d'accès manquant");
+                displayErrorMessage("🔐 Session expirée. Veuillez vous reconnecter.");
                 return;
             }
 
             updateButtonState('processing');
+            showTypingIndicator();
+
             try {
                 const endpoint = getChatEndpoint();
+                console.log(`📡 Requête vers: ${endpoint}`);
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
@@ -189,494 +485,707 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    let errorMessage = `Erreur HTTP ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorMessage;
+                    } catch (e) {
+                        console.error('Impossible de parser l\'erreur');
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
+                console.log('✅ Données reçues:', data);
 
-                if (!data.generated_response || !data.audio_base64) {
-                    throw new Error(`Missing expected data in response.`);
+                // Nettoyer le message de bienvenue
+                clearWelcomeMessage();
+
+                if (!data.generated_response) {
+                    throw new Error('Réponse manquante du serveur');
                 }
 
-                displayMessage(data.generated_response, 'bot', data.audio_base64);
+                // Afficher le message avec animation
+                setTimeout(() => {
+                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                    if (data.audio_base64) {
+                        playAudioFromBase64(data.audio_base64);
+                    }
+                }, 500);
 
-                const audioBase64 = data.audio_base64;
-                const audioElement = document.getElementById('generatedAudio');
-                if (audioElement) {
-                    audioElement.src = "data:audio/wav;base64," + audioBase64;
-                    audioElement.style.display = "none";
-                    audioElement.style.display = "block";
-                    audioElement.className = 'audio-player hidden-audio';
-
-                    audioElement.play().then(() => {
-                        document.getElementById('avatarGif').src = "../static/assets/images/ai/brain.gif";
-                    }).catch((error) => {
-                        console.error('Error playing audio:', error);
-                    });
-
-                } else {
-                    console.error('Element with ID "generatedAudio" not found.');
-                }
-
-                document.getElementById('loadingIndicator').classList.add('hidden');
             } catch (err) {
-                console.error('Error starting chat: ', err);
+                console.error('❌ Erreur:', err);
+                clearWelcomeMessage();
+                displayErrorMessage(`💥 Erreur: ${err.message}`);
             } finally {
+                hideTypingIndicator();
                 updateButtonState('start');
             }
         }
 
-        function getChatEndpoint() {
-            const url = window.location.href;
-            if (url.includes('conv_')) {
-                return '/chat_conv/start';
-            } else if (url.includes('r_a_m_')) {
-                return '/chat_repeat/start';
-            } else {
-                throw new Error('Invalid URL: Unable to determine the correct endpoint');
+        // Indicateur de frappe
+        function showTypingIndicator() {
+            const chatBox = document.getElementById('chatBox');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'flex items-center space-x-2 p-4';
+            typingDiv.innerHTML = `
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                </div>
+                <span class="text-gray-500 text-sm">L'assistant réfléchit...</span>
+            `;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
             }
         }
 
+        function clearWelcomeMessage() {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+        }
 
-        async function toggleRecording() {
-            if (!recording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    
-                    const audioTracks = stream.getAudioTracks();
-                    if (audioTracks.length === 0 || !audioTracks[0].enabled) {
-                        throw new Error("Microphone is muted or inactive.");
-                    }
-                    recorder = new MediaRecorder(stream);
-                    recorder.ondataavailable = e => audioChunks.push(e.data);
-                    recorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks);
-                        const formData = new FormData();
-                        formData.append('audio_file', audioBlob, 'recorded_audio.wav');
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const choice = urlParams.get('choice');
-                        formData.append('choice', choice);
-                        updateButtonState('processing');
-                        try {
-                            const accessToken = localStorage.getItem("accessToken");
-                            if (!accessToken) {
-                                throw new Error("Access token not found in localStorage.");
-                            }
-                            const endpointTwo = getChatEndpointTwo();
-                            const response = await fetch(endpointTwo, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                },
-                                body: formData
-                            });
-
-                            if (!response.ok) {
-                                if (response.status === 401) {
-                                    throw new Error('Unauthorized: Not authenticated');
-                                }
-                                throw new Error(`HTTP error! Status: ${response.status}`);
-                            }
-
-                            const data = await response.json();
-                            console.log(data);
-
-                            if (data.error === "unknown_language") {
-                                displayMessage("😵‍💫 Il semble que ta prononciation n'est pas bonne, ou tu parles en français, recommencez.", 'bot', null, true);
-                            } else {
-                                if (data.user_input) {
-                                    displayMessage(data.user_input, 'user');
-                                }
-
-                                if (data.generated_response) {
-                                    displayMessage(data.generated_response, 'bot', data.audio_base64);
-                                }
-
-                                if (data.suggestions) {
-                                    appendSuggestions(data.suggestions);
-                                }
-                            }
-
-                        } catch (err) {
-                            console.error('Error sending audio data to server: ', err);
-                            displayErrorMessage("Erreur lors de l'enregistrement, recommencez.");
-                        } finally {
-                            audioChunks = [];
-                            recording = false;
-                            updateButtonState('start');
-                        }
-                    };
-                    recorder.start();
-                    recording = true;
-                    updateButtonState('stop');
-                } catch (err) {
-                    if (err.name === 'DOMException' && err.message.includes('Requested device not found')) {
-                        console.error('Error starting recording: ', err);
-                        displayErrorMessage("Microphone non trouvé. Veuillez vérifier que votre microphone est connecté et fonctionne correctement.");
-                    } else {
-                        console.error('Error starting recording: ', err);
-                        displayErrorMessage("🎙️ Erreur lors du démarrage de l'enregistrement : Microphone inactif ou muet.");
-                    }
-                }
-            } else {
-                recorder.stop();
+        // Fonction pour jouer l'audio
+        function playAudioFromBase64(audioBase64) {
+            try {
+                const audioElement = document.createElement('audio');
+                audioElement.src = "data:audio/wav;base64," + audioBase64;
+                audioElement.play().then(() => {
+                    console.log('🔊 Audio en lecture');
+                    changeAvatarToGif();
+                }).catch((error) => {
+                    console.warn('⚠️ Lecture auto bloquée:', error);
+                });
+                
+                audioElement.onended = () => {
+                    changeAvatarToPng();
+                };
+            } catch (error) {
+                console.error('❌ Erreur audio:', error);
             }
+        }
+
+        // Endpoints
+        function getChatEndpoint() {
+            const url = window.location.href;
+            if (url.includes('conv_')) return '/chat_conv/start';
+            if (url.includes('r_a_m_')) return '/chat_repeat/start';
+            throw new Error('URL invalide');
         }
 
         function getChatEndpointTwo() {
             const url = window.location.href;
-            if (url.includes('conv_')) {
-                return '/chat_conv';
-            } else if (url.includes('r_a_m_')) {
-                return '/chat_repeat';
+            if (url.includes('conv_')) return '/chat_conv';
+            if (url.includes('r_a_m_')) return '/chat_repeat';
+            throw new Error('URL invalide');
+        }
+
+        // Enregistrement vocal
+        async function toggleRecording() {
+            if (!recording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const audioTracks = stream.getAudioTracks();
+                    
+                    if (audioTracks.length === 0 || !audioTracks[0].enabled) {
+                        throw new Error("Microphone inactif");
+                    }
+
+                    recorder = new MediaRecorder(stream);
+                    recorder.ondataavailable = e => audioChunks.push(e.data);
+                    recorder.onstop = async () => await handleRecordingStop();
+
+                    recorder.start();
+                    recording = true;
+                    updateButtonState('stop');
+                    console.log('🎙️ Enregistrement démarré');
+
+                } catch (err) {
+                    console.error('❌ Erreur microphone:', err);
+                    handleMicrophoneError(err);
+                    updateButtonState('start');
+                }
             } else {
-                throw new Error('Invalid URL: Unable to determine the correct endpoint');
+                recorder.stop();
+                console.log('⏹️ Arrêt demandé');
             }
         }
 
+        function handleMicrophoneError(err) {
+            if (err.name === 'NotFoundError') {
+                displayErrorMessage("🎙️ Microphone non trouvé. Vérifiez votre matériel.");
+            } else if (err.name === 'NotAllowedError') {
+                displayErrorMessage("🔒 Accès microphone refusé. Autorisez l'accès dans votre navigateur.");
+            } else {
+                displayErrorMessage("⚠️ Erreur microphone: " + err.message);
+            }
+        }
+
+        // Gestion arrêt enregistrement
+        async function handleRecordingStop() {
+            try {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio_file', audioBlob, 'recorded_audio.wav');
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const choice = urlParams.get('choice');
+                formData.append('choice', choice);
+
+                updateButtonState('processing');
+                showTypingIndicator();
+
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) throw new Error("Token manquant");
+
+                const endpoint = getChatEndpointTwo();
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}` },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('🔐 Session expirée');
+                    }
+                    throw new Error(`Erreur HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📨 Réponse reçue:', data);
+
+                // Traitement des réponses
+                if (data.error === "unknown_language") {
+                    displayErrorMessage("🗣️ Langue non reconnue. Parlez en anglais s'il vous plaît.");
+                } else {
+                    if (data.user_input) {
+                        displayMessage(data.user_input, 'user');
+                    }
+                    if (data.generated_response) {
+                        setTimeout(() => {
+                            displayMessage(data.generated_response, 'bot', data.audio_base64);
+                        }, 300);
+                    }
+                    if (data.suggestions) {
+                        setTimeout(() => {
+                            appendSuggestions(data.suggestions);
+                        }, 600);
+                    }
+                }
+
+            } catch (err) {
+                console.error('❌ Erreur envoi:', err);
+                displayErrorMessage("💥 " + err.message);
+            } finally {
+                audioChunks = [];
+                recording = false;
+                hideTypingIndicator();
+                updateButtonState('start');
+            }
+        }
+
+        // Affichage des suggestions
         function appendSuggestions(suggestions) {
             const chatBox = document.getElementById('chatBox');
-            const suggestionsTitle = document.createElement('div');
-            suggestionsTitle.className = 'suggestions-title text-gray-500 font-bold mb-2';
-            suggestionsTitle.textContent = 'Suggestion : ⬇️';
-
-            chatBox.appendChild(suggestionsTitle);
-
+            
             if (suggestions && suggestions.length > 0) {
+                const suggestionsContainer = document.createElement('div');
+                suggestionsContainer.className = 'suggestions-container space-y-2 mt-4';
+                
+                const title = document.createElement('div');
+                title.className = 'flex items-center space-x-2 text-sm text-gray-600 mb-3';
+                title.innerHTML = `
+                    <ion-icon name="bulb" class="text-yellow-500"></ion-icon>
+                    <span class="font-medium">Suggestions pour vous aider :</span>
+                `;
+                suggestionsContainer.appendChild(title);
+
                 suggestions.forEach((suggestion, index) => {
-                    if (suggestion.trim() !== "") {
+                    if (suggestion.trim()) {
                         const suggestionDiv = document.createElement('div');
-                        suggestionDiv.className = 'div bg-yellow-200 text-blue-800 p-2 rounded mb-2';
-                        suggestionDiv.textContent = suggestion;
-                        suggestionDiv.setAttribute('data-index', index);
+                        suggestionDiv.className = 'suggestion-item p-3 rounded-xl border border-yellow-200 hover:border-yellow-300 transition-all duration-300 cursor-pointer';
+                        suggestionDiv.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <ion-icon name="arrow-forward" class="text-yellow-600 text-sm"></ion-icon>
+                                <span class="text-gray-800">${suggestion}</span>
+                            </div>
+                        `;
+                        
                         suggestionDiv.addEventListener('click', () => {
                             const userInputField = document.getElementById('userInputField');
                             userInputField.value = suggestion;
+                            if (document.getElementById('textInputContainer').classList.contains('hidden')) {
+                                toggleTextArea();
+                            }
+                            userInputField.focus();
+                            
+                            // Animation de sélection
+                            suggestionDiv.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                suggestionDiv.style.transform = 'scale(1)';
+                            }, 150);
                         });
-                        chatBox.appendChild(suggestionDiv);
+                        
+                        suggestionsContainer.appendChild(suggestionDiv);
                     }
                 });
-            } else {
-                const noSuggestionsDiv = document.createElement('div');
-                noSuggestionsDiv.className = 'no-suggestions text-red-500';
-                noSuggestionsDiv.textContent = "Aucune suggestion disponible.";
-                chatBox.appendChild(noSuggestionsDiv);
+
+                chatBox.appendChild(suggestionsContainer);
             }
+            
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function checkAndStopSession(generated_response) {
-            if (generated_response === "Thanks for the exchange, I have to go soon! Bye.") {
-                stopChatSession();
-            }
-        }
-
+        // Fonction principale d'affichage des messages
         function displayMessage(message, sender, audioBase64, isError = false) {
             const chatBox = document.getElementById('chatBox');
 
+            // Validation du message
             if (Array.isArray(message)) {
-                console.warn('The message is a tuple, extracting the first element:', message);
                 message = message[0];
             }
-
+            
             if (typeof message !== 'string') {
-                console.error('The message is not a string:', message);
-                message = ''; 
+                message = String(message) || '';
             }
 
+            // Filtrer les messages indésirables
             if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
-                const errorMessageDiv = document.createElement('div');
-                errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
-                errorMessageDiv.textContent = "🗣️ Aucun audio détecté, recommencez.";
-                chatBox.appendChild(errorMessageDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
+                displayErrorMessage("🎤 Audio non détecté. Recommencez.");
                 return;
             }
 
-            if (!message) return; 
-
-            const messageContainer = document.createElement('div');
-            messageContainer.className = 'message-container mb-2';
-
-            const messageDiv = document.createElement('div');
-            if (isError) {
-                messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
-            } else if (message.startsWith('Traduction :')) {
-                messageDiv.className = 'message bg-green-200 text-black rounded-lg p-2 max-w-xs';
-            } else {
-                messageDiv.className = sender === 'bot' ? 'message bg-gray-200 rounded-lg text-black' : 'message self bg-blue-500 text-white rounded-lg';
+            if (!message || message.trim() === '') {
+                return;
             }
 
-            messageDiv.textContent = message;
+            // Créer le conteneur du message
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `message-container mb-4 ${sender === 'user' ? 'flex justify-end' : ''}`;
+
+            // Créer l'élément message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = getMessageClasses(sender, message, isError);
+            messageDiv.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    ${sender === 'bot' ? `
+                        <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                            <ion-icon name="sparkles" class="text-white text-sm"></ion-icon>
+                        </div>
+                    ` : ''}
+                    <div class="flex-1">
+                        <div class="message-content">${escapeHtml(message)}</div>
+                        ${audioBase64 && !isError ? `
+                            <div class="audio-container mt-3">
+                                <audio class="audio-player w-full" controls style="max-width: 300px; height: 40px;">
+                                    <source src="data:audio/wav;base64,${audioBase64}" type="audio/wav">
+                                </audio>
+                                <div class="audio-visualizer mt-2">
+                                    <div class="audio-progress"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${sender === 'user' ? `
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <ion-icon name="person" class="text-white text-sm"></ion-icon>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
             messageContainer.appendChild(messageDiv);
 
-            if (!message.startsWith('Traduction :') && sender === 'bot') {
-                const iconSVG = `
-                    <svg class="h-6 w-6 text-pink-500 inline-block ml-2 cursor-pointer translate-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" data-message="${message}">
-                        <path stroke="none" d="M0 0h24v24H0z"/>
-                        <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4"/>
-                        <path d="M11 19l4 -9l4 9m-.9 -2h-6.2"/>
-                    </svg>
-                `;
-                messageContainer.insertAdjacentHTML('beforeend', iconSVG);
+            // Ajouter les actions pour les messages bot
+            if (sender === 'bot' && !isError && !message.startsWith('Traduction :')) {
+                addMessageActions(messageContainer, message);
             }
 
-            if (audioBase64) {
-                const audioElement = document.createElement('audio');
-                audioElement.controls = true;
-                audioElement.src = "data:audio/wav;base64," + audioBase64;
-                audioElement.className = 'audio-player hidden-audio';
-                audioElement.addEventListener('loadeddata', () => {
-                    audioElement.play();
-                });
-
-                audioElement.onplay = () => changeAvatarToGif(); 
-                audioElement.onpause = () => changeAvatarToPng(); 
-                audioElement.onended = () => changeAvatarToPng(); 
-
-                messageContainer.appendChild(audioElement);
-
-                const replayIconSVG = `
-                    <svg class="h-6 w-6 text-zinc-500 cursor-pointer replay-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                    </svg>
-                `;
-                messageContainer.insertAdjacentHTML('beforeend', replayIconSVG);
-            }
-
+            // Animation d'apparition
+            messageContainer.style.opacity = '0';
+            messageContainer.style.transform = 'translateY(20px)';
             chatBox.appendChild(messageContainer);
+
+            // Déclencher l'animation
+            requestAnimationFrame(() => {
+                messageContainer.style.transition = 'all 0.3s ease-out';
+                messageContainer.style.opacity = '1';
+                messageContainer.style.transform = 'translateY(0)';
+            });
+
+            // Gérer l'audio
+            const audioPlayer = messageContainer.querySelector('.audio-player');
+            if (audioPlayer) {
+                setupAudioPlayer(audioPlayer, messageContainer);
+            }
+
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const translateIcon = messageContainer.querySelector('.translate-icon');
-            if (translateIcon) {
-                translateIcon.addEventListener('click', () => {
-                    const message = translateIcon.getAttribute('data-message');
-                    translateMessage(message);
-                    translateIcon.remove();
-                });
-            }
-
-            const replayIcon = messageContainer.querySelector('.replay-icon');
-            if (replayIcon) {
-                replayIcon.addEventListener('click', () => {
-                    const audioPlayer = messageContainer.querySelector('.audio-player');
-                    if (audioPlayer) {
-                        audioPlayer.play();
-                    }
-                });
-            }
-
+            // Vérifier arrêt de session
             if (sender === 'bot') {
                 checkAndStopSession(message);
             }
         }
 
+        // Configuration du lecteur audio
+        function setupAudioPlayer(audioPlayer, container) {
+            const progressBar = container.querySelector('.audio-progress');
+            
+            audioPlayer.addEventListener('timeupdate', () => {
+                if (audioPlayer.duration) {
+                    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    progressBar.style.width = progress + '%';
+                }
+            });
 
+            audioPlayer.addEventListener('play', () => {
+                changeAvatarToGif();
+                progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+            });
 
-        function translateMessage(message) {
-            const translateUrl = '/translate';
+            audioPlayer.addEventListener('pause', () => {
+                changeAvatarToPng();
+            });
 
-            const requestBody = {
-                message: message
-            };
+            audioPlayer.addEventListener('ended', () => {
+                changeAvatarToPng();
+                progressBar.style.width = '0%';
+            });
 
-            const fetchOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            };
-
-            fetch(translateUrl, fetchOptions)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('Erreur lors de la traduction');
-                })
-                .then(data => {
-                    const translatedMessage = data.translated_message;
-                    console.log(`Message traduit: "${translatedMessage}"`);
-                    
-                    const messageContainer = document.querySelector('.message-container:last-child');
-
-                    if (messageContainer) {
-                        displayMessage(`Traduction : ${translatedMessage}`, 'bot');
-                        
-                        const translateIcon = messageContainer.querySelector('.translate-icon');
-                        if (translateIcon) {
-                            translateIcon.remove();  
-                        }
-                    } else {
-                        console.error('Erreur lors de la traduction: Aucun messageContainer trouvé.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la traduction:', error);
+            // Lecture automatique
+            audioPlayer.addEventListener('loadeddata', () => {
+                audioPlayer.play().catch(error => {
+                    console.warn('Lecture automatique bloquée:', error);
                 });
+            });
         }
 
+        // Actions sur les messages
+        function addMessageActions(container, message) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'flex items-center space-x-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity';
+            actionsDiv.innerHTML = `
+                <button class="translate-btn text-pink-500 hover:text-pink-600 p-1 rounded transition-colors" data-message="${escapeHtml(message)}" title="Traduire en français">
+                    <ion-icon name="language" class="text-lg"></ion-icon>
+                </button>
+                <button class="copy-btn text-gray-500 hover:text-gray-600 p-1 rounded transition-colors" data-message="${escapeHtml(message)}" title="Copier le message">
+                    <ion-icon name="copy" class="text-lg"></ion-icon>
+                </button>
+            `;
+            
+            container.classList.add('group');
+            container.appendChild(actionsDiv);
+
+            // Événements
+            const translateBtn = actionsDiv.querySelector('.translate-btn');
+            const copyBtn = actionsDiv.querySelector('.copy-btn');
+
+            translateBtn.addEventListener('click', () => {
+                translateMessage(message);
+                translateBtn.style.color = '#10b981';
+                translateBtn.innerHTML = '<ion-icon name="checkmark" class="text-lg"></ion-icon>';
+            });
+
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(message);
+                    copyBtn.style.color = '#10b981';
+                    copyBtn.innerHTML = '<ion-icon name="checkmark" class="text-lg"></ion-icon>';
+                    setTimeout(() => {
+                        copyBtn.style.color = '#6b7280';
+                        copyBtn.innerHTML = '<ion-icon name="copy" class="text-lg"></ion-icon>';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Erreur copie:', err);
+                }
+            });
+        }
+
+        // Classes CSS pour les messages
+        function getMessageClasses(sender, message, isError) {
+            const baseClasses = 'message p-4 max-w-md rounded-2xl shadow-sm';
+            
+            if (isError) {
+                return `${baseClasses} message-error`;
+            } else if (message.startsWith('Traduction :')) {
+                return `${baseClasses} message-translation`;
+            } else if (sender === 'bot') {
+                return `${baseClasses} message-bot`;
+            } else {
+                return `${baseClasses} message-user ml-auto`;
+            }
+        }
+
+        // Utilitaires
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         function displayErrorMessage(errorMessage) {
-            const chatBox = document.getElementById('chatBox');
-            const errorMessageDiv = document.createElement('div');
-            errorMessageDiv.className = 'message text-red-500 rounded-lg p-2 max-w-xs';
-            errorMessageDiv.textContent = errorMessage;
-            chatBox.appendChild(errorMessageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            displayMessage(errorMessage, 'bot', null, true);
         }
 
+        // Traduction
+        function translateMessage(message) {
+            fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur traduction');
+                return response.json();
+            })
+            .then(data => {
+                setTimeout(() => {
+                    displayMessage(`🇫🇷 ${data.translated_message}`, 'bot');
+                }, 300);
+            })
+            .catch(error => {
+                console.error('Erreur traduction:', error);
+                displayErrorMessage('❌ Erreur de traduction');
+            });
+        }
+
+        // États des boutons
         function updateButtonState(state) {
             const button = document.getElementById('toggleRecording');
             const loadingIndicator = document.getElementById('loadingIndicator');
 
+            button.classList.remove('recording-pulse');
+
             switch (state) {
                 case 'start':
-                    button.textContent = "Parler";
-                    button.classList.remove('hidden');
-                    button.classList.remove('bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
-                    button.classList.add('bg-green-500', 'text-white');
+                    button.innerHTML = `
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                        </svg>
+                        <span class="font-medium">Parler</span>
+                    `;
+                    button.className = 'btn-modern bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300';
+                    button.disabled = false;
                     loadingIndicator.classList.add('hidden');
                     break;
+
                 case 'stop':
-                    button.textContent = "Arrêter l'enregistrement";
-                    button.classList.remove('bg-green-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
-                    button.classList.add('bg-red-500', 'text-white');
+                    button.innerHTML = `
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                        </svg>
+                        <span class="font-medium">Arrêter</span>
+                    `;
+                    button.className = 'btn-modern recording-pulse bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300';
+                    button.disabled = false;
                     loadingIndicator.classList.add('hidden');
                     break;
+
                 case 'processing':
-                    button.classList.add('hidden');
+                    button.innerHTML = `
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                            <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                        </div>
+                        <span class="font-medium">Traitement...</span>
+                    `;
+                    button.className = 'btn-modern bg-gray-400 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 cursor-not-allowed';
+                    button.disabled = true;
                     loadingIndicator.classList.remove('hidden');
                     break;
-                default:
-                    break;
             }
         }
 
-        function monitorAudioVolume(audioElement) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const analyser = audioContext.createAnalyser();
-            const source = audioContext.createMediaElementSource(audioElement);
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function checkVolume() {
-                analyser.getByteFrequencyData(dataArray);
-                const volume = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-                if (volume < 10) {
-                    changeAvatarToPng();
-                } else {
-                    changeAvatarToGif();
-                }
-                requestAnimationFrame(checkVolume);
-            }
-
-            audioElement.onplay = () => {
-                audioContext.resume().then(() => {
-                    checkVolume();
-                });
-            };
-        }
-
-       
+        // Avatar animations
         function changeAvatarToGif() {
             const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.gif"; 
+            if (avatarImg) {
+                avatarImg.src = "../static/assets/images/ai/brain.gif";
+                avatarImg.style.transform = 'scale(1.1)';
+            }
         }
 
         function changeAvatarToPng() {
             const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.png"; 
-        }
-        
-        function toggleTextArea() {
-            const userInputField = document.getElementById('userInputField');
-            const sendTextMessageButton = document.getElementById('sendTextMessage');
-
-            if (userInputField.classList.contains('hidden')) {
-                userInputField.classList.remove('hidden');
-                sendTextMessageButton.classList.remove('hidden');
-            } else {
-                userInputField.classList.add('hidden');
-                sendTextMessageButton.classList.add('hidden');
+            if (avatarImg) {
+                avatarImg.src = "../static/assets/images/ai/brain.png";
+                avatarImg.style.transform = 'scale(1)';
             }
         }
 
-    async function sendTextMessage() {
-        const userInputField = document.getElementById('userInputField');
-        const message = userInputField.value.trim();
+        // Zone de texte
+        function toggleTextArea() {
+            const container = document.getElementById('textInputContainer');
+            const userInputField = document.getElementById('userInputField');
+            
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                container.style.opacity = '0';
+                container.style.transform = 'translateY(20px)';
+                
+                requestAnimationFrame(() => {
+                    container.style.transition = 'all 0.3s ease-out';
+                    container.style.opacity = '1';
+                    container.style.transform = 'translateY(0)';
+                });
+                
+                setTimeout(() => userInputField.focus(), 300);
+            } else {
+                container.style.opacity = '0';
+                container.style.transform = 'translateY(20px)';
+                setTimeout(() => container.classList.add('hidden'), 300);
+            }
+        }
 
-        if (message) {
+        // Envoi message texte
+        async function sendTextMessage() {
+            const userInputField = document.getElementById('userInputField');
+            const message = userInputField.value.trim();
+            
+            if (!message) {
+                userInputField.focus();
+                userInputField.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                    userInputField.style.borderColor = '';
+                }, 1000);
+                return;
+            }
+
             displayMessage(message, 'user');
             userInputField.value = '';
             updateButtonState('processing');
+            showTypingIndicator();
+
             try {
                 const response = await fetch('/chat/message', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message })
                 });
+
+                if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+
                 const data = await response.json();
-                if (data.generated_response) {
-                    displayMessage(data.generated_response, 'bot', data.audio_base64);
-                }
-                if (data.suggestions) {
-                    appendSuggestions(data.suggestions);
-                }
+                
+                setTimeout(() => {
+                    if (data.generated_response) {
+                        displayMessage(data.generated_response, 'bot', data.audio_base64);
+                    }
+                    if (data.suggestions) {
+                        setTimeout(() => appendSuggestions(data.suggestions), 300);
+                    }
+                }, 500);
+
             } catch (err) {
-                console.error('Error sending text message: ', err);
-                displayErrorMessage("Erreur lors de l'envoi du message texte.");
+                console.error('Erreur envoi texte:', err);
+                displayErrorMessage("💥 " + err.message);
             } finally {
+                hideTypingIndicator();
                 updateButtonState('start');
             }
         }
-    }
-    
 
-                window.addEventListener('beforeunload', async function(event) {
-                event.preventDefault(); 
-                await stopChatSession(); 
-            });
+        // Session management
+        function checkAndStopSession(generated_response) {
+            if (generated_response === "Thanks for the exchange, I have to go soon! Bye.") {
+                setTimeout(() => {
+                    displayMessage("🎯 Session terminée ! Redirection vers l'analyse...", 'bot');
+                    setTimeout(stopChatSession, 2000);
+                }, 1000);
+            }
+        }
 
-            async function stopChatSession() {
-                try {
-                    const accessToken = localStorage.getItem("accessToken");
-                    if (!accessToken) {
-                        throw new Error("Access token not found in localStorage.");
+        async function stopChatSession() {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) throw new Error("Token manquant");
+
+                const response = await fetch('/chat_repeat/stop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
                     }
+                });
 
-                    const response = await fetch('/chat_repeat/stop', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
+                if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
+                const data = await response.json();
+                if (data.message === "Chat session ended successfully.") {
+                    window.location.href = `analysis.html?conversation_id=${data.conversation_id}`;
+                }
+            } catch (err) {
+                console.error('Erreur arrêt session:', err);
+            }
+        }
 
-                    const data = await response.json();
-                    console.log(data); 
+        // Utilitaires
+        function logout() {
+            localStorage.removeItem("accessToken");
+            window.location.href = "form-login.html";
+        }
 
-                    if (data.message === "Chat session ended successfully.") {
-                        const conversationId = data.conversation_id;
-                        window.location.href = `analysis.html?conversation_id=${conversationId}`;
-                    }
-
-                } catch (err) {
-                    console.error('Error stopping chat session: ', err);
+        // Événements clavier
+        document.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey || event.shiftKey) && event.key === 'Enter') {
+                event.preventDefault();
+                const userInputField = document.getElementById('userInputField');
+                if (!document.getElementById('textInputContainer').classList.contains('hidden') && userInputField.value.trim()) {
+                    sendTextMessage();
                 }
             }
+            
+            if (event.code === 'Space' && !event.target.matches('input, textarea')) {
+                event.preventDefault();
+                toggleRecording();
+            }
+        });
 
+        // Chargement profil
+        async function loadUserProfile() {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) return;
+
+                const response = await fetch('/users/me', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('profile-name').textContent = user.nom || 'Utilisateur';
+                    document.getElementById('profile-email').textContent = user.email || '';
+                    document.getElementById('profile-name-header').textContent = user.nom || 'Utilisateur';
+                }
+            } catch (error) {
+                console.error('Erreur profil:', error);
+            }
+        }
+
+        // Initialisation
+        loadUserProfile();
+
+        // Gestion fermeture page
+        window.addEventListener('beforeunload', function(event) {
+            if (recording) {
+                event.preventDefault();
+                event.returnValue = 'Enregistrement en cours...';
+                return 'Enregistrement en cours...';
+            }
+        });
+
+        console.log('🎉 Interface chargée avec succès !');
     </script>
 </body>
-
 </html>

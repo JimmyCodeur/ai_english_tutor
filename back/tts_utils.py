@@ -1,6 +1,8 @@
 from TTS.api import TTS
 import numpy as np
+import os
 from datetime import datetime
+from pathlib import Path
 from back.audio_utils import lowpass_filter
 from pydub import AudioSegment
 import time
@@ -101,43 +103,125 @@ vocoder_models = {
     "be_common-voice_hifigan": "vocoder_models/be/common-voice/hifigan"
 }
 
+def ensure_audio_directories():
+    """Créer les répertoires audio s'ils n'existent pas"""
+    directories = [
+        './audio',
+        './audio/teacher',
+        './audio/user',
+    ]
+    
+    for directory in directories:
+        Path(directory).mkdir(parents=True, exist_ok=True)
+        print(f"Répertoire créé/vérifié : {directory}")
+
 async def text_to_speech_audio(generated_response, voice_key):
-    if voice_key not in voices:
-        raise ValueError(f"Invalid voice key: {voice_key}")
-
-    model_name = voices[voice_key]
-    tts = TTS(model_name=model_name, progress_bar=False, gpu=True)
-
-    if isinstance(generated_response, tuple):
-        print(f"Le texte est un tuple: {generated_response}, extraction du premier élément")
-        generated_response = generated_response[0]
-
-    start_time_total = time.time()
-
-    start_time_tts = time.time()
-    wav_data = await asyncio.to_thread(tts.tts, generated_response)
-    tts_time = time.time() - start_time_tts
-    await log_custom_metric("Generate TTS audio time", tts_time)
-
-    if isinstance(wav_data, tuple):
-        print(f"wav_data est un tuple, contenu : {wav_data}")
-        wav_data = wav_data[0]
-
-    wav_data_np = np.array(wav_data, dtype=np.float32)
-    wav_data_np = wav_data_np / np.max(np.abs(wav_data_np))
-    cutoff_freq = 8000
-    wav_data_filtered = lowpass_filter(wav_data_np, cutoff_freq, 22050)
-    wav_data_pcm = np.int16(wav_data_filtered * 32767)
-    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    audio_file_path = f"./audio/teacher/teacher_{current_time}.wav"
-
-    with wave.open(audio_file_path, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(22050)
-        wf.writeframes(wav_data_pcm.tobytes())
-
-    audio = AudioSegment.from_file(audio_file_path)
-    duration = len(audio) / 1000.0
-
-    return audio_file_path, duration
+    try:
+        print(f"Début TTS pour : '{generated_response}' avec la voix : {voice_key}")
+        
+        if voice_key not in voices:
+            raise ValueError(f"Clé de voix invalide : {voice_key}")
+        
+        # S'assurer que le répertoire existe
+        audio_dir = "./audio/teacher"
+        Path(audio_dir).mkdir(parents=True, exist_ok=True)
+        print(f"Répertoire audio vérifié : {audio_dir}")
+        
+        model_name = voices[voice_key]
+        print(f"Chargement du modèle TTS : {model_name}")
+        
+        # Initialiser TTS
+        tts = TTS(model_name=model_name, progress_bar=False, gpu=True)
+        
+        # Nettoyer le texte d'entrée
+        if isinstance(generated_response, tuple):
+            print(f"Le texte est un tuple: {generated_response}, extraction du premier élément")
+            generated_response = generated_response[0]
+        
+        if not isinstance(generated_response, str):
+            generated_response = str(generated_response)
+        
+        generated_response = generated_response.strip()
+        if not generated_response:
+            raise ValueError("Le texte à synthétiser est vide")
+        
+        print(f"Texte nettoyé : '{generated_response}'")
+        
+        start_time_total = time.time()
+        start_time_tts = time.time()
+        
+        # Générer l'audio dans un thread séparé
+        print("Génération de l'audio TTS...")
+        wav_data = await asyncio.to_thread(tts.tts, generated_response)
+        tts_time = time.time() - start_time_tts
+        await log_custom_metric("Generate TTS audio time", tts_time)
+        
+        print(f"Audio TTS généré en {tts_time:.2f}s")
+        
+        # Traitement des données audio
+        if isinstance(wav_data, tuple):
+            print(f"wav_data est un tuple, contenu : {wav_data}")
+            wav_data = wav_data[0]
+        
+        if wav_data is None or len(wav_data) == 0:
+            raise ValueError("Les données audio générées sont vides")
+        
+        # Normalisation et filtrage
+        wav_data_np = np.array(wav_data, dtype=np.float32)
+        
+        # Éviter la division par zéro
+        max_val = np.max(np.abs(wav_data_np))
+        if max_val > 0:
+            wav_data_np = wav_data_np / max_val
+        
+        cutoff_freq = 8000
+        wav_data_filtered = lowpass_filter(wav_data_np, cutoff_freq, 22050)
+        wav_data_pcm = np.int16(wav_data_filtered * 32767)
+        
+        # Créer le nom de fichier unique
+        current_time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Microseconds pour unicité
+        filename = f"teacher_{current_time}.wav"
+        audio_file_path = os.path.join(audio_dir, filename)
+        
+        print(f"Écriture du fichier audio : {audio_file_path}")
+        
+        # Écrire le fichier WAV
+        try:
+            with wave.open(audio_file_path, 'wb') as wf:
+                wf.setnchannels(1)  # Mono
+                wf.setsampwidth(2)  # 16-bit
+                wf.setframerate(22050)  # Sample rate
+                wf.writeframes(wav_data_pcm.tobytes())
+        except Exception as wav_error:
+            raise ValueError(f"Erreur lors de l'écriture du fichier WAV : {wav_error}")
+        
+        # Vérifier que le fichier a été créé
+        if not os.path.exists(audio_file_path):
+            raise FileNotFoundError(f"Le fichier audio n'a pas été créé : {audio_file_path}")
+        
+        # Vérifier la taille du fichier
+        file_size = os.path.getsize(audio_file_path)
+        if file_size == 0:
+            raise ValueError(f"Le fichier audio créé est vide : {audio_file_path}")
+        
+        print(f"Fichier audio créé avec succès : {audio_file_path} ({file_size} bytes)")
+        
+        # Calculer la durée
+        try:
+            audio = AudioSegment.from_file(audio_file_path)
+            duration = len(audio) / 1000.0  # Durée en secondes
+        except Exception as duration_error:
+            print(f"Erreur lors du calcul de la durée : {duration_error}")
+            # Estimation approximative basée sur le taux d'échantillonnage
+            duration = len(wav_data_pcm) / 22050.0
+        
+        total_time = time.time() - start_time_total
+        print(f"TTS terminé en {total_time:.2f}s, durée audio : {duration:.2f}s")
+        
+        return audio_file_path, duration
+        
+    except Exception as e:
+        print(f"Erreur dans text_to_speech_audio : {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise

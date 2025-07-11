@@ -193,3 +193,189 @@ RuntimeError: Calculated padded input size per channel: (4). Kernel size: (5). K
 2024-11-02T15:17:27.141445,Generate TTS audio time,1.5492863655090332,52.8,10.7,7.600070953369141,6.3
 2024-11-02T15:17:37.523555,Response Generation Time,66.19377517700195,52.8,9.5,7.604686737060547,6.3
 2024-11-02T15:17:40.447105,Generate TTS audio time,1.9047348499298096,52.8,19.4,7.605381011962891,6.3
+2025-07-11T12:46:01.046550,Generate TTS audio time,2.146071434020996,26.7,2.3,3.7082252502441406,24.1
+2025-07-11T12:46:01.051910,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_124601.wav',N/A,N/A,N/A,N/A
+2025-07-11T12:46:01.051910,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_124601.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T12:46:13.191429,Error,Error: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav',N/A,N/A,N/A,N/A
+2025-07-11T12:46:13.191429,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 369, in chat_with_brain
+    async with aiofiles.open(user_audio_path, ""wb"") as f:
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/base.py"", line 78, in __aenter__
+    self._obj = await self._coro
+                ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/threadpool/__init__.py"", line 80, in _open
+    f = yield from loop.run_in_executor(executor, cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T12:47:02.644626,Generate TTS audio time,0.8759315013885498,29.2,3.0,3.9987258911132812,24.1
+2025-07-11T12:47:02.648867,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_124702.wav',N/A,N/A,N/A,N/A
+2025-07-11T12:47:02.648867,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_124702.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T12:50:21.610450,Error,Error: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav',N/A,N/A,N/A,N/A
+2025-07-11T12:50:21.610450,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 369, in chat_with_brain
+    async with aiofiles.open(user_audio_path, ""wb"") as f:
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/base.py"", line 78, in __aenter__
+    self._obj = await self._coro
+                ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/threadpool/__init__.py"", line 80, in _open
+    f = yield from loop.run_in_executor(executor, cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:01:51.966179,Generate TTS audio time,2.2007079124450684,26.1,3.6,3.636791229248047,24.9
+2025-07-11T13:01:51.972464,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_130151.wav',N/A,N/A,N/A,N/A
+2025-07-11T13:01:51.972464,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    audio_file_path, duration = await text_to_speech_audio(alice_start_greetings, voice)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_130151.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:11:52.117029,Generate TTS audio time,0.6322219371795654,26.9,1.0,3.7571678161621094,24.9
+2025-07-11T13:11:52.122190,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_131152.wav',N/A,N/A,N/A,N/A
+2025-07-11T13:11:52.122190,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    conversation_start_time[user_id] = time.time()
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_131152.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:12:11.136200,Generate TTS audio time,0.7012989521026611,27.0,2.9,3.7720947265625,24.9
+2025-07-11T13:12:11.140563,Error,Error: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_131211.wav',N/A,N/A,N/A,N/A
+2025-07-11T13:12:11.140563,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 307, in start_chat_with_brain
+    conversation_start_time[user_id] = time.time()
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/tts_utils.py"", line 134, in text_to_speech_audio
+    with wave.open(audio_file_path, 'wb') as wf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 633, in open
+    return Wave_write(f)
+           ^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/wave.py"", line 425, in __init__
+    f = builtins.open(f, 'wb')
+        ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/teacher/teacher_20250711_131211.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:13:07.238318,Generate TTS audio time,1.7909700870513916,25.8,5.6,3.5934486389160156,24.9
+2025-07-11T13:13:57.069133,Error,Error: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav',N/A,N/A,N/A,N/A
+2025-07-11T13:13:57.069133,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 424, in chat_with_brain
+    async with aiofiles.open(user_audio_path, ""wb"") as f:
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/base.py"", line 78, in __aenter__
+    self._obj = await self._coro
+                ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/threadpool/__init__.py"", line 80, in _open
+    f = yield from loop.run_in_executor(executor, cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:14:05.392504,Error,Error: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav',N/A,N/A,N/A,N/A
+2025-07-11T13:14:05.392504,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 424, in chat_with_brain
+    async with aiofiles.open(user_audio_path, ""wb"") as f:
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/base.py"", line 78, in __aenter__
+    self._obj = await self._coro
+                ^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/aiofiles/threadpool/__init__.py"", line 80, in _open
+    f = yield from loop.run_in_executor(executor, cb)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './audio/user/recorded_audio.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T13:14:14.053739,Generate TTS audio time,0.7820110321044922,28.8,4.0,3.9481544494628906,24.9
+2025-07-11T13:57:47.342973,Generate TTS audio time,1.7959113121032715,26.5,5.2,3.6905479431152344,24.9
+2025-07-11T13:58:28.788896,Generate TTS audio time,19.746788501739502,30.5,6.9,4.220428466796875,24.9
+2025-07-11T13:59:04.158470,Generate TTS audio time,2.138580560684204,29.7,2.7,4.091728210449219,24.9
+2025-07-11T13:59:57.308743,Generate TTS audio time,0.7282371520996094,30.8,2.1,4.268707275390625,24.9
+2025-07-11T14:03:30.814377,Generate TTS audio time,1.559884786605835,27.5,2.1,3.849262237548828,25.1
+2025-07-11T14:03:54.891861,Generate TTS audio time,0.5978906154632568,30.2,3.3,4.172412872314453,25.1
+2025-07-11T14:04:16.335251,Generate TTS audio time,2.9247512817382812,30.5,4.0,4.212409973144531,25.1
+2025-07-11T14:10:33.053809,Generate TTS audio time,0.6873595714569092,28.5,1.3,4.006656646728516,25.1
+2025-07-11T14:10:53.381980,Generate TTS audio time,0.5977687835693359,28.5,2.8,4.000999450683594,25.1
+2025-07-11T14:11:19.121471,Generate TTS audio time,0.37044668197631836,31.0,2.8,4.292469024658203,25.1
+2025-07-11T14:12:22.978845,Generate TTS audio time,0.6777307987213135,30.9,1.4,4.286766052246094,25.1
+2025-07-11T14:13:10.370795,Error,Error: [Errno 1094995529] Invalid data found when processing input: './audio/user/recorded_audio.wav',N/A,N/A,N/A,N/A
+2025-07-11T14:13:10.370795,Traceback,"Traceback (most recent call last):
+  File ""/app/back/api_main.py"", line 441, in chat_with_brain
+    user_input, transcription_time = await transcription_task
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/app/back/transcribe_audio.py"", line 12, in transcribe_audio
+    segments, info = await asyncio.to_thread(asr_model.transcribe,
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/asyncio/threads.py"", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/lib/python3.11/concurrent/futures/thread.py"", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/transcribe.py"", line 236, in transcribe
+    audio = decode_audio(audio, sampling_rate=sampling_rate)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/usr/local/lib/python3.11/dist-packages/faster_whisper/audio.py"", line 45, in decode_audio
+    with av.open(input_file, metadata_errors=""ignore"") as container:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""av/container/core.pyx"", line 401, in av.container.core.open
+  File ""av/container/core.pyx"", line 272, in av.container.core.Container.__cinit__
+  File ""av/container/core.pyx"", line 292, in av.container.core.Container.err_check
+  File ""av/error.pyx"", line 336, in av.error.err_check
+av.error.InvalidDataError: [Errno 1094995529] Invalid data found when processing input: './audio/user/recorded_audio.wav'
+",N/A,N/A,N/A,N/A
+2025-07-11T14:13:30.721734,Generate TTS audio time,0.6461746692657471,46.0,8.2,6.6305694580078125,25.2
+2025-07-11T14:13:50.207741,Generate TTS audio time,1.3324878215789795,46.1,3.3,6.645732879638672,25.2
