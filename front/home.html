@@ -1,3 +1,4 @@
+<!-- fichier home.html-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,10 +7,8 @@
     <title>TalkAI - Cours</title>
     <meta name="description" content="TalkAI - Vos cours d'apprentissage des langues">
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <!-- Configuration Tailwind personnalisée -->
     <script>
         tailwind.config = {
@@ -41,79 +40,64 @@
             }
         }
     </script>
-    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: #f8fafc;
         }
-        
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
         .card-hover {
             transition: all 0.3s ease;
         }
-        
         .card-hover:hover {
             transform: translateY(-8px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
-        
         .sidebar-backdrop {
             backdrop-filter: blur(10px);
             background: rgba(0, 0, 0, 0.3);
         }
-        
         .mobile-menu-open {
             transform: translateX(0);
         }
-        
         .mobile-menu-closed {
             transform: translateX(-100%);
         }
-        
         .category-btn {
             transition: all 0.3s ease;
         }
-        
         .category-btn.active {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             transform: translateY(-2px);
         }
-        
         .category-btn:hover:not(.active) {
             background: #f1f5f9;
             transform: translateY(-1px);
         }
-        
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
-        
         .animate-float {
             animation: float 6s ease-in-out infinite;
         }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    
     <!-- Mobile Menu Overlay -->
     <div id="mobile-overlay" class="fixed inset-0 z-40 sidebar-backdrop hidden lg:hidden"></div>
     
     <!-- Container principal -->
     <div class="min-h-screen">
-        
         <!-- Header -->
         <header class="sticky top-0 z-50 glass-effect border-b border-gray-200/20 shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -126,7 +110,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        
                         <!-- Logo -->
                         <a href="home.html" class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -149,7 +132,7 @@
                     <!-- Profil utilisateur -->
                     <div class="relative">
                         <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                            <img src="../static/assets/images/avatars/placeholder.png" 
+                            <img src="../static/assets/images/avatars/placeholder.png"
                                  class="w-8 h-8 rounded-full ring-2 ring-primary-500" alt="Avatar">
                             <div class="hidden sm:block text-left">
                                 <div id="profile-name" class="text-sm font-semibold text-gray-900"></div>
@@ -164,7 +147,7 @@
                         <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl border border-gray-200/20 py-2 z-50">
                             <div class="px-4 py-3 border-b border-gray-200/20">
                                 <div class="flex items-center space-x-3">
-                                    <img src="../static/assets/images/avatars/avatar-2.jpg" 
+                                    <img src="../static/assets/images/avatars/avatar-2.jpg"
                                          class="w-12 h-12 rounded-full" alt="Avatar">
                                     <div>
                                         <div id="profile-name-menu" class="font-semibold text-gray-900"></div>
@@ -192,6 +175,12 @@
                                     </svg>
                                     Configuration
                                 </a>
+                                <a href="voice-tester.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                                                                        <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                    </svg>
+                                    🎙️ Testeur de Voix
+                                </a>
                                 <hr class="my-2 border-gray-200/20">
                                 <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
                                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +194,7 @@
                 </div>
             </div>
         </header>
-        
+
         <!-- Sidebar mobile -->
         <div id="mobile-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 mobile-menu-closed transition-transform duration-300 lg:hidden">
             <div class="h-full glass-effect border-r border-gray-200/20">
@@ -227,10 +216,9 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Contenu principal -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            
             <!-- En-tête -->
             <div class="text-center mb-12">
                 <h1 class="text-4xl font-bold text-gray-900 mb-4">
@@ -240,7 +228,7 @@
                     Choisissez un cours pour commencer votre apprentissage des langues avec l'IA
                 </p>
             </div>
-            
+
             <!-- Section Conversation libre -->
             <section class="mb-16">
                 <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
@@ -253,7 +241,7 @@
                             <p class="text-gray-600">Pratiquez vos compétences conversationnelles en temps réel</p>
                         </div>
                     </div>
-                    
+
                     <!-- Filtres catégories -->
                     <div class="flex flex-wrap gap-3 mb-8">
                         <button class="category-btn active px-6 py-3 rounded-xl font-semibold text-sm" data-category="conv-all">
@@ -265,10 +253,14 @@
                         <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="conv-intermediate">
                             Intermédiaire
                         </button>
+                        <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="conv-advanced">
+                            Avancé
+                        </button>
                     </div>
-                    
+
                     <!-- Cartes conversation -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="conversation-cards">
+                        <!-- Cours 1: Salutations avec Alice -->
                         <div class="conv-card conv-all conv-beginner">
                             <a href="course.html?choice=conv_greetings_common_conversations" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
@@ -277,15 +269,15 @@
                                             <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
                                         </div>
                                         <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-900 mb-1">Salutations et conversations</h3>
+                                            <h3 class="font-semibold text-gray-900 mb-1">Salutations & Conversations</h3>
                                             <div class="flex items-center space-x-2">
                                                 <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
-                                                <span class="text-xs text-gray-500">👋🏼</span>
+                                                <span class="text-xs text-gray-500">👋🏼 Alice</span>
                                             </div>
                                         </div>
                                     </div>
                                     <p class="text-gray-600 text-sm mb-4">
-                                        Maîtrisez les bases de la conversation en anglais : salutations, présentations et échanges courants.
+                                        Conversez avec Alice pour maîtriser les bases : salutations, présentations et échanges courants en anglais.
                                     </p>
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs text-gray-400">15-20 min</span>
@@ -296,83 +288,25 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section Modes d'entraînement -->
-            <section class="mb-16">
-                <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-                    <div class="flex items-center space-x-3 mb-8">
-                        <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl flex items-center justify-center">
-                            <span class="text-2xl">🎯</span>
-                        </div>
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">Modes d'entraînement</h2>
-                            <p class="text-gray-600">Répétez et perfectionnez votre prononciation</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Filtres catégories -->
-                    <div class="flex flex-wrap gap-3 mb-8">
-                        <button class="category-btn active px-6 py-3 rounded-xl font-semibold text-sm" data-category="train-all">
-                            Tous les modes
-                        </button>
-                        <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="train-repeat">
-                            Repeat After Me
-                        </button>
-                        <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="train-phrases">
-                            Phrases
-                        </button>
-                    </div>
-                    
-                    <!-- Cartes entraînement -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="training-cards">
-                        <div class="train-card train-all train-repeat">
-                            <a href="course.html?choice=r_a_m_greetings_common_conversations" class="block">
+
+                        <!-- Cours 2: Réservation de taxi avec Mike -->
+                        <div class="conv-card conv-all conv-intermediate">
+                            <a href="course.html?choice=conv_taxi_booking" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
                                         <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center animate-float">
                                             <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
                                         </div>
                                         <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-900 mb-1">Salutations et conversations</h3>
+                                            <h3 class="font-semibold text-gray-900 mb-1">Réservation de Taxi</h3>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Répétition</span>
-                                                <span class="text-xs text-gray-500">👋🏼</span>
+                                                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">Intermédiaire</span>
+                                                <span class="text-xs text-gray-500">🚕 Mike</span>
                                             </div>
                                         </div>
                                     </div>
                                     <p class="text-gray-600 text-sm mb-4">
-                                        Répétez après l'IA pour perfectionner votre prononciation des salutations.
-                                    </p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-gray-400">10-15 min</span>
-                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <div class="train-card train-all train-repeat">
-                            <a href="course.html?choice=r_a_m_travel_situation_at_the_airport" class="block">
-                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                                    <div class="flex items-center space-x-4 mb-4">
-                                        <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center animate-float">
-                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
-                                        </div>
-                                        <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-900 mb-1">À l'aéroport</h3>
-                                            <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Voyage</span>
-                                                <span class="text-xs text-gray-500">✈️</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p class="text-gray-600 text-sm mb-4">
-                                        Pratiquez les situations de voyage : enregistrement, contrôles, annonces.
+                                        Apprenez avec Mike à réserver un taxi, négocier les tarifs et communiquer avec les chauffeurs en anglais.
                                     </p>
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs text-gray-400">20-25 min</span>
@@ -383,27 +317,57 @@
                                 </div>
                             </a>
                         </div>
-                        
-                        <div class="train-card train-all train-phrases">
-                            <a href="course.html?choice=english_phrases" class="block">
+
+                        <!-- Cours 3: Achat de billet d'avion avec Sarah -->
+                        <div class="conv-card conv-all conv-intermediate">
+                            <a href="course.html?choice=conv_airport_ticket" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
                                         <div class="w-16 h-16 bg-gradient-to-r from-green-400 to-teal-500 rounded-2xl flex items-center justify-center animate-float">
                                             <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
                                         </div>
                                         <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-900 mb-1">English Phrases</h3>
+                                            <h3 class="font-semibold text-gray-900 mb-1">Achat de Billet d'Avion</h3>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">Phrases</span>
-                                                <span class="text-xs text-gray-500">😀</span>
+                                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Intermédiaire</span>
+                                                <span class="text-xs text-gray-500">✈️ Sarah</span>
                                             </div>
                                         </div>
                                     </div>
                                     <p class="text-gray-600 text-sm mb-4">
-                                        Apprenez et répétez les phrases essentielles en anglais.
+                                        Pratiquez avec Sarah l'achat de billets d'avion, les changements de vol et les procédures aéroportuaires.
                                     </p>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-xs text-gray-400">15-20 min</span>
+                                        <span class="text-xs text-gray-400">25-30 min</span>
+                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Cours bonus: Chat libre général -->
+                        <div class="conv-card conv-all conv-advanced">
+                            <a href="course.html?choice=conv_greetings_common_conversations" class="block">
+                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center animate-float">
+                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 mb-1">Chat Libre</h3>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Avancé</span>
+                                                <span class="text-xs text-gray-500">💬 Alice</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-4">
+                                        Conversation libre avec Alice sur tous les sujets pour améliorer votre fluidité en anglais.
+                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">Illimité</span>
                                         <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                         </svg>
@@ -414,86 +378,61 @@
                     </div>
                 </div>
             </section>
-            
-            <!-- Section Accès rapide -->
-            <section class="mb-16">
-                <div class="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8 text-white">
-                    <div class="text-center">
-                        <h2 class="text-2xl font-bold mb-4">🚀 Prêt à commencer ?</h2>
-                        <p class="text-primary-100 mb-6 max-w-2xl mx-auto">
-                            Choisissez un cours ci-dessus ou commencez par notre cours le plus populaire
-                        </p>
-                        <a href="course.html?choice=conv_greetings_common_conversations" 
-                           class="inline-flex items-center bg-white text-primary-600 px-8 py-3 rounded-xl font-semibold hover:bg-primary-50 transition-colors">
-                            Commencer maintenant
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
-    
+
     <!-- Scripts -->
     <script src="../static/assets/js/logout.js"></script>
     <script src="../static/assets/js/info_users.js" defer></script>
-
     <script>
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileSidebar = document.getElementById('mobile-sidebar');
         const mobileOverlay = document.getElementById('mobile-overlay');
-        
+
         function toggleMobileMenu() {
             mobileSidebar.classList.toggle('mobile-menu-open');
             mobileSidebar.classList.toggle('mobile-menu-closed');
             mobileOverlay.classList.toggle('hidden');
         }
-        
+
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         mobileOverlay.addEventListener('click', toggleMobileMenu);
-        
+
         // Profile menu toggle
         const profileBtn = document.getElementById('profile-btn');
         const profileMenu = document.getElementById('profile-menu');
-        
+
         profileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             profileMenu.classList.toggle('hidden');
         });
-        
+
         document.addEventListener('click', () => {
             profileMenu.classList.add('hidden');
         });
-        
+
         profileMenu.addEventListener('click', (e) => {
             e.stopPropagation();
         });
-        
+
         // Category filters
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const category = btn.getAttribute('data-category');
-                const isConversation = category.startsWith('conv-');
                 
-                // Update active button in same group
-                const group = isConversation ? 'conv' : 'train';
-                document.querySelectorAll(`[data-category^="${group}-"]`).forEach(b => {
+                // Update active button
+                document.querySelectorAll('.category-btn').forEach(b => {
                     b.classList.remove('active');
                     b.classList.add('border', 'border-gray-200');
                 });
-                
                 btn.classList.add('active');
                 btn.classList.remove('border', 'border-gray-200');
-                
+
                 // Filter cards
-                const cardContainer = isConversation ? 'conversation-cards' : 'training-cards';
-                const cards = document.querySelectorAll(`#${cardContainer} .${group}-card`);
-                
+                const cards = document.querySelectorAll('.conv-card');
                 cards.forEach(card => {
-                    if (category.endsWith('-all') || card.classList.contains(category)) {
+                    if (category === 'conv-all' || card.classList.contains(category.replace('conv-', 'conv-'))) {
                         card.style.display = 'block';
                     } else {
                         card.style.display = 'none';
@@ -501,14 +440,81 @@
                 });
             });
         });
-        
+
         // Mise à jour du nom d'utilisateur
         document.addEventListener('DOMContentLoaded', function() {
             // Cette fonction sera appelée par info_users.js
             window.updateWelcomeName = function(name) {
                 document.getElementById('welcome-name').textContent = name || 'Utilisateur';
             };
+            
+            // Charger les statistiques de l'utilisateur
+            loadUserStats();
         });
+
+        // Fonction pour charger les statistiques
+        async function loadUserStats() {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                if (!accessToken) return;
+
+                // Charger les conversations de l'utilisateur
+                const response = await fetch('/user/conversations', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (response.ok) {
+                    const conversations = await response.json();
+                    console.log('Conversations loaded:', conversations.length);
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+            }
+        }
+
+        // Fonction logout
+        function logout() {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("nom");
+            window.location.href = "form-login.html";
+        }
+
+        // Animation des cartes au scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observer toutes les cartes
+        document.querySelectorAll('.conv-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Effet de survol amélioré pour les cartes
+        document.querySelectorAll('.card-hover').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        console.log('🎉 Interface TalkAI Home chargée avec succès !');
     </script>
 </body>
 </html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkAI - Test Phi3 Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .response-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { border-color: #10b981; background: #ecfdf5; }
+        .error { border-color: #ef4444; background: #fef2f2; }
+        .warning { border-color: #f59e0b; background: #fffbeb; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            border-bottom-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🔍 TalkAI - Debug Phi3 & Mike</h1>
+            <p class="text-gray-600">Outils de diagnostic pour comprendre pourquoi Phi3 ne maintient pas le personnage Mike</p>
+            
+            <!-- Status Connection -->
+            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold">Statut de connexion Ollama :</span>
+                    <button onclick="testConnection()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Tester Connexion
+                    </button>
+                </div>
+                <div id="connectionStatus" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-lg shadow-lg mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-0">
+                    <button class="tab-button active" onclick="switchTab('simple')">
+                        🔧 Test Simple
+                    </button>
+                    <button class="tab-button" onclick="switchTab('complete')">
+                        🎭 Test Complet Mike
+                    </button>
+                    <button class="tab-button" onclick="switchTab('model')">
+                        🤖 Debug Modèle
+                    </button>
+                    <button class="tab-button" onclick="switchTab('custom')">
+                        ✏️ Test Personnalisé
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab 1: Test Simple -->
+            <div id="simple" class="tab-content active p-6">
+                <h3 class="text-xl font-semibold mb-4">Test Simple Phi3</h3>
+                <div class="flex gap-4 mb-4">
+                    <input 
+                        type="text" 
+                        id="simpleMessage" 
+                        placeholder="Message à tester (ex: How are you?)"
+                        value="How are you?"
+                        class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button onclick="testSimple()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
+                        Tester Simple
+                    </button>
+                </div>
+                <div id="simpleResult"></div>
+            </div>
+
+            <!-- Tab 2: Test Complet Mike -->
+            <div id="complete" class="tab-content p-6">
+                <h3 class="text-xl font-semibold mb-4">Test Complet Mike avec Diagnostic</h3>
+                <div class="flex gap-4 mb-4">
+                    <input 
+                        type="text" 
+                        id="completeMessage" 
+                        placeholder="Message à tester"
+                        value="Who are you?"
+                        class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button onclick="testComplete()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                        Test Complet
+                    </button>
+                </div>
+                <div id="completeResult"></div>
+            </div>
+
+            <!-- Tab 3: Debug Modèle -->
+            <div id="model" class="tab-content p-6">
+                <h3 class="text-xl font-semibold mb-4">Debug Modèle Phi3</h3>
+                <button onclick="testModel()" class="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 mb-4">
+                    Lancer Tests de Contrôle
+                </button>
+                <div id="modelResult"></div>
+            </div>
+
+            <!-- Tab 4: Test Personnalisé -->
+            <div id="custom" class="tab-content p-6">
+                <h3 class="text-xl font-semibold mb-4">Test avec Prompt Personnalisé</h3>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Prompt personnalisé :</label>
+                    <textarea 
+                        id="customPrompt" 
+                        rows="6"
+                        placeholder="Entrez votre prompt personnalisé ici..."
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">You are Mike from NYC Taxi. Customer says: "Hello". Respond as Mike only.</textarea>
+                </div>
+                <button onclick="testCustom()" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600">
+                    Tester Prompt Personnalisé
+                </button>
+                <div id="customResult" class="mt-4"></div>
+            </div>
+        </div>
+
+        <!-- Logs en temps réel -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold">📋 Logs de Debug</h3>
+                <button onclick="clearLogs()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    Effacer Logs
+                </button>
+            </div>
+            <div id="debugLogs" class="response-box min-h-32 bg-gray-900 text-green-400"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTab = 'simple';
+
+        // Fonction pour changer d'onglet
+        function switchTab(tabName) {
+            // Désactiver tous les onglets
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activer l'onglet sélectionné
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            currentTab = tabName;
+        }
+
+        // Fonction pour logger
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logs = document.getElementById('debugLogs');
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                error: 'text-red-400',
+                warning: 'text-yellow-400'
+            };
+            logs.innerHTML += `<span class="${colors[type]}">[${timestamp}]</span> ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        // Fonction pour afficher les résultats
+        function displayResult(containerId, data, success = null) {
+            const container = document.getElementById(containerId);
+            let cssClass = 'response-box';
+            if (success === true) cssClass += ' success';
+            else if (success === false) cssClass += ' error';
+            else if (success === null) cssClass += ' warning';
+
+            container.innerHTML = `<div class="${cssClass}">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        // Test 1: Connexion Ollama
+        async function testConnection() {
+            log('🔄 Test de connexion Ollama...', 'info');
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.innerHTML = '<div class="loading"></div> Test en cours...';
+
+            try {
+                const response = await fetch('/test_ollama_connection');
+                const data = await response.json();
+                
+                if (data.status === 'connected') {
+                    statusDiv.innerHTML = `<span class="text-green-600 font-semibold">✅ Connecté</span> - Réponse: ${data.test_response}`;
+                    log('✅ Connexion Ollama OK', 'success');
+                } else {
+                    statusDiv.innerHTML = `<span class="text-red-600 font-semibold">❌ Erreur</span> - ${data.error}`;
+                    log(`❌ Erreur connexion: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="text-red-600 font-semibold">❌ Erreur réseau</span> - ${error.message}`;
+                log(`❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Simple
+        async function testSimple() {
+            const message = document.getElementById('simpleMessage').value;
+            log(`🔄 Test simple avec message: "${message}"`, 'info');
+
+            try {
+                const response = await fetch('/test_phi3_simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `message=${encodeURIComponent(message)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayResult('simpleResult', data, false);
+                    log(`❌ Test simple échoué: ${data.error}`, 'error');
+                } else {
+                    const success = data.response.includes('Mike') && !data.response.toLowerCase().includes('ai');
+                    displayResult('simpleResult', data, success);
+                    log(`${success ? '✅' : '⚠️'} Test simple terminé`, success ? 'success' : 'warning');
+                }
+            } catch (error) {
+                log(`❌ Erreur test simple: ${error.message}`, 'error');
+                displayResult('simpleResult', {error: error.message}, false);
+            }
+        }
+
+        // Test 3: Complet
+        async function testComplete() {
+            const message = document.getElementById('completeMessage').value;
+            log(`🔄 Test complet Mike avec message: "${message}"`, 'info');
+
+            try {
+                const response = await fetch(`/test_phi3_mike?test_message=${encodeURIComponent(message)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'demo_token'}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayResult('completeResult', data, false);
+                    log(`❌ Test complet échoué: ${data.error}`, 'error');
+                } else {
+                    const success = data.character_maintained;
+                    displayResult('completeResult', data, success);
+                    log(`${success ? '✅' : '⚠️'} Test complet terminé - Personnage maintenu: ${success}`, success ? 'success' : 'warning');
+                    
+                    if (data.ai_indicators_detected && data.ai_indicators_detected.length > 0) {
+                        log(`🚨 Indicateurs d'IA détectés: ${data.ai_indicators_detected.join(', ')}`, 'warning');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Erreur test complet: ${error.message}`, 'error');
+                displayResult('completeResult', {error: error.message}, false);
+            }
+        }
+
+        // Test 4: Debug Modèle
+        async function testModel() {
+            log('🔄 Lancement des tests de contrôle du modèle...', 'info');
+
+            try {
+                const response = await fetch('/debug_phi3_model');
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayResult('modelResult', data, false);
+                    log(`❌ Tests de contrôle échoués: ${data.error}`, 'error');
+                } else {
+                    let allSuccess = true;
+                    
+                    ['control_test', 'simple_test', 'negative_test'].forEach(testName => {
+                        const test = data[testName];
+                        if (!test.success) allSuccess = false;
+                        log(`${test.success ? '✅' : '❌'} ${testName}: ${test.success ? 'SUCCÈS' : 'ÉCHEC'}`, test.success ? 'success' : 'error');
+                    });
+                    
+                    displayResult('modelResult', data, allSuccess);
+                    log(`📊 Tests de contrôle terminés - Succès global: ${allSuccess}`, allSuccess ? 'success' : 'warning');
+                }
+            } catch (error) {
+                log(`❌ Erreur tests de contrôle: ${error.message}`, 'error');
+                displayResult('modelResult', {error: error.message}, false);
+            }
+        }
+
+        // Test 5: Personnalisé
+        async function testCustom() {
+            const prompt = document.getElementById('customPrompt').value;
+            log('🔄 Test avec prompt personnalisé...', 'info');
+
+            try {
+                // Appel direct à generate_ollama_response via un endpoint simple
+                const response = await fetch('/test_phi3_simple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `message=${encodeURIComponent(prompt)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayResult('customResult', data, false);
+                    log(`❌ Test personnalisé échoué: ${data.error}`, 'error');
+                } else {
+                    displayResult('customResult', data, null);
+                    log('📝 Test personnalisé terminé', 'info');
+                }
+            } catch (error) {
+                log(`❌ Erreur test personnalisé: ${error.message}`, 'error');
+                displayResult('customResult', {error: error.message}, false);
+            }
+        }
+
+        // Auto-test au chargement
+        window.addEventListener('load', function() {
+            log('🚀 Page de debug chargée', 'success');
+            log('💡 Commencez par tester la connexion Ollama', 'info');
+            
+            // Test automatique de connexion
+            setTimeout(testConnection, 1000);
+        });
+
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch(event.key) {
+                    case '1':
+                        event.preventDefault();
+                        switchTab('simple');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        switchTab('complete');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        switchTab('model');
+                        break;
+                    case '4':
+                        event.preventDefault();
+                        switchTab('custom');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
