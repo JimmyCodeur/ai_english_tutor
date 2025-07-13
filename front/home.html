@@ -1,4 +1,3 @@
-<!-- fichier home.html-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -90,6 +89,14 @@
         .animate-float {
             animation: float 6s ease-in-out infinite;
         }
+        .new-badge {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
@@ -176,7 +183,7 @@
                                     Configuration
                                 </a>
                                 <a href="voice-tester.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
-                                                                        <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
                                     </svg>
                                     🎙️ Testeur de Voix
@@ -229,6 +236,14 @@
                 </p>
             </div>
 
+            <!-- Bannière Nouveautés -->
+            <section class="mb-8">
+                <div class="bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 rounded-2xl p-6 text-white text-center">
+                    <h2 class="text-2xl font-bold mb-2">🎉 Nouveaux Personnages pour Débutants ! 🎉</h2>
+                    <p class="text-lg opacity-90">Découvrez Emma, Tom, Lucy et Ben - parfaits pour commencer l'anglais en douceur</p>
+                </div>
+            </section>
+
             <!-- Section Conversation libre -->
             <section class="mb-16">
                 <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
@@ -248,20 +263,145 @@
                             Tous les cours
                         </button>
                         <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="conv-beginner">
-                            Débutant
+                            🌱 Débutant
                         </button>
                         <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="conv-intermediate">
-                            Intermédiaire
+                            📈 Intermédiaire
                         </button>
                         <button class="category-btn px-6 py-3 rounded-xl font-semibold text-sm border border-gray-200" data-category="conv-advanced">
-                            Avancé
+                            🚀 Avancé
                         </button>
                     </div>
 
                     <!-- Cartes conversation -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="conversation-cards">
-                        <!-- Cours 1: Salutations avec Alice -->
-                        <div class="conv-card conv-all conv-beginner">
+                        
+                        <!-- 🆕 NOUVEAUX COURS DÉBUTANTS -->
+                        
+                        <!-- Cours 1: Emma - Professeure pour débutants -->
+                        <div class="conv-card conv-all conv-beginner relative">
+                            <span class="new-badge absolute top-2 right-2 text-xs px-2 py-1 text-white rounded-full font-bold z-10">NOUVEAU</span>
+                            <a href="course.html?choice=conv_beginner_teacher" class="block">
+                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <div class="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center animate-float">
+                                            <span class="text-2xl">👩‍🏫</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 mb-1">Professeure Emma</h3>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
+                                                <span class="text-xs text-gray-500">👩‍🏫 Emma</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-4">
+                                        Commencez avec Emma ! Elle enseigne l'anglais aux débutants avec patience et encourage chaque progrès.
+                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">10-15 min</span>
+                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Cours 2: Tom - Restaurant simple -->
+                        <div class="conv-card conv-all conv-beginner relative">
+                            <span class="new-badge absolute top-2 right-2 text-xs px-2 py-1 text-white rounded-full font-bold z-10">NOUVEAU</span>
+                            <a href="course.html?choice=conv_simple_restaurant" class="block">
+                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <div class="w-16 h-16 bg-gradient-to-r from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center animate-float">
+                                            <span class="text-2xl">🍕</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 mb-1">Restaurant avec Tom</h3>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
+                                                <span class="text-xs text-gray-500">🍕 Tom</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-4">
+                                        Apprenez à commander votre repas avec Tom, un serveur sympa qui utilise des mots simples.
+                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">10-15 min</span>
+                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Cours 3: Lucy - Shopping simple -->
+                        <div class="conv-card conv-all conv-beginner relative">
+                            <span class="new-badge absolute top-2 right-2 text-xs px-2 py-1 text-white rounded-full font-bold z-10">NOUVEAU</span>
+                            <a href="course.html?choice=conv_simple_shopping" class="block">
+                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center animate-float">
+                                            <span class="text-2xl">🛍️</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 mb-1">Shopping avec Lucy</h3>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
+                                                <span class="text-xs text-gray-500">🛍️ Lucy</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-4">
+                                        Faites du shopping avec Lucy ! Elle vous aide à acheter des vêtements avec des mots faciles.
+                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">10-15 min</span>
+                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Cours 4: Ben - Directions simples -->
+                        <div class="conv-card conv-all conv-beginner relative">
+                            <span class="new-badge absolute top-2 right-2 text-xs px-2 py-1 text-white rounded-full font-bold z-10">NOUVEAU</span>
+                            <a href="course.html?choice=conv_simple_directions" class="block">
+                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-teal-500 rounded-2xl flex items-center justify-center animate-float">
+                                            <span class="text-2xl">🗺️</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 mb-1">Directions avec Ben</h3>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
+                                                <span class="text-xs text-gray-500">🗺️ Ben</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-4">
+                                        Demandez votre chemin avec Ben ! Il vous guide avec des directions très simples.
+                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">10-15 min</span>
+                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- COURS EXISTANTS -->
+
+                        <!-- Cours 5: Salutations avec Alice -->
+                        <div class="conv-card conv-all conv-intermediate">
                             <a href="course.html?choice=conv_greetings_common_conversations" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
@@ -271,7 +411,7 @@
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Salutations & Conversations</h3>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Débutant</span>
+                                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Intermédiaire</span>
                                                 <span class="text-xs text-gray-500">👋🏼 Alice</span>
                                             </div>
                                         </div>
@@ -289,8 +429,8 @@
                             </a>
                         </div>
 
-                        <!-- Cours 2: Réservation de taxi avec Mike -->
-                        <div class="conv-card conv-all conv-intermediate">
+                        <!-- Cours 6: Réservation de taxi avec Mike -->
+                        <div class="conv-card conv-all conv-advanced">
                             <a href="course.html?choice=conv_taxi_booking" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
@@ -300,7 +440,7 @@
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Réservation de Taxi</h3>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">Intermédiaire</span>
+                                                <span class="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">Avancé</span>
                                                 <span class="text-xs text-gray-500">🚕 Mike</span>
                                             </div>
                                         </div>
@@ -318,8 +458,8 @@
                             </a>
                         </div>
 
-                        <!-- Cours 3: Achat de billet d'avion avec Sarah -->
-                        <div class="conv-card conv-all conv-intermediate">
+                        <!-- Cours 7: Achat de billet d'avion avec Sarah -->
+                        <div class="conv-card conv-all conv-advanced">
                             <a href="course.html?choice=conv_airport_ticket" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
@@ -329,7 +469,7 @@
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Achat de Billet d'Avion</h3>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Intermédiaire</span>
+                                                <span class="text-xs px-2 py-1 bg-teal-100 text-teal-700 rounded-full">Avancé</span>
                                                 <span class="text-xs text-gray-500">✈️ Sarah</span>
                                             </div>
                                         </div>
@@ -346,35 +486,46 @@
                                 </div>
                             </a>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        <!-- Cours bonus: Chat libre général -->
-                        <div class="conv-card conv-all conv-advanced">
-                            <a href="course.html?choice=conv_greetings_common_conversations" class="block">
-                                <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                                    <div class="flex items-center space-x-4 mb-4">
-                                        <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center animate-float">
-                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
-                                        </div>
-                                        <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-900 mb-1">Chat Libre</h3>
-                                            <div class="flex items-center space-x-2">
-                                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Avancé</span>
-                                                <span class="text-xs text-gray-500">💬 Alice</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p class="text-gray-600 text-sm mb-4">
-                                        Conversation libre avec Alice sur tous les sujets pour améliorer votre fluidité en anglais.
-                                    </p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-gray-400">Illimité</span>
-                                        <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </a>
+            <!-- Section Info Parcours d'apprentissage -->
+            <section class="mb-16">
+                <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-8 text-white">
+                    <h2 class="text-2xl font-bold mb-6 text-center">🎯 Votre Parcours d'Apprentissage Recommandé</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                <span class="text-2xl">👩‍🏫</span>
+                            </div>
+                            <h3 class="font-semibold mb-2">1. Commencez avec Emma</h3>
+                            <p class="text-sm opacity-90">Apprenez les bases avec une professeure patiente</p>
                         </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                <span class="text-2xl">🍕</span>
+                            </div>
+                            <h3 class="font-semibold mb-2">2. Pratiquez avec Tom</h3>
+                            <p class="text-sm opacity-90">Commandez votre repas en anglais</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                <span class="text-2xl">🛍️</span>
+                            </div>
+                            <h3 class="font-semibold mb-2">3. Shoppez avec Lucy</h3>
+                            <p class="text-sm opacity-90">Achetez des vêtements et apprenez les couleurs</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                <span class="text-2xl">🗺️</span>
+                            </div>
+                            <h3 class="font-semibold mb-2">4. Naviguez avec Ben</h3>
+                            <p class="text-sm opacity-90">Demandez votre chemin et explorez</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-6">
+                        <p class="text-lg opacity-90">Puis continuez avec Alice, Mike et Sarah pour des conversations plus avancées !</p>
                     </div>
                 </div>
             </section>
@@ -450,6 +601,9 @@
             
             // Charger les statistiques de l'utilisateur
             loadUserStats();
+            
+            // Animation d'apparition des nouvelles cartes
+            animateNewCards();
         });
 
         // Fonction pour charger les statistiques
@@ -466,10 +620,53 @@
                 if (response.ok) {
                     const conversations = await response.json();
                     console.log('Conversations loaded:', conversations.length);
+                    
+                    // Recommandations personnalisées basées sur l'historique
+                    showPersonalizedRecommendations(conversations);
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des statistiques:', error);
             }
+        }
+
+        // Fonction pour afficher des recommandations personnalisées
+        function showPersonalizedRecommendations(conversations) {
+            const beginnerChoices = ['conv_beginner_teacher', 'conv_simple_restaurant', 'conv_simple_shopping', 'conv_simple_directions'];
+            const hasBeginnerConversations = conversations.some(conv => beginnerChoices.includes(conv.category));
+            
+            if (!hasBeginnerConversations && conversations.length === 0) {
+                // Premier utilisateur - suggérer Emma
+                highlightCard('conv_beginner_teacher');
+            } else if (!hasBeginnerConversations && conversations.length > 0) {
+                // Utilisateur expérimenté - continuer avec les cours existants
+                console.log('Utilisateur expérimenté détecté');
+            }
+        }
+
+        // Fonction pour mettre en surbrillance une carte
+        function highlightCard(choice) {
+            const card = document.querySelector(`[href="course.html?choice=${choice}"]`);
+            if (card) {
+                card.style.outline = '3px solid #667eea';
+                card.style.outlineOffset = '4px';
+                setTimeout(() => {
+                    card.style.outline = 'none';
+                }, 3000);
+            }
+        }
+
+        // Animation des nouvelles cartes
+        function animateNewCards() {
+            const newCards = document.querySelectorAll('.conv-card[class*="beginner"]');
+            newCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
         }
 
         // Fonction logout
@@ -497,9 +694,6 @@
 
         // Observer toutes les cartes
         document.querySelectorAll('.conv-card').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.6s ease';
             observer.observe(card);
         });
 
@@ -514,7 +708,21 @@
             });
         });
 
+        // Easter egg - clic sur le logo pour afficher les stats des nouveaux personnages
+        document.querySelector('[href="home.html"]').addEventListener('dblclick', async () => {
+            try {
+                const response = await fetch('/beginner_characters_info');
+                if (response.ok) {
+                    const info = await response.json();
+                    console.log('🎯 Informations sur les nouveaux personnages:', info);
+                }
+            } catch (error) {
+                console.log('Informations des personnages non disponibles');
+            }
+        });
+
         console.log('🎉 Interface TalkAI Home chargée avec succès !');
+        console.log('🆕 Nouveaux personnages : Emma, Tom, Lucy, Ben disponibles !');
     </script>
 </body>
 </html>

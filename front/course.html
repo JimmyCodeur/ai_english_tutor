@@ -1,4 +1,3 @@
-<!-- fichier course.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -48,7 +47,7 @@
                         },
                         pulseGlow: {
                             '0%, 100%': { boxShadow: '0 0 20px rgba(102, 126, 234, 0.3)' },
-                                                        '50%': { boxShadow: '0 0 40px rgba(102, 126, 234, 0.8)' },
+                            '50%': { boxShadow: '0 0 40px rgba(102, 126, 234, 0.8)' },
                         },
                         slideIn: {
                             from: { opacity: '0', transform: 'translateY(20px)' },
@@ -492,7 +491,69 @@
     let recording = false;
     let currentChoice = null;
     let currentCharacter = null;
-    let isFirstMessage = true; // Flag pour gérer le premier message
+    let isFirstMessage = true;
+
+    // 🆕 CONFIGURATION COMPLÈTE DES PERSONNAGES - AVEC NOUVEAUX
+    const CHARACTER_CONFIG = {
+        // Cours existants
+        'conv_greetings_common_conversations': {
+            character: 'Alice',
+            endpoint: '/chat_conv/alice',
+            title: 'Chat avec Alice',
+            subtitle: 'Salutations et conversations courantes - Niveau intermédiaire',
+            emoji: '👋🏼',
+            level: 'intermediate'
+        },
+        'conv_taxi_booking': {
+            character: 'Mike',
+            endpoint: '/chat_conv/mike',
+            title: 'Chat avec Mike',
+            subtitle: 'Réservation de taxi et transport - Niveau avancé',
+            emoji: '🚕',
+            level: 'advanced'
+        },
+        'conv_airport_ticket': {
+            character: 'Sarah',
+            endpoint: '/chat_conv/sarah',
+            title: 'Chat avec Sarah',
+            subtitle: 'Achat de billets d\'avion et voyage - Niveau avancé',
+            emoji: '✈️',
+            level: 'advanced'
+        },
+        // 🆕 NOUVEAUX COURS DÉBUTANTS
+        'conv_beginner_teacher': {
+            character: 'Emma',
+            endpoint: '/chat_conv/emma',
+            title: 'Chat avec Emma',
+            subtitle: 'Professeure pour débutants absolus - Niveau débutant',
+            emoji: '👩‍🏫',
+            level: 'beginner'
+        },
+        'conv_simple_restaurant': {
+            character: 'Tom',
+            endpoint: '/chat_conv/tom',
+            title: 'Restaurant avec Tom',
+            subtitle: 'Commander votre repas simplement - Niveau débutant',
+            emoji: '🍕',
+            level: 'beginner'
+        },
+        'conv_simple_shopping': {
+            character: 'Lucy',
+            endpoint: '/chat_conv/lucy',
+            title: 'Shopping avec Lucy',
+            subtitle: 'Acheter des vêtements facilement - Niveau débutant',
+            emoji: '🛍️',
+            level: 'beginner'
+        },
+        'conv_simple_directions': {
+            character: 'Ben',
+            endpoint: '/chat_conv/ben',
+            title: 'Directions avec Ben',
+            subtitle: 'Demander son chemin simplement - Niveau débutant',
+            emoji: '🗺️',
+            level: 'beginner'
+        }
+    };
 
     // Initialisation au chargement de la page
     document.addEventListener('DOMContentLoaded', async () => {
@@ -504,6 +565,7 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         currentChoice = urlParams.get('choice');
+        
         console.log('📋 Choix détecté:', currentChoice);
         
         if (!currentChoice) {
@@ -513,15 +575,42 @@
             }, 2000);
             return;
         }
+
+        // 🆕 VALIDATION AVEC LA NOUVELLE CONFIGURATION
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (!config) {
+            console.error(`❌ Configuration non trouvée pour: ${currentChoice}`);
+            console.error(`📋 Choix disponibles:`, Object.keys(CHARACTER_CONFIG));
+            displayErrorMessage('❌ Cours non reconnu. Retour à l\'accueil...');
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 2000);
+            return;
+        }
+
+        // Mettre à jour les variables globales
+        currentCharacter = config.character;
         
         // Mettre à jour l'en-tête selon le choix
-        updateChatHeader(currentChoice);
+        updateChatHeader(config);
         
         // Afficher un message d'information
         displayWelcomeMessage();
-        
         loadUserProfile();
+        
+        console.log(`✅ Configuration chargée: ${config.character} (${config.level})`);
     });
+
+    // 🆕 FONCTION DE VALIDATION MISE À JOUR
+    function validateCourseChoice(choice) {
+        const config = CHARACTER_CONFIG[choice];
+        if (!config) {
+            console.error(`❌ Choix invalide: ${choice}`);
+            console.error(`📋 Choix valides:`, Object.keys(CHARACTER_CONFIG));
+            return null;
+        }
+        return config;
+    }
 
     // Fonction pour initialiser les éléments DOM
     function initializeDOMElements() {
@@ -534,16 +623,16 @@
                 e.stopPropagation();
                 profileMenu.classList.toggle('hidden');
             });
-            
+
             document.addEventListener('click', () => {
                 profileMenu.classList.add('hidden');
             });
-            
+
             profileMenu.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
         }
-        
+
         // Observer le chat box pour l'auto-scroll
         const chatBox = document.getElementById('chatBox');
         if (chatBox) {
@@ -556,10 +645,10 @@
             });
             chatObserver.observe(chatBox, { childList: true });
         }
-        
+
         // Vérifier les permissions
         checkMicrophonePermission();
-        
+
         // Ajouter des raccourcis clavier visibles
         const helpText = document.createElement('div');
         helpText.className = 'fixed bottom-4 left-4 bg-black bg-opacity-70 text-white p-3 rounded-lg text-xs hidden lg:block';
@@ -572,57 +661,199 @@
         document.body.appendChild(helpText);
     }
 
-    // Fonction pour mettre à jour l'en-tête du chat
-    function updateChatHeader(choice) {
-        const titles = {
-            "conv_greetings_common_conversations": {
-                title: "Chat avec Alice",
-                subtitle: "Salutations et conversations courantes - Niveau débutant",
-                character: "Alice",
-                role: "Conversation Partner"
-            },
-            "conv_taxi_booking": {
-                title: "Chat avec Mike",
-                subtitle: "Réservation de taxi et transport - Niveau intermédiaire",
-                character: "Mike",
-                role: "NYC Taxi Dispatcher"
-            },
-            "conv_airport_ticket": {
-                title: "Chat avec Sarah",
-                subtitle: "Achat de billets d'avion et voyage - Niveau intermédiaire",
-                character: "Sarah",
-                role: "Airline Customer Service"
-            }
-        };
-        
-        const config = titles[choice] || {
-            title: "Assistant Conversationnel",
-            subtitle: "Prêt à vous accompagner dans votre apprentissage",
-            character: "Assistant",
-            role: "AI Helper"
-        };
-        
-        currentCharacter = config.character;
-        
+    // 🆕 FONCTION MISE À JOUR POUR L'EN-TÊTE
+    function updateChatHeader(config) {
         // Mettre à jour l'en-tête du chat
         const titleElement = document.querySelector('.chat-header h1');
         const subtitleElement = document.querySelector('.chat-header p');
+        
         if (titleElement) titleElement.textContent = config.title;
         if (subtitleElement) subtitleElement.textContent = config.subtitle;
-        
-        // DEBUG : Confirmer le mapping
-        console.log(`🎭 Personnage défini: ${currentCharacter} pour le choix: ${choice}`);
+
+        // Mettre à jour le titre de la page
+        document.title = `TalkAI - ${config.title}`;
+
+        console.log(`🎭 En-tête mis à jour: ${config.character} - ${config.level}`);
     }
 
     // Message de bienvenue initial
     function displayWelcomeMessage() {
-        const welcomeMessage = `🎉 Bienvenue ! Cliquez sur "Parler" pour commencer votre conversation avec ${currentCharacter}. Votre première phrase déclenchera automatiquement la salutation !`;
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (!config) return;
+        
+        let welcomeMessage;
+        
+        if (config.character === 'Emma') {
+            welcomeMessage = `👩‍🏫 Bienvenue dans la classe de Miss Emma ! 
+            
+    Elle va vous apprendre l'anglais comme si vous étiez un enfant de 5 ans qui ne connaît AUCUN mot d'anglais !
+
+    🎯 Méthode Emma :
+    - Un seul mot par leçon
+    - Beaucoup d'encouragements  
+    - Répétition et patience
+    - Progression très douce
+
+    Cliquez sur "Parler" pour apprendre votre premier mot : "Hello" !`;
+        } else if (config.level === 'beginner') {
+            welcomeMessage = `🌱 Bienvenue ! Vous allez apprendre avec ${config.character}, parfait pour les débutants. Cliquez sur "Parler" pour commencer votre première leçon simple !`;
+        } else {
+            welcomeMessage = `🎉 Bienvenue ! Cliquez sur "Parler" pour commencer votre conversation avec ${config.character}. Votre première phrase déclenchera automatiquement la salutation !`;
+        }
+        
         displayMessage(welcomeMessage, 'bot', null, false, true);
     }
 
     // Animation de bienvenue
     function addWelcomeAnimation() {
         // Cette fonction peut rester vide maintenant ou être utilisée pour d'autres animations
+    }
+
+    // 🆕 FONCTION D'ENVOI AUDIO MISE À JOUR
+    async function sendAudioToCharacter(choice, audioFile) {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+            throw new Error("Token d'accès manquant");
+        }
+
+        console.log(`🎯 === DÉBUT ENVOI AUDIO ===`);
+        console.log(`📋 Choix: ${choice}`);
+
+        // 🆕 UTILISER LA NOUVELLE CONFIGURATION
+        const config = validateCourseChoice(choice);
+        if (!config) {
+            throw new Error('Paramètre de cours invalide');
+        }
+
+        console.log(`🎭 Personnage: ${config.character}`);
+        console.log(`📡 Endpoint: ${config.endpoint}`);
+
+        const formData = new FormData();
+        formData.append('audio_file', audioFile, 'recorded_audio.wav');
+
+        console.log(`🔑 Token présent: ${accessToken.substring(0, 20)}...`);
+
+        try {
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: formData
+            });
+
+            console.log(`📡 Status réponse: ${response.status}`);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('🔐 Session expirée');
+                }
+                // Lire le détail de l'erreur
+                let errorDetail = `Erreur HTTP ${response.status}`;
+                try {
+                    const errorData = await response.text();
+                    console.error(`❌ Détail erreur:`, errorData);
+                    errorDetail += ` - ${errorData}`;
+                } catch (e) {
+                    console.error('Impossible de lire le détail de l\'erreur');
+                }
+                throw new Error(errorDetail);
+            }
+
+            const result = await response.json();
+            console.log(`✅ Réponse reçue de ${config.endpoint}:`, result);
+            console.log(`🎭 Personnage dans la réponse: ${result.character}`);
+            console.log(`📝 Réponse générée: ${result.generated_response}`);
+            console.log(`🎯 === FIN ENVOI AUDIO ===`);
+
+            return result;
+        } catch (error) {
+            console.error(`❌ ERREUR avec ${config.endpoint}:`, error);
+            console.error(`🔍 Type d'erreur:`, error.name);
+            console.error(`📝 Message d'erreur:`, error.message);
+            throw error;
+        }
+    }
+
+    // 🆕 FONCTION D'ENVOI TEXTE MISE À JOUR
+    async function sendTextMessage() {
+        const userInputField = document.getElementById('userInputField');
+        if (!userInputField) return;
+
+        const message = userInputField.value.trim();
+        if (!message) {
+            userInputField.focus();
+            userInputField.style.borderColor = '#ef4444';
+            userInputField.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            setTimeout(() => {
+                userInputField.style.borderColor = '';
+                userInputField.style.boxShadow = '';
+            }, 1000);
+            return;
+        }
+
+        displayMessage(message, 'user');
+        userInputField.value = '';
+        updateButtonState('processing');
+        showTypingIndicator();
+
+        try {
+            console.log(`📝 Envoi message texte vers ${currentCharacter} (choix: ${currentChoice})`);
+            console.log(`💬 Message original: "${message}"`);
+
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) {
+                throw new Error("Token d'accès manquant");
+            }
+
+            // 🆕 UTILISER LA NOUVELLE CONFIGURATION
+            const config = validateCourseChoice(currentChoice);
+            if (!config) {
+                throw new Error('Paramètre de cours invalide');
+            }
+
+            const formData = new FormData();
+            // Créer un blob audio vide
+            const emptyArrayBuffer = new ArrayBuffer(44);
+            const emptyBlob = new Blob([emptyArrayBuffer], { type: 'audio/wav' });
+            formData.append('audio_file', emptyBlob, 'text_message.wav');
+            formData.append('text_message', message);
+
+            console.log(`📡 Appel texte vers: ${config.endpoint}`);
+
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`✅ Réponse texte reçue de ${config.endpoint}:`, data);
+
+            if (data.generated_response) {
+                setTimeout(() => {
+                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                    if (data.audio_base64) {
+                        playAudioFromBase64(data.audio_base64);
+                    }
+                }, 300);
+            }
+
+            if (data.suggestion) {
+                setTimeout(() => {
+                    appendSuggestions([data.suggestion]);
+                }, 600);
+            }
+
+        } catch (err) {
+            console.error('Erreur envoi texte:', err);
+            displayErrorMessage("💥 " + err.message);
+        } finally {
+            hideTypingIndicator();
+            updateButtonState('start');
+        }
     }
 
     // Enregistrement vocal
@@ -634,11 +865,11 @@
                 if (audioTracks.length === 0 || !audioTracks[0].enabled) {
                     throw new Error("Microphone inactif");
                 }
-                
+
                 recorder = new MediaRecorder(stream);
                 recorder.ondataavailable = e => audioChunks.push(e.data);
                 recorder.onstop = async () => await handleRecordingStop();
-                
+
                 recorder.start();
                 recording = true;
                 updateButtonState('stop');
@@ -669,13 +900,9 @@
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             updateButtonState('processing');
             showTypingIndicator();
-            
-            // DEBUG : Confirmer les paramètres avant l'envoi
             console.log(`🎯 Envoi audio vers ${currentCharacter} (choix: ${currentChoice})`);
             console.log(`📏 Taille audio: ${audioBlob.size} bytes`);
             console.log(`🏁 Premier message: ${isFirstMessage}`);
-            
-            // Utiliser directement les endpoints spécifiques des personnages
             const data = await sendAudioToCharacter(currentChoice, audioBlob);
             console.log('📨 Réponse reçue:', data);
             
@@ -686,84 +913,77 @@
                 console.log(`✅ Personnage correct: ${data.character}`);
             }
             
-            // 🔧 CORRECTION: Gestion intelligente du premier message
+            // Gestion intelligente du premier message
             if (data.is_first_message && data.greeting) {
                 console.log('🎭 Premier message avec salutation détecté');
                 
-                // 🔧 NOUVEAU: Vérifier si la salutation et la réponse sont identiques
-                const isSameResponse = data.generated_response && 
-                                    data.greeting && 
-                                    data.generated_response.trim() === data.greeting.trim();
-                
-                console.log(`🔍 Salutation identique à la réponse: ${isSameResponse}`);
-                console.log(`📝 Salutation: "${data.greeting}"`);
-                console.log(`📝 Réponse générée: "${data.generated_response}"`);
-                
-                if (isSameResponse) {
-                    // 🎯 CAS 1: Salutation = Réponse (Sarah, optimisé)
-                    console.log('✅ Affichage unique - salutation et réponse identiques');
+                // 🆕 VÉRIFICATION SPÉCIALE POUR TOM
+                if (currentCharacter === 'Tom' && data.user_input && data.generated_response) {
+                    console.log('🍕 Tom - Affichage simplifié sans salutation séparée');
+                    // Pour Tom, afficher seulement : user_input → generated_response
+                    displayMessage(data.user_input, 'user');
                     
-                    // Afficher le message utilisateur
-                    if (data.user_input) {
-                        displayMessage(data.user_input, 'user');
-                    }
-                    
-                    // Attendre un peu puis afficher la réponse unique
                     setTimeout(() => {
-                        displayMessage(data.greeting, 'bot', data.greeting_audio);
-                        if (data.greeting_audio) {
-                            playAudioFromBase64(data.greeting_audio);
+                        displayMessage(data.generated_response, 'bot', data.audio_base64);
+                        if (data.audio_base64) {
+                            playAudioFromBase64(data.audio_base64);
                         }
-                    }, 500);
+                    }, 300);
                     
+                    isFirstMessage = false;
+                    // 🆕 NE PAS FAIRE RETURN ICI - continuer vers finally pour le nettoyage
                 } else {
-                    // 🎯 CAS 2: Salutation ≠ Réponse (Mike, Alice)
-                    console.log('📝 Affichage séparé - salutation et réponse différentes');
+                    // Pour les autres personnages (Alice, Mike, Sarah, Emma, Lucy, Ben), continuer normalement
+                    const isSameResponse = data.generated_response &&
+                                        data.greeting &&
+                                        data.generated_response.trim() === data.greeting.trim();
                     
-                    // Afficher d'abord la salutation
-                    displayMessage(data.greeting, 'bot', data.greeting_audio);
+                    console.log(`🔍 Salutation identique à la réponse: ${isSameResponse}`);
                     
-                    // Jouer l'audio de salutation
-                    if (data.greeting_audio) {
-                        setTimeout(() => {
-                            playAudioFromBase64(data.greeting_audio);
-                        }, 300);
-                    }
-                    
-                    // Attendre que la salutation soit finie avant d'afficher le reste
-                    setTimeout(() => {
-                        // Afficher le message de l'utilisateur
+                    if (isSameResponse) {
+                        // Cas 1: Salutation = Réponse
+                        console.log('✅ Affichage unique - salutation et réponse identiques');
                         if (data.user_input) {
                             displayMessage(data.user_input, 'user');
                         }
-                        
-                        // Puis la réponse du personnage (si différente de la salutation)
-                        if (data.generated_response && 
-                            data.generated_response.trim() !== data.greeting.trim()) {
+                        setTimeout(() => {
+                            displayMessage(data.greeting, 'bot', data.greeting_audio);
+                            if (data.greeting_audio) {
+                                playAudioFromBase64(data.greeting_audio);
+                            }
+                        }, 500);
+                    } else {
+                        // Cas 2: Salutation ≠ Réponse
+                        console.log('📝 Affichage séparé - salutation et réponse différentes');
+                        displayMessage(data.greeting, 'bot', data.greeting_audio);
+                        if (data.greeting_audio) {
                             setTimeout(() => {
-                                displayMessage(data.generated_response, 'bot', data.audio_base64);
-                                if (data.audio_base64) {
-                                    playAudioFromBase64(data.audio_base64);
-                                }
-                            }, 500);
-                        } else {
-                            console.log('⚠️ Réponse identique à la salutation - pas d\'affichage supplémentaire');
+                                playAudioFromBase64(data.greeting_audio);
+                            }, 300);
                         }
-                    }, 2000); // Attendre 2 secondes pour que la salutation soit bien visible
+                        setTimeout(() => {
+                            if (data.user_input) {
+                                displayMessage(data.user_input, 'user');
+                            }
+                            if (data.generated_response &&
+                                data.generated_response.trim() !== data.greeting.trim()) {
+                                setTimeout(() => {
+                                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                                    if (data.audio_base64) {
+                                        playAudioFromBase64(data.audio_base64);
+                                    }
+                                }, 500);
+                            }
+                        }, 2000);
+                    }
+                    isFirstMessage = false;
                 }
-                
-                isFirstMessage = false;
-                
             } else {
-                // 🎯 CAS 3: Conversation normale - Messages suivants
+                // Conversation normale
                 console.log('💬 Message de conversation normale');
-                
-                // Afficher le message utilisateur
                 if (data.user_input) {
                     displayMessage(data.user_input, 'user');
                 }
-                
-                // Afficher la réponse du bot
                 if (data.generated_response) {
                     setTimeout(() => {
                         displayMessage(data.generated_response, 'bot', data.audio_base64);
@@ -772,28 +992,12 @@
                         }
                     }, 300);
                 }
-                
                 isFirstMessage = false;
             }
             
-            // 🔧 NOUVEAU: Gestion des réponses spéciales avec logs détaillés
+            // Gestion des réponses spéciales
             if (data.type) {
-                console.log(`🏷️ Type de réponse spéciale détecté: ${data.type}`);
-                
-                switch (data.type) {
-                    case "translation":
-                        console.log('🌐 Traduction détectée');
-                        break;
-                    case "french_response":
-                        console.log('🇫🇷 Réponse française détectée');
-                        break;
-                    case "unclear_response":
-                        console.log('❓ Réponse peu claire détectée');
-                        break;
-                    case "session_end":
-                        console.log('🏁 Fin de session détectée');
-                        break;
-                }
+                console.log(`🏷️ Type de réponse spéciale: ${data.type}`);
             }
             
             // Gestion des erreurs spécifiques
@@ -810,24 +1014,11 @@
                 }, 600);
             }
             
-            // 🔧 NOUVEAU: Vérification de la cohérence des données
-            if (data.character && data.generated_response) {
-                console.log(`✅ Traitement réussi - ${data.character}: "${data.generated_response.substring(0, 50)}..."`);
-            } else {
-                console.warn('⚠️ Données de réponse incomplètes:', {
-                    character: data.character,
-                    hasResponse: !!data.generated_response,
-                    hasAudio: !!data.audio_base64
-                });
-            }
-            
         } catch (err) {
             console.error('❌ Erreur dans handleRecordingStop:', err);
             console.error('🔍 Stack trace:', err.stack);
             
-            // 🔧 NOUVEAU: Gestion d'erreur plus détaillée
             let errorMessage = "💥 Erreur de traitement audio";
-            
             if (err.message.includes('Token')) {
                 errorMessage = "🔐 Session expirée. Veuillez vous reconnecter.";
                 setTimeout(() => {
@@ -842,115 +1033,20 @@
             } else {
                 errorMessage = `💥 ${err.message}`;
             }
-            
             displayErrorMessage(errorMessage);
-            
         } finally {
-            // 🔧 NOUVEAU: Nettoyage plus robuste
             console.log('🧹 Nettoyage des ressources audio');
-            
-            // Nettoyer les chunks audio
             audioChunks = [];
             recording = false;
-            
-            // Nettoyer l'indicateur de frappe
             hideTypingIndicator();
-            
-            // Restaurer l'état du bouton
             updateButtonState('start');
-            
-            // 🔧 NOUVEAU: Libérer les ressources microphone
             if (recorder && recorder.stream) {
                 recorder.stream.getTracks().forEach(track => {
                     track.stop();
                     console.log('🎤 Piste audio fermée');
                 });
             }
-            
-            // 🔧 NOUVEAU: Forcer le garbage collection si disponible
-            if (window.gc && typeof window.gc === 'function') {
-                try {
-                    window.gc();
-                    console.log('🗑️ Garbage collection forcé');
-                } catch (gcError) {
-                    // Ignore silencieusement les erreurs de GC
-                }
-            }
-            
             console.log('✅ Nettoyage terminé');
-        }
-    }
-
-    // CORRECTION MAJEURE : Fonction d'envoi audio avec logs détaillés
-    async function sendAudioToCharacter(choice, audioFile) {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) {
-            throw new Error("Token d'accès manquant");
-        }
-        
-        console.log(`🎯 === DÉBUT ENVOI AUDIO ===`);
-        console.log(`📋 Choix: ${choice}`);
-        console.log(`🎭 Personnage attendu: ${currentCharacter}`);
-        
-        // Mapping des choix vers les endpoints spécifiques (sans /start)
-        const endpoints = {
-            'conv_greetings_common_conversations': '/chat_conv/alice',
-            'conv_taxi_booking': '/chat_conv/mike',
-            'conv_airport_ticket': '/chat_conv/sarah'
-        };
-        
-        const endpoint = endpoints[choice];
-        if (!endpoint) {
-            console.error(`❌ ENDPOINT NON TROUVÉ pour le choix: ${choice}`);
-            console.error(`📋 Endpoints disponibles:`, Object.keys(endpoints));
-            throw new Error('Paramètre de cours invalide');
-        }
-        
-        const formData = new FormData();
-        formData.append('audio_file', audioFile, 'recorded_audio.wav');
-        
-        console.log(`📡 Appel vers: ${endpoint}`);
-        console.log(`🔑 Token présent: ${accessToken.substring(0, 20)}...`);
-        
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${accessToken}` },
-                body: formData
-            });
-            
-            console.log(`📡 Status réponse: ${response.status}`);
-            
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('🔐 Session expirée');
-                }
-                
-                // Lire le détail de l'erreur
-                let errorDetail = `Erreur HTTP ${response.status}`;
-                try {
-                    const errorData = await response.text();
-                    console.error(`❌ Détail erreur:`, errorData);
-                    errorDetail += ` - ${errorData}`;
-                } catch (e) {
-                    console.error('Impossible de lire le détail de l\'erreur');
-                }
-                
-                throw new Error(errorDetail);
-            }
-            
-            const result = await response.json();
-            console.log(`✅ Réponse reçue de ${endpoint}:`, result);
-            console.log(`🎭 Personnage dans la réponse: ${result.character}`);
-            console.log(`📝 Réponse générée: ${result.generated_response}`);
-            console.log(`🎯 === FIN ENVOI AUDIO ===`);
-            
-            return result;
-        } catch (error) {
-            console.error(`❌ ERREUR avec ${endpoint}:`, error);
-            console.error(`🔍 Type d'erreur:`, error.name);
-            console.error(`📝 Message d'erreur:`, error.message);
-            throw error;
         }
     }
 
@@ -958,7 +1054,7 @@
     function showTypingIndicator() {
         const chatBox = document.getElementById('chatBox');
         if (!chatBox) return;
-        
+
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typingIndicator';
         typingDiv.className = 'typing-indicator';
@@ -970,6 +1066,7 @@
             </div>
             <span class="text-gray-600 font-medium">${currentCharacter || 'L\'assistant'} réfléchit...</span>
         `;
+
         chatBox.appendChild(typingDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -992,7 +1089,7 @@
             }).catch((error) => {
                 console.warn('⚠️ Lecture auto bloquée:', error);
             });
-            
+
             audioElement.onended = () => {
                 changeAvatarToPng();
             };
@@ -1001,102 +1098,14 @@
         }
     }
 
-    // Enregistrement vocal
-    async function toggleRecording() {
-        if (!recording) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const audioTracks = stream.getAudioTracks();
-                if (audioTracks.length === 0 || !audioTracks[0].enabled) {
-                    throw new Error("Microphone inactif");
-                }
-                
-                recorder = new MediaRecorder(stream);
-                recorder.ondataavailable = e => audioChunks.push(e.data);
-                recorder.onstop = async () => await handleRecordingStop();
-                
-                recorder.start();
-                recording = true;
-                updateButtonState('stop');
-                console.log('🎙️ Enregistrement démarré');
-            } catch (err) {
-                console.error('❌ Erreur microphone:', err);
-                handleMicrophoneError(err);
-                updateButtonState('start');
-            }
-        } else {
-            recorder.stop();
-            console.log('⏹️ Arrêt demandé');
-        }
-    }
-
-    function handleMicrophoneError(err) {
-        if (err.name === 'NotFoundError') {
-            displayErrorMessage("🎙️ Microphone non trouvé. Vérifiez votre matériel.");
-        } else if (err.name === 'NotAllowedError') {
-            displayErrorMessage("🔒 Accès microphone refusé. Autorisez l'accès dans votre navigateur.");
-        } else {
-            displayErrorMessage("⚠️ Erreur microphone: " + err.message);
-        }
-    }
-
-    async function sendAudioToCharacter(choice, audioFile) {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) {
-            throw new Error("Token d'accès manquant");
-        }
-        
-        console.log(`🎯 Envoi vers le personnage: ${choice}`);
-        
-        // Mapping des choix vers les endpoints spécifiques (sans /start)
-        const endpoints = {
-            'conv_greetings_common_conversations': '/chat_conv/alice',
-            'conv_taxi_booking': '/chat_conv/mike',
-            'conv_airport_ticket': '/chat_conv/sarah'
-        };
-        
-        const endpoint = endpoints[choice];
-        if (!endpoint) {
-            throw new Error('Paramètre de cours invalide');
-        }
-        
-        const formData = new FormData();
-        formData.append('audio_file', audioFile, 'recorded_audio.wav');
-        
-        console.log(`📡 Appel direct vers ${endpoint}`);
-        
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${accessToken}` },
-                body: formData
-            });
-            
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('🔐 Session expirée');
-                }
-                throw new Error(`Erreur HTTP ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log(`✅ Réponse reçue de ${endpoint}:`, result);
-            
-            return result;
-        } catch (error) {
-            console.error(`❌ Erreur avec ${endpoint}:`, error);
-            throw error;
-        }
-    }
-
     // Affichage des suggestions
     function appendSuggestions(suggestions) {
         const chatBox = document.getElementById('chatBox');
         if (!chatBox || !suggestions || suggestions.length === 0) return;
-        
+
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.className = 'suggestions-container space-y-3 mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200';
-        
+
         const title = document.createElement('div');
         title.className = 'flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-4';
         title.innerHTML = `
@@ -1106,7 +1115,7 @@
             <span>Suggestion pour vous aider :</span>
         `;
         suggestionsContainer.appendChild(title);
-        
+
         suggestions.forEach((suggestion, index) => {
             if (suggestion.trim()) {
                 const suggestionDiv = document.createElement('div');
@@ -1121,7 +1130,7 @@
                         <span class="text-gray-800 font-medium">${suggestion}</span>
                     </div>
                 `;
-                
+
                 suggestionDiv.addEventListener('click', () => {
                     const userInputField = document.getElementById('userInputField');
                     if (userInputField) {
@@ -1130,18 +1139,17 @@
                             toggleTextArea();
                         }
                         userInputField.focus();
-                        // Animation de sélection
                         suggestionDiv.style.transform = 'scale(0.95)';
                         setTimeout(() => {
                             suggestionDiv.style.transform = 'scale(1)';
                         }, 150);
                     }
                 });
-                
+
                 suggestionsContainer.appendChild(suggestionDiv);
             }
         });
-        
+
         chatBox.appendChild(suggestionsContainer);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -1150,7 +1158,7 @@
     function displayMessage(message, sender, audioBase64, isError = false, isWelcome = false) {
         const chatBox = document.getElementById('chatBox');
         if (!chatBox) return;
-        
+
         // Validation du message
         if (Array.isArray(message)) {
             message = message[0];
@@ -1158,21 +1166,21 @@
         if (typeof message !== 'string') {
             message = String(message) || '';
         }
-        
+
         // Filtrer les messages indésirables
         if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
             displayErrorMessage("🎤 Audio non détecté. Recommencez.");
             return;
         }
-        
+
         if (!message || message.trim() === '') {
             return;
         }
-        
+
         // Créer le conteneur du message
         const messageContainer = document.createElement('div');
         messageContainer.className = `message-container mb-6 ${sender === 'user' ? 'flex justify-end' : ''}`;
-        
+
         // Créer l'élément message
         const messageDiv = document.createElement('div');
         messageDiv.className = getMessageClasses(sender, message, isError, isWelcome);
@@ -1207,34 +1215,34 @@
                 ` : ''}
             </div>
         `;
-        
+
         messageContainer.appendChild(messageDiv);
-        
+
         // Ajouter les actions pour les messages bot (sauf messages de bienvenue)
         if (sender === 'bot' && !isError && !isWelcome && !message.startsWith('Traduction :')) {
             addMessageActions(messageContainer, message);
         }
-        
+
         // Animation d'apparition
         messageContainer.style.opacity = '0';
         messageContainer.style.transform = 'translateY(20px)';
         chatBox.appendChild(messageContainer);
-        
+
         // Déclencher l'animation
         requestAnimationFrame(() => {
             messageContainer.style.transition = 'all 0.4s ease-out';
             messageContainer.style.opacity = '1';
             messageContainer.style.transform = 'translateY(0)';
         });
-        
+
         // Gérer l'audio
         const audioPlayer = messageContainer.querySelector('.audio-player');
         if (audioPlayer) {
             setupAudioPlayer(audioPlayer, messageContainer);
         }
-        
+
         chatBox.scrollTop = chatBox.scrollHeight;
-        
+
         // Vérifier arrêt de session
         if (sender === 'bot') {
             checkAndStopSession(message);
@@ -1245,28 +1253,28 @@
     function setupAudioPlayer(audioPlayer, container) {
         const progressBar = container.querySelector('.audio-progress');
         if (!progressBar) return;
-        
+
         audioPlayer.addEventListener('timeupdate', () => {
             if (audioPlayer.duration) {
                 const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
                 progressBar.style.width = progress + '%';
             }
         });
-        
+
         audioPlayer.addEventListener('play', () => {
             changeAvatarToGif();
             progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
         });
-        
+
         audioPlayer.addEventListener('pause', () => {
             changeAvatarToPng();
         });
-        
+
         audioPlayer.addEventListener('ended', () => {
             changeAvatarToPng();
             progressBar.style.width = '0%';
         });
-        
+
         // Lecture automatique
         audioPlayer.addEventListener('loadeddata', () => {
             audioPlayer.play().catch(error => {
@@ -1291,14 +1299,14 @@
                 </svg>
             </button>
         `;
-        
+
         container.classList.add('group');
         container.appendChild(actionsDiv);
-        
+
         // Événements
         const translateBtn = actionsDiv.querySelector('.translate-btn');
         const copyBtn = actionsDiv.querySelector('.copy-btn');
-        
+
         if (translateBtn) {
             translateBtn.addEventListener('click', () => {
                 translateMessage(message);
@@ -1306,7 +1314,7 @@
                 translateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
             });
         }
-        
+
         if (copyBtn) {
             copyBtn.addEventListener('click', async () => {
                 try {
@@ -1378,11 +1386,10 @@
     function updateButtonState(state) {
         const button = document.getElementById('toggleRecording');
         const loadingIndicator = document.getElementById('loadingIndicator');
-        
         if (!button) return;
-        
+
         button.classList.remove('recording-pulse');
-        
+
         switch (state) {
             case 'start':
                 button.innerHTML = `
@@ -1395,7 +1402,7 @@
                 button.disabled = false;
                 if (loadingIndicator) loadingIndicator.classList.add('hidden');
                 break;
-                
+
             case 'stop':
                 button.innerHTML = `
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1408,7 +1415,7 @@
                 button.disabled = false;
                 if (loadingIndicator) loadingIndicator.classList.add('hidden');
                 break;
-                
+
             case 'processing':
                 button.innerHTML = `
                     <div class="voice-wave">
@@ -1450,8 +1457,8 @@
         const userInputField = document.getElementById('userInputField');
         const button = document.getElementById('toggleTextArea');
         
-                if (!container || !button) return;
-        
+        if (!container || !button) return;
+
         if (container.classList.contains('hidden')) {
             container.classList.remove('hidden');
             container.style.opacity = '0';
@@ -1462,14 +1469,14 @@
                 container.style.opacity = '1';
                 container.style.transform = 'translateY(0)';
             });
-            
+
             button.innerHTML = `
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
                 <span class="font-semibold">Fermer</span>
             `;
-            
+
             if (userInputField) {
                 setTimeout(() => userInputField.focus(), 300);
             }
@@ -1477,7 +1484,7 @@
             container.style.opacity = '0';
             container.style.transform = 'translateY(20px)';
             setTimeout(() => container.classList.add('hidden'), 300);
-            
+
             button.innerHTML = `
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
@@ -1487,143 +1494,19 @@
         }
     }
 
-    // Envoi message texte
-    async function sendTextMessage() {
-        const userInputField = document.getElementById('userInputField');
-        if (!userInputField) return;
-        
-        const message = userInputField.value.trim();
-        if (!message) {
-            userInputField.focus();
-            userInputField.style.borderColor = '#ef4444';
-            userInputField.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            setTimeout(() => {
-                userInputField.style.borderColor = '';
-                userInputField.style.boxShadow = '';
-            }, 1000);
-            return;
-        }
-        
-        displayMessage(message, 'user');
-        userInputField.value = '';
-        updateButtonState('processing');
-        showTypingIndicator();
-        
-        try {
-            console.log(`📝 Envoi message texte vers ${currentCharacter} (choix: ${currentChoice})`);
-            console.log(`💬 Message original: "${message}"`);
-            
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) {
-                throw new Error("Token d'accès manquant");
-            }
-            
-            // Mapping vers les endpoints spécifiques
-            const endpoints = {
-                'conv_greetings_common_conversations': '/chat_conv/alice',
-                'conv_taxi_booking': '/chat_conv/mike',
-                'conv_airport_ticket': '/chat_conv/sarah'
-            };
-            
-            const endpoint = endpoints[currentChoice];
-            if (!endpoint) {
-                throw new Error('Paramètre de cours invalide');
-            }
-            
-            // CORRECTION : Envoyer le texte directement avec un blob vide
-            const formData = new FormData();
-            
-            // Créer un blob audio VRAIMENT vide
-            const emptyArrayBuffer = new ArrayBuffer(44); // Taille minimale d'un WAV header
-            const emptyBlob = new Blob([emptyArrayBuffer], { type: 'audio/wav' });
-            
-            formData.append('audio_file', emptyBlob, 'text_message.wav');
-            formData.append('text_message', message); // IMPORTANT: Le vrai message texte
-            
-            console.log(`📡 Appel texte vers: ${endpoint}`);
-            console.log(`📝 Contenu FormData: text_message = "${message}"`);
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${accessToken}` },
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log(`✅ Réponse texte reçue de ${endpoint}:`, data);
-            console.log(`💬 Message utilisateur reçu par le backend: "${data.user_input}"`);
-            console.log(`🤖 Réponse générée: "${data.generated_response}"`);
-            
-            // Vérifier que le bon message a été traité
-            if (data.user_input && data.user_input !== message) {
-                console.warn(`⚠️ PROBLÈME: Message envoyé "${message}" différent du message traité "${data.user_input}"`);
-            }
-            
-            if (data.generated_response) {
-                setTimeout(() => {
-                    displayMessage(data.generated_response, 'bot', data.audio_base64);
-                    if (data.audio_base64) {
-                        playAudioFromBase64(data.audio_base64);
-                    }
-                }, 300);
-            }
-            
-            if (data.suggestion) {
-                setTimeout(() => {
-                    appendSuggestions([data.suggestion]);
-                }, 600);
-            }
-            
-        } catch (err) {
-            console.error('Erreur envoi texte:', err);
-            displayErrorMessage("💥 " + err.message);
-        } finally {
-            hideTypingIndicator();
-            updateButtonState('start');
-        }
-    }
-
-    async function createAudioBlobFromText(text) {
-        try {
-            // Créer un audio synthétique court pour simuler l'utilisateur parlant
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const sampleRate = audioContext.sampleRate;
-            const duration = 0.5; // 0.5 seconde d'audio vide
-            const numSamples = Math.floor(sampleRate * duration);
-            
-            const audioBuffer = audioContext.createBuffer(1, numSamples, sampleRate);
-            const channelData = audioBuffer.getChannelData(0);
-            
-            // Ajouter un peu de bruit blanc très faible pour que ce ne soit pas complètement vide
-            for (let i = 0; i < numSamples; i++) {
-                channelData[i] = (Math.random() - 0.5) * 0.001; // Très faible bruit
-            }
-            
-            // Convertir en WAV blob
-            const wavBlob = await audioBufferToWav(audioBuffer);
-            
-            console.log(`🎵 Audio synthétique créé pour le texte: "${text}"`);
-            return wavBlob;
-            
-        } catch (error) {
-            console.error('Erreur création audio synthétique:', error);
-            // Fallback: créer un blob audio vide
-            return new Blob([new ArrayBuffer(44)], { type: 'audio/wav' });
-        }
-    }
-
-    // Session management
+    // Session management - 🆕 MISE À JOUR POUR TOUS LES PERSONNAGES
     function checkAndStopSession(generated_response) {
         const endMessages = [
             "It was lovely chatting with you! I have to help other students now. Keep practicing your English!",
             "Thanks for calling NYC Taxi! I gotta take other calls now. Have a great ride!",
-            "Thank you for choosing our airline! I need to assist other passengers now. Have a wonderful trip!"
+            "Thank you for choosing our airline! I need to assist other passengers now. Have a wonderful trip!",
+            // 🆕 MESSAGES DE FIN POUR LES NOUVEAUX PERSONNAGES
+            "Good job today! You did very well. See you next time!",  // Emma
+            "Thank you for coming! Have a good day!",  // Tom
+            "Thank you for shopping with us! Have a nice day!",  // Lucy
+            "I hope you find your way! Have a wonderful trip!"  // Ben
         ];
-        
+
         if (endMessages.some(msg => generated_response.includes(msg))) {
             setTimeout(() => {
                 displayMessage("🎯 Session terminée ! Redirection vers l'analyse...", 'bot');
@@ -1636,7 +1519,7 @@
         try {
             const accessToken = localStorage.getItem("accessToken");
             if (!accessToken) throw new Error("Token manquant");
-            
+
             const response = await fetch('/chat_conv/stop', {
                 method: 'POST',
                 headers: {
@@ -1644,9 +1527,9 @@
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
-            
+
             if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
-            
+
             const data = await response.json();
             if (data.message === "Chat session ended successfully.") {
                 window.location.href = `analysis.html?conversation_id=${data.conversation_id}`;
@@ -1679,13 +1562,13 @@
                 sendTextMessage();
             }
         }
-        
+
         // Espace pour enregistrer (sauf si on est dans un champ de texte)
         if (event.code === 'Space' && !event.target.matches('input, textarea')) {
             event.preventDefault();
             toggleRecording();
         }
-        
+
         // Échap pour fermer le champ de texte
         if (event.key === 'Escape') {
             const container = document.getElementById('textInputContainer');
@@ -1700,17 +1583,17 @@
         try {
             const accessToken = localStorage.getItem("accessToken");
             if (!accessToken) return;
-            
+
             const response = await fetch('/users/me', {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
             });
-            
+
             if (response.ok) {
                 const user = await response.json();
                 const profileName = document.getElementById('profile-name');
                 const profileEmail = document.getElementById('profile-email');
                 const profileNameHeader = document.getElementById('profile-name-header');
-                
+
                 if (profileName) profileName.textContent = user.nom || 'Utilisateur';
                 if (profileEmail) profileEmail.textContent = user.email || '';
                 if (profileNameHeader) profileNameHeader.textContent = user.nom || 'Utilisateur';
@@ -1724,6 +1607,7 @@
     function handleResponsive() {
         const isMobile = window.innerWidth < 768;
         const chatContainer = document.querySelector('.chat-container');
+        
         if (chatContainer) {
             if (isMobile) {
                 chatContainer.classList.add('mx-2');
@@ -1764,6 +1648,7 @@
             if (permission.state === 'denied') {
                 displayErrorMessage('🎙️ Accès microphone refusé. Activez-le dans les paramètres de votre navigateur.');
             }
+
             permission.addEventListener('change', () => {
                 if (permission.state === 'granted') {
                     console.log('✅ Permission microphone accordée');
@@ -1778,14 +1663,42 @@
     function smartScroll() {
         const chatBox = document.getElementById('chatBox');
         if (!chatBox) return;
-        
+
         const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 1;
         if (isScrolledToBottom) {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 
+    // 🆕 FONCTION DE DEBUG POUR TESTER LES NOUVEAUX PERSONNAGES
+    function debugCharacterConfig() {
+        console.log('🔍 === DEBUG CONFIGURATION PERSONNAGES ===');
+        console.log('📋 Choix actuel:', currentChoice);
+        console.log('🎭 Personnage actuel:', currentCharacter);
+        console.log('📚 Configuration complète:', CHARACTER_CONFIG);
+        
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (config) {
+            console.log('✅ Configuration trouvée:', config);
+        } else {
+            console.error('❌ Configuration manquante pour:', currentChoice);
+        }
+        
+        console.log('🎯 === FIN DEBUG ===');
+    }
+
+    // Exposer la fonction de debug en global pour les tests
+    window.debugCharacterConfig = debugCharacterConfig;
+
     console.log('🎉 Interface TalkAI chargée avec succès !');
+    console.log('🆕 Support pour tous les personnages: Alice, Mike, Sarah, Emma, Tom, Lucy, Ben');
+    
+    // 🆕 DEBUG AUTOMATIQUE AU CHARGEMENT
+    if (currentChoice) {
+        setTimeout(() => {
+            debugCharacterConfig();
+        }, 1000);
+    }
 </script>
 </body>
 </html>
