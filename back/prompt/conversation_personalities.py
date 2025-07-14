@@ -12,7 +12,6 @@ def get_category(choice: str) -> str:
         "conv_greetings_common_conversations": "conv_greetings_common_conversations",
         "conv_taxi_booking": "conv_taxi_booking", 
         "conv_airport_ticket": "conv_airport_ticket",
-        # 🆕 NOUVELLES CATÉGORIES DÉBUTANTS
         "conv_beginner_teacher": "conv_beginner_teacher",
         "conv_simple_restaurant": "conv_simple_restaurant",
         "conv_simple_shopping": "conv_simple_shopping",
@@ -24,7 +23,6 @@ category_mapping = {
     "conv_greetings_common_conversations": "👋🏼 Salutations et conversations courantes",
     "conv_taxi_booking": "🚕 Réservation de taxi",
     "conv_airport_ticket": "🎫 Achat de billet d'avion",
-    # 🆕 NOUVELLES CATÉGORIES DÉBUTANTS
     "conv_beginner_teacher": "👩‍🏫 Professeure pour débutants",
     "conv_simple_restaurant": "🍕 Restaurant simple",
     "conv_simple_shopping": "🛍️ Shopping basique",
@@ -39,7 +37,6 @@ def get_character_greeting(character, user_id):
     random.seed(seed_value)
     
     greetings = {
-        # PERSONNAGES EXISTANTS
         'alice': [
             "Hello there! I'm Alice, your friendly English conversation partner! I'm so excited to help you practice today. How are you feeling about our English session?",
             "Hi! Alice here, ready to help you with your English conversation skills! I love chatting with new students. What brings you here today?",
@@ -55,7 +52,6 @@ def get_character_greeting(character, user_id):
             "Hello! Sarah speaking from airline customer service. I'd be delighted to assist you with your flight needs today. Where are you hoping to travel?",
             "Hi there! I'm Sarah, and I work for the airline's booking department. I love helping people plan their journeys! Do you have a destination in mind?"
         ],
-        # 🆕 NOUVEAUX PERSONNAGES POUR DÉBUTANTS
         'emma': [
             "Hello! I am Miss Emma! I teach English to children! Are you ready to learn your first English word?",
             "Hi! I am Teacher Emma! Today we learn English together! Let's start with 'Hello'!",
@@ -85,7 +81,6 @@ def get_variation_prompt(character, conversation_count):
     """Ajoute de la variation selon le nombre de conversations du personnage - AVEC NOUVEAUX"""
     
     variations = {
-        # PERSONNAGES EXISTANTS
         'alice': [
             "Mix up your responses with different conversation starters and follow-up questions.",
             "Sometimes be more curious about the student's interests and hobbies.",
@@ -107,7 +102,6 @@ def get_variation_prompt(character, conversation_count):
             "Sometimes ask about special needs or requests for the flight.",
             "Vary between focusing on booking details and travel experience."
         ],
-        # 🆕 NOUVEAUX PERSONNAGES DÉBUTANTS
         'emma': [
             "Sometimes ask about basic colors, numbers, or family members.",
             "Use more gestures and praise words like 'Very good!' and 'Perfect!'",
@@ -138,13 +132,10 @@ def get_variation_prompt(character, conversation_count):
         ]
     }
     
-    # Sélectionner une variation basée sur le nombre de conversations
     char_variations = variations.get(character, ["Stay natural and helpful in your responses."])
     selected_variation = char_variations[conversation_count % len(char_variations)]
     
     return selected_variation
-
-# ===== PERSONNAGES EXISTANTS =====
 
 def generate_ai_response_alice(previous_input, user_history, user_id=None, context_sentences=2):
     """IA Alice - Conversations générales et salutations avec variation"""
@@ -157,7 +148,6 @@ def generate_ai_response_alice(previous_input, user_history, user_id=None, conte
             if entry.get('response'):
                 conversation_context += f"Alice: {entry['response']}\n"
     
-    # Ajouter de la variation
     variation_prompt = get_variation_prompt('alice', len(user_history))
     
     alice_personality = f"""You are Alice, a 25-year-old English teacher from London. You are NOT an AI or language model - you are a real person.
@@ -186,7 +176,6 @@ def generate_ai_response_taxi_mike(previous_input, user_history, user_id=None, c
             if entry.get('response'):
                 conversation_context += f"Mike: {entry['response']}\n"
     
-    # Prompt ULTRA-RENFORCÉ pour forcer Mike
     mike_personality = f"""You are Mike Thompson, a 35-year-old human taxi dispatcher from NYC. This is a ROLEPLAY - you are NOT an AI.
 CRITICAL CHARACTER RULES:
 - You are Mike Thompson, a REAL PERSON who works at NYC Taxi Central
@@ -223,7 +212,6 @@ def generate_ai_response_airport_sarah(previous_input, user_history, user_id=Non
             if entry.get('response'):
                 conversation_context += f"Sarah: {entry['response']}\n"
     
-    # Ajouter de la variation
     variation_prompt = get_variation_prompt('sarah', len(user_history))
     
     sarah_personality = f"""You are Sarah, a 28-year-old airline customer service representative. You are NOT an AI or language model - you are a real person.
@@ -240,44 +228,34 @@ Respond as Sarah the airline representative would naturally respond. Help them w
     
     return _generate_response_with_personality(sarah_personality, previous_input, user_history, context_sentences)
 
-# ===== 🆕 NOUVEAUX PERSONNAGES POUR DÉBUTANTS =====
-
 def generate_ai_response_teacher_emma(previous_input, user_history, user_id=None, context_sentences=2):
     """Emma - Méthode immersion naturelle comme un enfant français qui arrive en Angleterre"""
     
     conversation_count = len(user_history)
     input_lower = previous_input.lower().strip()
     
-    # Déterminer la phase d'apprentissage naturel
     phase = get_natural_learning_phase(conversation_count)
     
-    # Générer une réponse selon la phase ET l'input
     return generate_emma_immersion_response(input_lower, conversation_count, phase)
 
 def generate_emma_immersion_response(user_input, conversation_count, phase):
     """Génère la réponse Emma selon la phase d'immersion naturelle"""
     
-    # PHASE 1: OBSERVATION SILENCIEUSE (comme un vrai enfant qui arrive)
     if phase == "silent_observation":
         return handle_phase_1_observation(user_input, conversation_count)
     
-    # PHASE 2: MOTS DE SURVIE (ce dont l'enfant a besoin pour survivre à l'école)
     elif phase == "survival_words":
         return handle_phase_2_survival(user_input, conversation_count)
     
-    # PHASE 3: PHRASES UTILES (phrases complètes pour situations scolaires)
     elif phase == "useful_phrases":
         return handle_phase_3_phrases(user_input, conversation_count)
     
-    # PHASE 4: COMMUNICATION NATURELLE (conversations normales)
     else:
         return handle_phase_4_communication(user_input, conversation_count)
 
-# ========== PHASE 1: OBSERVATION SILENCIEUSE ==========
 def handle_phase_1_observation(user_input, conversation_count):
     """Phase 1: L'enfant observe et écoute, comme en vraie immersion"""
     
-    # Premier contact - Emma se présente avec gestes
     if conversation_count == 0:
         return random.choice([
             "Hello! *Emma waves with a big smile* I'm Miss Emma! *Emma points to herself* Emma! *Emma speaks slowly and clearly* Welcome to our class! *Emma gestures around the classroom*",
@@ -285,7 +263,6 @@ def handle_phase_1_observation(user_input, conversation_count):
             "Hello there! *Emma kneels down to child's level* I'm Miss Emma! *Emma taps her chest* Emma! *Emma points gently to child* What's your name? *Emma tilts head with encouraging smile*"
         ])
     
-    # L'enfant dit "hello" ou "bonjour" - ÉNORME encouragement
     if any(greeting in user_input for greeting in ["hello", "hi", "bonjour", "salut"]):
         return random.choice([
             "OH! *Emma's eyes light up* You said Hello! *Emma claps excitedly* WELL DONE! *Emma gives big thumbs up* Hello! *Emma waves* Hello to you too! *Emma points to child with pride*",
@@ -293,21 +270,18 @@ def handle_phase_1_observation(user_input, conversation_count):
             "EXCELLENT! *Emma beams with pride* You said Hello! *Emma applauds* That's English! *Emma points excitedly* Hello! *Emma waves both hands* You're doing amazing! *Emma shows pure joy*"
         ])
     
-    # L'enfant dit "yes" ou "oui"
     elif any(yes_word in user_input for yes_word in ["yes", "oui", "yeah"]):
         return random.choice([
             "Perfect! *Emma nods enthusiastically* Yes! *Emma gives thumbs up* You said Yes! *Emma claps* Yes means Oui! *Emma nods again* Brilliant! *Emma smiles proudly*",
             "Wonderful! *Emma's face shows delight* Yes! *Emma nods vigorously* That's right! *Emma points approvingly* Yes! *Emma makes big check mark in air* Very good! *Emma applauds*"
         ])
     
-    # L'enfant dit "no" ou "non"
     elif any(no_word in user_input for no_word in ["no", "non", "nah"]):
         return random.choice([
             "Good! *Emma nods understanding* No! *Emma shakes head gently* You said No! *Emma gives encouraging smile* No means Non! *Emma shakes head again* Well done! *Emma claps softly*",
             "That's right! *Emma nods approvingly* No! *Emma shakes head* Perfect! *Emma smiles warmly* No! *Emma demonstrates shaking head* Very good! *Emma gives gentle thumbs up*"
         ])
     
-    # Réponses générales pour phase d'observation
     else:
         return random.choice([
             "It's okay! *Emma smiles reassuringly* Just listen! *Emma points to her ear* Watch me! *Emma points to her eyes then herself* Hello! *Emma waves slowly* Can you wave? *Emma demonstrates waving*",
@@ -315,11 +289,9 @@ def handle_phase_1_observation(user_input, conversation_count):
             "You're learning! *Emma gives encouraging smile* Watch! *Emma points to her eyes* Hello! *Emma waves clearly* Try when you're ready! *Emma points gently to child*"
         ])
 
-# ========== PHASE 2: MOTS DE SURVIE ==========
 def handle_phase_2_survival(user_input, conversation_count):
     """Phase 2: Enseigner les mots essentiels pour survivre à l'école"""
     
-    # Si l'enfant maîtrise "hello", passer aux mots de survie
     if any(greeting in user_input for greeting in ["hello", "hi"]):
         return random.choice([
             "Brilliant Hello! *Emma claps* Now important word: Please! *Emma puts hands together* Please! *Emma demonstrates* When you want something: Please! *Emma points to child* Try it!",
@@ -327,28 +299,24 @@ def handle_phase_2_survival(user_input, conversation_count):
             "Excellent Hello! *Emma smiles* Now learn: Thank you! *Emma bows slightly* When someone helps you: Thank you! *Emma points to heart* Try saying: Thank you! *Emma encourages*"
         ])
     
-    # L'enfant dit "please"
     elif "please" in user_input:
         return random.choice([
             "WONDERFUL! *Emma jumps with joy* Please! *Emma claps excitedly* You're so polite! *Emma shows pride* Please is very important! *Emma nods* You're learning fast! *Emma gives big hug gesture*",
             "AMAZING! *Emma applauds* Please! *Emma puts hands together* Such good manners! *Emma beams* Now try: Thank you! *Emma bows slightly* Thank you! *Emma encourages warmly*"
         ])
     
-    # L'enfant dit "help me" ou "help"
     elif any(help_word in user_input for help_word in ["help", "help me", "aide"]):
         return random.choice([
             "EXCELLENT! *Emma rushes over supportively* Help me! *Emma nods* Good! *Emma pats shoulder gently* I will help you! *Emma points to herself* Always say Help me! *Emma demonstrates raising hand*",
             "PERFECT! *Emma shows immediate attention* Help me! *Emma nods approvingly* Very smart! *Emma gives thumbs up* Teacher will always help! *Emma points to herself with caring smile*"
         ])
     
-    # L'enfant dit "thank you"
     elif any(thanks in user_input for thanks in ["thank you", "thanks", "merci"]):
         return random.choice([
             "OH MY! *Emma's heart melts* Thank you! *Emma puts hand on heart* You're SO polite! *Emma beams with pride* Such good manners! *Emma applauds* You're wonderful! *Emma shows pure affection*",
             "BEAUTIFUL! *Emma smiles warmly* Thank you! *Emma bows slightly* You're very kind! *Emma touches heart* Perfect manners! *Emma gives proud thumbs up*"
         ])
     
-    # Enseigner les mots de survie selon la progression
     else:
         survival_lesson = get_survival_word_lesson(conversation_count)
         return survival_lesson
@@ -357,25 +325,19 @@ def get_survival_word_lesson(conversation_count):
     """Leçons de mots de survie dans l'ordre d'importance"""
     
     lessons = [
-        # Conversation 4-5: Please
         "Important school word: Please! *Emma puts hands together* Please! *Emma demonstrates* When you want water: Please! *Emma points to water* Try saying: Please! *Emma encourages*",
         
-        # Conversation 6-7: Help me  
         "Essential word: Help me! *Emma raises hand high* Help me! *Emma demonstrates* If you don't understand: Help me! *Emma points to confused face* Very important! *Emma nods seriously*",
         
-        # Conversation 8: Thank you
         "Polite word: Thank you! *Emma bows head slightly* Thank you! *Emma smiles warmly* When someone is kind: Thank you! *Emma points to heart* Good manners! *Emma gives thumbs up*"
     ]
     
-    # Prendre la leçon appropriée ou la dernière si on dépasse
     lesson_index = min(conversation_count - 4, len(lessons) - 1)
     return lessons[lesson_index] if lesson_index >= 0 else lessons[-1]
 
-# ========== PHASE 3: PHRASES UTILES ==========
 def handle_phase_3_phrases(user_input, conversation_count):
     """Phase 3: Phrases complètes pour situations scolaires réelles"""
     
-    # Si l'enfant utilise les mots de survie, encourager puis enseigner des phrases
     if any(word in user_input for word in ["please", "help", "thank you"]):
         return random.choice([
             "BRILLIANT! *Emma applauds* You know survival words! *Emma counts on fingers* Now full sentences! *Emma speaks slowly* Can I have water please? *Emma pretends to drink* Repeat exactly! *Emma points encouragingly*",
@@ -383,15 +345,13 @@ def handle_phase_3_phrases(user_input, conversation_count):
             "WONDERFUL! *Emma claps* Now classroom phrase! *Emma looks confused* I don't understand! *Emma shrugs* Important phrase! *Emma points to head* Say it! *Emma smiles supportively*"
         ])
     
-    # L'enfant essaie une phrase complète
-    elif len(user_input.split()) >= 3:  # 3+ mots = tentative de phrase
+    elif len(user_input.split()) >= 3:
         return random.choice([
             "WOW! *Emma jumps excitedly* Full sentence! *Emma claps wildly* You're speaking English! *Emma shows amazement* Keep going! *Emma gestures to continue* You're doing fantastic! *Emma beams with pride*",
             "INCREDIBLE! *Emma applauds enthusiastically* Real English sentence! *Emma points excitedly* Amazing progress! *Emma gives huge thumbs up* You sound like English child! *Emma shows pure joy*",
             "OUTSTANDING! *Emma cheers* Look at you speaking! *Emma gestures proudly* Perfect! *Emma makes chef's kiss* You're becoming fluent! *Emma shows overwhelming pride*"
         ])
     
-    # Enseigner des phrases selon les besoins scolaires
     else:
         return get_useful_phrase_lesson(conversation_count)
 
@@ -399,31 +359,23 @@ def get_useful_phrase_lesson(conversation_count):
     """Phrases utiles pour situations scolaires dans l'ordre d'importance"""
     
     school_phrases = [
-        # Besoins physiologiques (priorité absolue)
         "School phrase! *Emma points to door* Can I go to toilet please? *Emma demonstrates urgency* VERY important! *Emma nods seriously* Repeat: Can I go to toilet please? *Emma waits patiently*",
         
-        # Soif/faim
         "Useful phrase! *Emma pretends to drink* Can I have water please? *Emma demonstrates drinking* When thirsty! *Emma points to throat* Say: Can I have water please? *Emma encourages*",
         
-        # Incompréhension (crucial en classe)
         "Important phrase! *Emma looks confused* I don't understand! *Emma shrugs* When confused! *Emma points to head* Say: I don't understand! *Emma demonstrates confused face*",
         
-        # Demander de l'aide
         "Classroom phrase! *Emma raises hand* Can you help me please? *Emma demonstrates* When stuck! *Emma shows struggling* Try: Can you help me please? *Emma smiles encouragingly*",
         
-        # Être malade
         "Emergency phrase! *Emma holds stomach* I feel sick! *Emma looks unwell* If not feeling good! *Emma demonstrates* Important: I feel sick! *Emma nods seriously*"
     ]
     
-    # Calculer quelle phrase enseigner
     phrase_index = (conversation_count - 9) % len(school_phrases)
     return school_phrases[phrase_index]
 
-# ========== PHASE 4: COMMUNICATION NATURELLE ==========
 def handle_phase_4_communication(user_input, conversation_count):
     """Phase 4: Conversations naturelles comme avec un enfant anglais"""
     
-    # L'enfant pose une question
     if "?" in user_input or any(q_word in user_input for q_word in ["what", "where", "how", "why", "when", "who"]):
         return random.choice([
             "Great question! *Emma smiles approvingly* You're curious! *Emma points to head* That's how you learn! *Emma gives thumbs up* Let me explain... *Emma settles in to answer*",
@@ -431,21 +383,18 @@ def handle_phase_4_communication(user_input, conversation_count):
             "Excellent! *Emma nods approvingly* You're asking questions! *Emma points excitedly* That's perfect English! *Emma shows pride* Let me tell you... *Emma speaks warmly*"
         ])
     
-    # L'enfant exprime ses sentiments
     elif any(feeling in user_input for feeling in ["happy", "sad", "tired", "hungry", "thirsty", "scared", "excited"]):
         return random.choice([
             "Thank you for telling me! *Emma nods understanding* I understand your feelings! *Emma points to heart* It's good to share! *Emma smiles warmly* How can I help? *Emma shows care*",
             "I hear you! *Emma listens attentively* Feelings are important! *Emma touches heart* Thank you for using English! *Emma gives encouraging smile* What do you need? *Emma offers support*"
         ])
     
-    # L'enfant parle de sa famille/maison
     elif any(family in user_input for family in ["mum", "dad", "home", "family", "brother", "sister"]):
         return random.choice([
             "How lovely! *Emma smiles warmly* Tell me more about your family! *Emma leans in interested* I'd love to hear! *Emma shows genuine interest* Family is so important! *Emma nods*",
             "That's wonderful! *Emma beams* Your family sounds nice! *Emma gives warm smile* Do you miss them? *Emma shows understanding* It's okay to feel that! *Emma offers comfort*"
         ])
     
-    # Conversation générale
     else:
         return random.choice([
             "You're speaking so well! *Emma applauds* Like a real English child! *Emma shows amazement* I'm so proud! *Emma beams* What else would you like to talk about? *Emma shows interest*",
@@ -457,13 +406,13 @@ def handle_phase_4_communication(user_input, conversation_count):
 def get_natural_learning_phase(conversation_count):
     """Phases d'apprentissage naturel d'un enfant en immersion"""
     if conversation_count <= 3:
-        return "silent_observation"     # 👁️ Observer + écouter
+        return "silent_observation"    
     elif conversation_count <= 8:
-        return "survival_words"         # 🆘 Mots de survie essentiels
+        return "survival_words"         
     elif conversation_count <= 15:
-        return "useful_phrases"         # 🗣️ Phrases complètes utiles
+        return "useful_phrases"         
     else:
-        return "natural_communication"  # 💬 Communication naturelle
+        return "natural_communication"  
 
 def get_emma_lesson_focus(lesson_number):
     """Focus de leçon selon la progression naturelle"""
@@ -484,7 +433,6 @@ def get_emma_improved_fallback(user_input, lesson_number):
     
     input_lower = user_input.lower().strip()
     
-    # Leçon 1-2: Focus sur Hello
     if lesson_number <= 2:
         return random.choice([
             "Very good! Today we learn 'Hello'! Hello means 'Bonjour'! Say 'Hello'!",
@@ -492,21 +440,18 @@ def get_emma_improved_fallback(user_input, lesson_number):
             "Bravo! First English word: 'Hello'! It means 'Bonjour'! Try it!"
         ])
     
-    # Leçon 3-4: Hello + Yes
     elif lesson_number <= 4:
         if "yes" in input_lower or "oui" in input_lower:
             return "Perfect! You said 'Yes'! Yes means 'Oui'! Very smart student!"
         else:
             return "Good! Now learn 'Yes'! Yes means 'Oui'! Say 'Yes Emma'!"
     
-    # Leçon 5-6: Hello + Yes + No  
     elif lesson_number <= 6:
         if "no" in input_lower or "non" in input_lower:
             return "Excellent! You said 'No'! No means 'Non'! Bravo!"
         else:
             return "Great! Now learn 'No'! No means 'Non'! Say 'No'!"
     
-    # Général - toujours encourager
     else:
         return random.choice([
             "Very good! You are learning English! Bravo!",
@@ -542,7 +487,6 @@ def generate_ai_response_waiter_tom(previous_input, user_history, user_id=None, 
     
     variation_prompt = get_variation_prompt('tom', len(user_history))
     
-    # PROMPT BEAUCOUP PLUS SIMPLE
     tom_personality = f"""You are Tom, a friendly waiter at a family restaurant. You are a real person, not an AI.
 
 SIMPLE RESTAURANT RULES:
@@ -657,7 +601,6 @@ Respond as Ben the tourist guide - use simple direction English, be very clear a
     
     return _generate_simple_response_with_validation(ben_personality, previous_input, user_history, "ben")
 
-# ===== FONCTIONS DE GÉNÉRATION ET VALIDATION =====
 
 def _generate_simple_response_with_validation(personality_prompt, previous_input, user_history, character_name):
     """Génération avec validation TRÈS ASSOUPLIE pour débutants"""
@@ -665,7 +608,6 @@ def _generate_simple_response_with_validation(personality_prompt, previous_input
     model_name = 'phi3'
     
     try:
-        # Prompt SIMPLE sans contraintes excessives
         simple_prompt = f"""<|system|>
 {personality_prompt}
 
@@ -678,16 +620,13 @@ IMPORTANT: Give ONE natural response that fits the conversation. Don't overthink
         
         generated_response = generate_ollama_response(model_name, simple_prompt)
         
-        # Nettoyer la réponse
         response = generated_response.strip()
         response = re.sub(r'<\|.*?\|>', '', response).strip()
         
-        # Validation TRÈS ASSOUPLIE - on garde presque tout
         if len(response.strip()) < 5:
             print(f"⚠️ Réponse trop courte, utilisation du fallback")
             return get_simple_beginner_fallback(previous_input, character_name)
         
-        # Limiter seulement si VRAIMENT trop long (plus de 3 phrases)
         sentences = nltk.tokenize.sent_tokenize(response)
         if len(sentences) > 3:
             response = '. '.join(sentences[:2]) + '.'
@@ -705,7 +644,6 @@ def _generate_response_with_personality(personality_prompt, previous_input, user
     start_time_phi3 = time.time()
     
     try:
-        # Prompt ULTRA strict pour forcer le maintien du personnage
         strict_prompt = f"""<|system|>
 {personality_prompt}
 ABSOLUTE RULES - NEVER BREAK THESE:
@@ -734,13 +672,10 @@ If asked about your identity, respond with your character name and role ONLY.
         end_time_phi3 = time.time()
         print(f"⏱️ Temps de réponse Phi3: {end_time_phi3 - start_time_phi3:.2f}s")
         
-        # Nettoyer la réponse plus agressivement
         response = generated_response.strip()
         
-        # Enlever les balises de template
         response = re.sub(r'<\|.*?\|>', '', response).strip()
         
-        # Détecter et remplacer les réponses d'IA communes
         ai_indicators = [
             "I'm an AI", "As an AI", "I'm a language model", "I'm Microsoft", "I'm Phi",
             "I'm OpenAI", "I'm GPT", "I'm developed by", "I'm designed to", "I'm programmed",
@@ -753,17 +688,13 @@ If asked about your identity, respond with your character name and role ONLY.
                 print(f"⚠️ Réponse d'IA détectée: {indicator}, remplacement par fallback")
                 return get_character_specific_fallback(previous_input, user_history)
         
-        # Vérifications spéciales pour les questions d'identité
         identity_questions = ["who are you", "what is your name", "your name"]
         if any(q in previous_input.lower() for q in identity_questions):
-            # Forcer une réponse de personnage
             return get_character_identity_response(user_history)
         
-        # Limiter à 2 phrases max
         sentences = nltk.tokenize.sent_tokenize(response)
         limited_response = ' '.join(sentences[:2])
         
-        # Vérification finale - si la réponse est trop générique, utiliser fallback
         if len(limited_response.strip()) < 10:
             return get_character_specific_fallback(previous_input, user_history)
         
@@ -780,14 +711,11 @@ def _generate_mike_response_with_validation(prompt, user_input, user_history, ma
         try:
             print(f"🔄 Tentative Mike {attempt + 1}/{max_attempts}")
             
-            # Générer avec Phi3
             raw_response = generate_ollama_response('phi3', prompt)
             
-            # Nettoyer la réponse
             cleaned_response = raw_response.strip()
             cleaned_response = re.sub(r'<\|.*?\|>', '', cleaned_response).strip()
             
-            # VALIDATION ULTRA-STRICTE
             validation_result = validate_mike_response(cleaned_response, user_input)
             
             if validation_result["is_valid"]:
@@ -796,28 +724,22 @@ def _generate_mike_response_with_validation(prompt, user_input, user_history, ma
             else:
                 print(f"❌ Tentative {attempt + 1} échouée: {validation_result['reason']}")
                 
-                # Modifier le prompt pour la prochaine tentative
                 if "ai" in validation_result['reason'].lower():
                     prompt += f"\n\nIMPORTANT: You are Mike Thompson, a HUMAN taxi dispatcher. Do NOT mention AI, computers, or Microsoft."
                 
         except Exception as e:
             print(f"❌ Erreur tentative {attempt + 1}: {e}")
     
-    # Si toutes les tentatives échouent, générer une réponse Mike de secours contextuelle
     print("🆘 Toutes les tentatives ont échoué - Génération réponse Mike de secours")
     return generate_contextual_mike_fallback(user_input, user_history)
-
-# ===== FONCTIONS DE VALIDATION =====
 
 def is_simple_enough_for_beginners(response):
     """Validation TRÈS PERMISSIVE - on accepte presque tout"""
     
-    # Vérifier seulement les cas extrêmes
-    if len(response) > 500:  # Très long
+    if len(response) > 500:  
         print(f"⚠️ Réponse trop longue: {len(response)} caractères")
         return False
     
-    # Vérifier s'il y a trop de phrases complexes
     sentences = nltk.tokenize.sent_tokenize(response)
     very_long_sentences = [s for s in sentences if len(s.split()) > 25]
     
@@ -825,7 +747,6 @@ def is_simple_enough_for_beginners(response):
         print(f"⚠️ Trop de phrases très longues")
         return False
     
-    # Sinon, on accepte
     return True
 
 def validate_mike_response(response, user_input):
@@ -833,7 +754,6 @@ def validate_mike_response(response, user_input):
     
     response_lower = response.lower()
     
-    # Liste exhaustive des phrases interdites
     forbidden_phrases = [
         "i'm an ai", "i'm phi", "i'm a computer", "i'm microsoft", 
         "i'm developed by", "i'm a language model", "artificial intelligence",
@@ -841,7 +761,6 @@ def validate_mike_response(response, user_input):
         "as an ai", "i'm here to help", "how can i assist you", "i'm just a computer"
     ]
     
-    # Vérifier les phrases interdites
     for phrase in forbidden_phrases:
         if phrase in response_lower:
             return {
@@ -849,7 +768,6 @@ def validate_mike_response(response, user_input):
                 "reason": f"Phrase d'IA détectée: '{phrase}'"
             }
     
-    # Vérifier que la réponse n'est pas trop courte ou trop longue
     if len(response.strip()) < 10:
         return {
             "is_valid": False,
@@ -862,8 +780,7 @@ def validate_mike_response(response, user_input):
             "reason": "Réponse trop longue"
         }
     
-    # Vérifier que la réponse semble naturelle (optionnel)
-    if response.count('.') > 5:  # Trop de phrases
+    if response.count('.') > 5:  
         return {
             "is_valid": False,
             "reason": "Réponse trop fragmentée"
@@ -873,8 +790,6 @@ def validate_mike_response(response, user_input):
         "is_valid": True,
         "reason": "Réponse valide"
     }
-
-# ===== RÉPONSES DE SECOURS =====
 
 def get_simple_beginner_fallback(user_input, character_name):
     """Réponses de secours ULTRA-SIMPLES par personnage"""
@@ -918,7 +833,6 @@ def get_simple_beginner_fallback(user_input, character_name):
             ])
     
     if character_name == "tom":
-        # Réponses selon le contexte
         if any(greeting in input_lower for greeting in ["hello", "hi", "hey"]):
             return random.choice([
                 "Hi there! Welcome to our restaurant!",
@@ -979,7 +893,6 @@ def get_simple_beginner_fallback(user_input, character_name):
 def get_character_identity_response(user_history):
     """Réponses d'identité spécifiques par personnage"""
     
-    # Déterminer le personnage basé sur l'historique
     if not user_history:
         return "I'm Mike from NYC Taxi dispatch."
     
@@ -1033,7 +946,6 @@ def get_character_identity_response(user_history):
 def get_character_specific_fallback(user_input, user_history):
     """Réponses de secours spécifiques par personnage"""
     
-    # Déterminer le contexte basé sur l'historique
     if not user_history:
         fallbacks = [
             "That's interesting! Tell me more about that.",
@@ -1094,7 +1006,6 @@ def generate_contextual_mike_fallback(user_input, user_history):
     
     input_lower = user_input.lower()
     
-    # Analyser le contexte pour donner une réponse appropriée
     if any(greeting in input_lower for greeting in ["hello", "hi", "hey"]):
         return "Hey there! Mike from NYC Taxi. What can I do for you today?"
     
@@ -1123,7 +1034,6 @@ def generate_contextual_mike_fallback(user_input, user_history):
         return "Traffic's not too bad right now. I always keep an eye on the conditions to get our customers the best routes."
     
     else:
-        # Réponse générale mais naturelle de Mike
         natural_responses = [
             "Sure thing! What else can I help you with for your ride?",
             "Alright, let me see what I can do for you here at NYC Taxi.",
@@ -1133,16 +1043,13 @@ def generate_contextual_mike_fallback(user_input, user_history):
         ]
         return random.choice(natural_responses)
 
-# ===== MAPPING DES FONCTIONS =====
 
 def get_ai_function_for_choice(choice):
     """Retourne la fonction IA appropriée selon le choix - AVEC NOUVEAUX PERSONNAGES"""
     ai_mapping = {
-        # PERSONNAGES EXISTANTS
         "conv_greetings_common_conversations": generate_ai_response_alice,
         "conv_taxi_booking": generate_ai_response_taxi_mike,
         "conv_airport_ticket": generate_ai_response_airport_sarah,
-        # 🆕 NOUVEAUX PERSONNAGES POUR DÉBUTANTS
         "conv_beginner_teacher": generate_ai_response_teacher_emma,
         "conv_simple_restaurant": generate_ai_response_waiter_tom,
         "conv_simple_shopping": generate_ai_response_shop_lucy,

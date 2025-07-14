@@ -24,6 +24,10 @@ class User(UserBase):
     id: int
     date_creation: datetime
     consent: bool
+    role: str 
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    country: Optional[str] = None
     
     class Config:
         orm_mode = True

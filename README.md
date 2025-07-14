@@ -1,4 +1,4 @@
-# Projet AI Tutor
+# Projet Talk AI
 
 Ce projet est une application web pour un service d'IA qui utilise des modèles de traitement du langage naturel (NLP) pour engager des conversations interactives. Le système comprend une API backend, un modèle d'IA pour la génération de texte, et des outils de transcription audio. Le projet est construit avec **FastAPI** et **Docker** pour une mise en œuvre continue via une pipeline CI/CD.
 
@@ -6,13 +6,8 @@ Ce projet est une application web pour un service d'IA qui utilise des modèles 
 
 ## Interface de l'application
 
-![Capture d'écran de l'IA](./front/static/assets/images/screen_ia.PNG)
-
-## Démo Vidéo
-
-Regardez la démo vidéo de l'application en cliquant sur le lien suivant :
-
-[Voir la démo sur YouTube](https://www.youtube.com/watch?v=FQ0OTguo_iA)
+![Capture d'écran de l'IA](./home_app.png)
+![Capture d'écran de l'IA](./conversation_tom.png)
 
 ## Fonctionnalités IA & principales
 
@@ -22,8 +17,8 @@ Regardez la démo vidéo de l'application en cliquant sur le lien suivant :
 - **Détection de langue** : L'IA peut détecter si l'utilisateur parle en français ou en anglais, et demande de parler en anglais si la langue n'est pas reconnue.
 - **Transcription audio** : Conversion de l'audio en texte à l'aide de **Whisper**.
 - **Génération de réponses** : Utilisation du modèle **Phi3** via l'API Ollama pour générer des réponses personnalisées. Vous pouvez également choisir et paramétrer d'autres modèles d'Ollama.
-- **Synthèse vocale (TTS)** : Utilisation de **Coqui TTS** pour générer des fichiers audio à partir de texte.
-- **Durée personnalisée des sessions** : Les utilisateurs peuvent choisir la durée de leurs sessions de conversation.
+- **Synthèse vocale (TTS)** : Utilisation de **Coqui TTS** & **Edge TTS**pour générer des fichiers audio à partir de texte.
+- **Durée personnalisée des sessions** : Les utilisateurs ont une durée de leurs sessions de conversation.
 - **Historique des conversations** : Les utilisateurs peuvent consulter l'historique de leurs conversations passées.
 - **Compte rendu de session** : À la fin de chaque session, un rapport détaillé est généré, incluant des statistiques et des analyses de performance.
 - **Logs des métriques** : Les temps de réponse et autres métriques sont enregistrés dans des fichiers CSV pour analyse.
@@ -35,7 +30,6 @@ Regardez la démo vidéo de l'application en cliquant sur le lien suivant :
 - **Compte utilisateur** : Chaque utilisateur dispose de son propre compte pour se connecter à l'application, accéder à ses sessions passées et revoir son historique de conversation.
 - **Historique des conversations** : L'utilisateur peut visualiser toutes ses sessions de conversation antérieures avec des détails sur chaque interaction.
 - **Rapport de session** : À la fin de chaque session, un rapport complet est généré, comprenant des statistiques telles que le nombre de messages échangés, les erreurs de compréhension, et une analyse des performances, notamment le temps de réponse moyen et le nombre de phrases correctes.
-- **Durée personnalisée des sessions** : L'utilisateur peut définir la durée de sa session avant de commencer, ce qui permet de personnaliser l'expérience selon ses besoins.
 
 ## Technologies utilisées
 
@@ -65,7 +59,7 @@ Regardez la démo vidéo de l'application en cliquant sur le lien suivant :
     cd ai_tutor
     ```
 
-2. Créez un fichier `.env` en copiant le fichier `.env.example` et modifiez-le avec vos informations de base de données :
+2. Créez un fichier `.env` en copiant le fichier `.env.example` et modifiez-le avec vos informations de base de données Postgress:
     ```bash
     cp .env.example .env
     ```

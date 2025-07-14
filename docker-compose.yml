@@ -1,16 +1,25 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:13
+    image: postgres:14
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-talkai_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talkai_password}
+      POSTGRES_DB: ${POSTGRES_DB:-talkai_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-talkai_user} -d ${POSTGRES_DB:-talkai_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - talkai-network
 
   ollama:
     image: ollama/ollama
@@ -28,21 +37,45 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - talkai-network
 
   web:
-    build: .
-    command: ["uvicorn", "back.api_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ["/wait-and-init.sh"]
     volumes:
       - .:/app
+      - ./front/static/assets/images/avatars:/app/front/static/assets/images/avatars
+      - ./audio:/app/audio
+      - ./logs:/app/logs
     ports:
       - "8000:8000"
     depends_on:
-      - db       
-      - ollama
-        
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      # Variables de base de données
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-talkai_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talkai_password}
+      POSTGRES_DB: ${POSTGRES_DB:-talkai_db}
+      # Variables d'application
+      PYTHONPATH: /app
+      OLLAMA_HOST: http://ollama:11434
     deploy:
       resources:
         reservations:
@@ -52,7 +85,16 @@ services:
               capabilities: [gpu]
     env_file:
       - .env
+    restart: unless-stopped
+    networks:
+      - talkai-network
 
 volumes:
   postgres_data:
+    driver: local
   ollama:
+    driver: local
+
+networks:
+  talkai-network:
+    driver: bridge

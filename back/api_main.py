@@ -22,6 +22,7 @@ from back.transcribe_audio import transcribe_audio
 from back.audio_utils import file_to_base64, is_valid_audio_file, delete_audio_file
 from back.detect_langs import detect_language
 from back.cors import add_middleware
+from back.bdd.database import init_db, check_db_health
 from typing import List, Optional
 from datetime import timezone, timedelta, date, datetime
 import nltk
@@ -124,23 +125,52 @@ DEFAULT_EDGE_VOICES = {
 # Événement de démarrage pour initialiser les répertoires
 @app.on_event("startup")
 async def startup_event():
-    print("🚀 Initialisation de l'application...")
-    print("📁 Initialisation des répertoires audio...")
+    print("🚀 Initialisation de TalkAI...")
+    
+    # Vérifier les variables d'environnement
+    required_env = ['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB']
+    missing_env = [var for var in required_env if not os.getenv(var)]
+    if missing_env:
+        print(f"❌ Variables d'environnement manquantes: {missing_env}")
+        sys.exit(1)
+    
+    # Initialiser la base de données
+    try:
+        init_db()
+        if check_db_health():
+            print("✅ Base de données opérationnelle")
+        else:
+            print("⚠️ Problème de santé de la DB")
+    except Exception as e:
+        print(f"❌ Erreur initialisation DB: {e}")
+        # Ne pas arrêter l'app, continuer avec les autres services
+    
+    # Créer les dossiers nécessaires
+    directories = [
+        "./front/static/assets/images/avatars",
+        "./audio/user", 
+        "./audio/ia",
+        "./logs"
+    ]
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
+    print("📁 Dossiers créés")
+    
+    # Initialiser les répertoires audio
     ensure_audio_directories()
     print("✅ Répertoires audio initialisés")
     
-    # Test rapide Edge-TTS au démarrage
+    # Test Edge-TTS
     try:
-        print("🧪 Test Edge-TTS au démarrage...")
-        test_audio_path, _ = await edge_text_to_speech_with_fallback("Hello, Edge-TTS is working!", "alice")
-        print(f"✅ Edge-TTS opérationnel: {test_audio_path}")
-        # Nettoyer le fichier de test
+        print("🧪 Test Edge-TTS...")
+        test_audio_path, _ = await edge_text_to_speech_with_fallback("Hello", "alice")
+        print(f"✅ Edge-TTS opérationnel")
         if os.path.exists(test_audio_path):
             os.remove(test_audio_path)
     except Exception as e:
-        print(f"⚠️ Edge-TTS test échoué au démarrage: {e}")
+        print(f"⚠️ Edge-TTS indisponible: {e}")
     
-    print("🎉 Application initialisée avec succès")
+    print("🎉 TalkAI initialisé avec succès!")
 
 # ===== ROUTES PAGES WEB =====
 @app.get('/')
@@ -295,7 +325,7 @@ def update_user_role_endpoint(
     db: Session = Depends(get_db),
     current_user: DBUser = Depends(get_current_user)
 ):
-    if current_user.role != Role.ADMIN.name:
+    if current_user.role != Role.ADMIN.value:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Insufficient permissions")
     updated = update_user_role(db=db, user_id=user_id, new_role=new_role)
     if not updated:
@@ -329,21 +359,58 @@ def delete_user_route(user_id: int, db: Session = Depends(get_db)):
 
 # ===== FONCTIONS UTILITAIRES =====
 def calculate_avg_user_response_time(messages):
-    if not messages:
+    """Calcule le temps de réponse moyen de l'utilisateur avec gestion d'erreur"""
+    try:
+        if not messages or len(messages) < 2:
+            return "N/A"
+        
+        # Trier les messages par timestamp
+        sorted_messages = sorted(messages, key=lambda msg: msg.timestamp)
+        
+        time_differences = []
+        for i in range(1, len(sorted_messages)):
+            try:
+                current_msg = sorted_messages[i]
+                previous_msg = sorted_messages[i-1]
+                
+                # Vérifier que les messages ont des timestamps valides
+                if not current_msg.timestamp or not previous_msg.timestamp:
+                    continue
+                
+                # Calculer la différence de temps
+                time_diff = (current_msg.timestamp - previous_msg.timestamp).total_seconds()
+                
+                # Soustraire la durée audio de l'IA si disponible
+                if hasattr(previous_msg, 'ia_audio_duration') and previous_msg.ia_audio_duration:
+                    time_diff -= previous_msg.ia_audio_duration
+                
+                # Ignorer les différences négatives ou trop grandes (> 5 minutes)
+                if 0 < time_diff < 300:
+                    time_differences.append(time_diff)
+                    
+            except Exception as e:
+                print(f"⚠️ Erreur calcul temps réponse message {i}: {e}")
+                continue
+        
+        if not time_differences:
+            return "N/A"
+        
+        avg_response_time = sum(time_differences) / len(time_differences)
+        avg_response_time_delta = timedelta(seconds=avg_response_time)
+        
+        # Formater le résultat
+        total_seconds = int(avg_response_time_delta.total_seconds())
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        
+        if minutes > 0:
+            return f"{minutes}m {seconds}s"
+        else:
+            return f"{seconds}s"
+            
+    except Exception as e:
+        print(f"❌ Erreur globale calcul temps réponse: {e}")
         return "N/A"
-    messages.sort(key=lambda msg: msg.timestamp)    
-    time_differences = []
-    for i in range(1, len(messages)):
-        if messages[i].user_id == messages[i-1].user_id:
-            time_diff = (messages[i].timestamp - messages[i-1].timestamp).total_seconds()
-            if messages[i-1].ia_audio_duration:
-                time_diff -= messages[i-1].ia_audio_duration
-            time_differences.append(time_diff)
-    if not time_differences:
-        return "N/A"
-    avg_response_time = sum(time_differences) / len(time_differences)
-    avg_response_time_delta = timedelta(seconds=avg_response_time)
-    return str(avg_response_time_delta).split('.')[0]
 
 def evaluate_sentence_quality_phi3(sentence: str) -> bool:
     print("🔍 Début évaluation phrase")
@@ -1798,52 +1865,214 @@ async def chat_with_brain(
 # ===== ROUTES D'ANALYSE =====
 @app.get("/analyze_session/{conversation_id}", response_model=AnalysisResponse)
 def analyze_session(conversation_id: int, db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
-    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
-    if not conversation:
-        raise HTTPException(status_code=404, detail="Conversation not found")
+    try:
+        # 🔥 CORRECTION : Vérifier que la conversation appartient à l'utilisateur
+        conversation = db.query(Conversation).filter(
+            Conversation.id == conversation_id,
+            Conversation.user1_id == current_user.id
+        ).first()
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+        
+        # Récupérer les messages avec gestion d'erreur
+        try:
+            translations = db.query(Message).filter(
+                Message.conversation_id == conversation_id,
+                Message.marker == "translations"
+            ).all()
+            
+            unclear_responses = db.query(Message).filter(
+                Message.conversation_id == conversation_id,
+                Message.marker == "unclear_responses"
+            ).all()
+            
+            french_responses = db.query(Message).filter(
+                Message.conversation_id == conversation_id,
+                Message.marker == "french_responses"
+            ).all()
+            
+            all_messages = db.query(Message).filter(
+                Message.conversation_id == conversation_id
+            ).all()
+            
+            # Calculer les phrases correctes (exclure les marqueurs d'erreur et traductions)
+            excluded_markers = ["unclear_responses", "french_responses", "translations"]
+            correct_phrases_count = len([
+                msg for msg in all_messages 
+                if not msg.marker or msg.marker not in excluded_markers
+            ])
+            
+            # 🔥 CORRECTION : Gestion des dates avec timezone
+            try:
+                if conversation.end_time and conversation.start_time:
+                    # S'assurer que les deux dates ont le même type de timezone
+                    start_time = conversation.start_time
+                    end_time = conversation.end_time
+                    
+                    # Si une date a timezone et l'autre non, normaliser
+                    if start_time.tzinfo is None and end_time.tzinfo is not None:
+                        start_time = start_time.replace(tzinfo=timezone.utc)
+                    elif start_time.tzinfo is not None and end_time.tzinfo is None:
+                        end_time = end_time.replace(tzinfo=timezone.utc)
+                    
+                    duration = end_time - start_time
+                else:
+                    # Utiliser le temps actuel si pas de end_time
+                    start_time = conversation.start_time
+                    current_time = datetime.now(timezone.utc)
+                    
+                    # Normaliser la timezone
+                    if start_time.tzinfo is None:
+                        start_time = start_time.replace(tzinfo=timezone.utc)
+                    
+                    duration = current_time - start_time
+                
+                # Formatage sécurisé de la durée
+                total_seconds = int(duration.total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                
+                if hours > 0:
+                    duration_str = f"{hours}h {minutes}m"
+                elif minutes > 0:
+                    duration_str = f"{minutes}m"
+                else:
+                    duration_str = "< 1m"
+                    
+            except Exception as duration_error:
+                print(f"⚠️ Erreur calcul durée: {duration_error}")
+                duration_str = "N/A"
+            
+            total_messages = len(all_messages)
+            
+            # Calcul du temps de réponse moyen avec gestion d'erreur améliorée
+            try:
+                avg_user_response_time = calculate_avg_user_response_time_safe(all_messages)
+            except Exception as time_error:
+                print(f"⚠️ Erreur calcul temps réponse: {time_error}")
+                avg_user_response_time = "N/A"
+            
+            # Construction de la réponse avec valeurs par défaut
+            analysis_result = {
+                "translations": [
+                    (msg.user_input or "N/A", msg.response or "N/A") 
+                    for msg in translations
+                ],
+                "unclear_responses": [
+                    {
+                        "response": msg.content or "N/A", 
+                        "suggestion": msg.suggestion or "Aucune suggestion"
+                    } for msg in unclear_responses
+                ],
+                "french_responses": [msg.content or "N/A" for msg in french_responses],
+                "french_responses_count": len(french_responses),
+                "unclear_responses_count": len(unclear_responses),
+                "translations_count": len(translations),
+                "correct_phrases_count": max(0, correct_phrases_count),
+                "duration": duration_str,
+                "category": conversation.category or "unknown",
+                "total_messages": total_messages,
+                "avg_user_response_time": avg_user_response_time
+            }
+            
+            print(f"✅ Analyse session {conversation_id} réussie: {total_messages} messages")
+            return analysis_result
+            
+        except Exception as messages_error:
+            print(f"❌ Erreur traitement messages session {conversation_id}: {messages_error}")
+            # Retourner une analyse vide plutôt qu'une erreur
+            return {
+                "translations": [],
+                "unclear_responses": [],
+                "french_responses": [],
+                "french_responses_count": 0,
+                "unclear_responses_count": 0,
+                "translations_count": 0,
+                "correct_phrases_count": 0,
+                "duration": "N/A",
+                "category": conversation.category or "unknown",
+                "total_messages": 0,
+                "avg_user_response_time": "N/A"
+            }
+            
+    except HTTPException:
+        # Re-lancer les erreurs HTTP
+        raise
+    except Exception as e:
+        print(f"❌ Erreur générale analyse session {conversation_id}: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erreur lors de l'analyse de la session: {str(e)}"
+        )
     
-    translations = db.query(Message).filter(
-        Message.conversation_id == conversation_id,
-        Message.marker == "translations"
-    ).all()
-    
-    unclear_responses = db.query(Message).filter(
-        Message.conversation_id == conversation_id,
-        Message.marker == "unclear_responses"
-    ).all()
-    
-    french_responses = db.query(Message).filter(
-        Message.conversation_id == conversation_id,
-        Message.marker == "french_responses"
-    ).all()
-    
-    all_messages = db.query(Message).filter(Message.conversation_id == conversation_id).all()
-    correct_phrases_count = len([msg for msg in all_messages if msg.marker not in ["unclear_responses", "french_responses"]])
-    
-    if conversation.end_time:
-        duration = conversation.end_time - conversation.start_time
-    else:
-        duration = datetime.utcnow() - conversation.start_time
-    duration_str = str(duration).split('.')[0]
-    
-    total_messages = len(all_messages)
-    avg_user_response_time = calculate_avg_user_response_time(all_messages)
-    
-    analysis_result = {
-        "translations": [(msg.user_input, msg.response) for msg in translations],
-        "unclear_responses": [{"response": msg.content, "suggestion": msg.suggestion} for msg in unclear_responses],
-        "french_responses": [msg.content for msg in french_responses],
-        "french_responses_count": len(french_responses),
-        "unclear_responses_count": len(unclear_responses),
-        "translations_count": len(translations),
-        "correct_phrases_count": correct_phrases_count,
-        "duration": duration_str,
-        "category": conversation.category,
-        "total_messages": total_messages,
-        "avg_user_response_time": avg_user_response_time
-    }
-    
-    return analysis_result
+def calculate_avg_user_response_time_safe(messages):
+    """Calcule le temps de réponse moyen avec gestion complète des timezones"""
+    try:
+        if not messages or len(messages) < 2:
+            return "N/A"
+        
+        # Trier les messages par timestamp
+        sorted_messages = sorted(messages, key=lambda msg: msg.timestamp if msg.timestamp else datetime.min.replace(tzinfo=timezone.utc))
+        
+        time_differences = []
+        for i in range(1, len(sorted_messages)):
+            try:
+                current_msg = sorted_messages[i]
+                previous_msg = sorted_messages[i-1]
+                
+                # Vérifier que les messages ont des timestamps valides
+                if not current_msg.timestamp or not previous_msg.timestamp:
+                    continue
+                
+                # Normaliser les timezones
+                current_time = current_msg.timestamp
+                previous_time = previous_msg.timestamp
+                
+                # S'assurer que les deux ont le même type de timezone
+                if current_time.tzinfo is None and previous_time.tzinfo is not None:
+                    current_time = current_time.replace(tzinfo=timezone.utc)
+                elif current_time.tzinfo is not None and previous_time.tzinfo is None:
+                    previous_time = previous_time.replace(tzinfo=timezone.utc)
+                elif current_time.tzinfo is None and previous_time.tzinfo is None:
+                    # Les deux sont naive, les traiter comme UTC
+                    current_time = current_time.replace(tzinfo=timezone.utc)
+                    previous_time = previous_time.replace(tzinfo=timezone.utc)
+                
+                # Calculer la différence de temps
+                time_diff = (current_time - previous_time).total_seconds()
+                
+                # Soustraire la durée audio de l'IA si disponible
+                if hasattr(previous_msg, 'ia_audio_duration') and previous_msg.ia_audio_duration:
+                    time_diff -= previous_msg.ia_audio_duration
+                
+                # Ignorer les différences négatives ou trop grandes (> 10 minutes)
+                if 0 < time_diff < 600:
+                    time_differences.append(time_diff)
+                    
+            except Exception as e:
+                print(f"⚠️ Erreur calcul temps réponse message {i}: {e}")
+                continue
+        
+        if not time_differences:
+            return "N/A"
+        
+        avg_response_time = sum(time_differences) / len(time_differences)
+        
+        # Formatage du résultat
+        if avg_response_time >= 60:
+            minutes = int(avg_response_time // 60)
+            seconds = int(avg_response_time % 60)
+            return f"{minutes}m {seconds}s"
+        else:
+            seconds = int(avg_response_time)
+            return f"{seconds}s"
+            
+    except Exception as e:
+        print(f"❌ Erreur globale calcul temps réponse: {e}")
+        return "N/A"
 
 @app.post("/get_suggestions")
 def get_suggestions(request: dict, db: Session = Depends(get_db), current_user: DBUser = Depends(get_current_user)):
@@ -3029,6 +3258,278 @@ def calculate_achievements(character_progress, total_conversations, total_messag
         })
     
     return achievements
+
+@app.get("/user/detailed_stats")
+async def get_detailed_user_stats(
+    current_user: DBUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Statistiques détaillées pour la page d'analyse"""
+    try:
+        user_id = current_user.id
+        
+        # Récupérer toutes les conversations
+        all_conversations = db.query(Conversation).filter(
+            Conversation.user1_id == user_id
+        ).all()
+        
+        # Statistiques globales
+        total_conversations = len(all_conversations)
+        total_time_minutes = 0
+        
+        # Statistiques par personnage
+        character_stats = {}
+        
+        # Analyser chaque conversation
+        for conv in all_conversations:
+            # Calculer la durée
+            start_time = conv.start_time
+            end_time = conv.end_time if conv.end_time else datetime.utcnow()
+            duration_minutes = max(1, int((end_time - start_time).total_seconds() / 60))
+            total_time_minutes += duration_minutes
+            
+            # Obtenir le personnage
+            character = get_character_from_category_util(conv.category)
+            
+            if character not in character_stats:
+                character_stats[character] = {
+                    'conversations': 0,
+                    'total_time': 0,
+                    'last_activity': None,
+                    'messages': 0
+                }
+            
+            character_stats[character]['conversations'] += 1
+            character_stats[character]['total_time'] += duration_minutes
+            
+            if not character_stats[character]['last_activity'] or conv.start_time > character_stats[character]['last_activity']:
+                character_stats[character]['last_activity'] = conv.start_time
+            
+            # Compter les messages
+            messages_count = db.query(Message).filter(Message.conversation_id == conv.id).count()
+            character_stats[character]['messages'] += messages_count
+        
+        # Calculer les tendances (cette semaine vs semaine dernière)
+        now = datetime.utcnow()
+        one_week_ago = now - timedelta(days=7)
+        two_weeks_ago = now - timedelta(days=14)
+        
+        this_week_convs = [c for c in all_conversations if c.start_time >= one_week_ago]
+        last_week_convs = [c for c in all_conversations if two_weeks_ago <= c.start_time < one_week_ago]
+        
+        # Activité par jour (7 derniers jours)
+        daily_activity = []
+        for i in range(7):
+            day = now - timedelta(days=i)
+            day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+            day_end = day_start + timedelta(days=1)
+            
+            day_conversations = [c for c in all_conversations 
+                               if day_start <= c.start_time < day_end]
+            
+            daily_activity.append({
+                'date': day_start.isoformat(),
+                'conversations': len(day_conversations)
+            })
+        
+        daily_activity.reverse()  # Du plus ancien au plus récent
+        
+        # Calculer le niveau de progression
+        level_info = calculate_user_level_util(character_stats)
+        
+        return {
+            'global_stats': {
+                'total_conversations': total_conversations,
+                'total_time_minutes': total_time_minutes,
+                'this_week_conversations': len(this_week_convs),
+                'last_week_conversations': len(last_week_convs),
+                'avg_session_time': total_time_minutes / total_conversations if total_conversations > 0 else 0
+            },
+            'character_stats': character_stats,
+            'level_info': level_info,
+            'daily_activity': daily_activity,
+            'trends': {
+                'conversations_trend': len(this_week_convs) - len(last_week_convs),
+                'most_active_character': max(character_stats.keys(), 
+                                           key=lambda k: character_stats[k]['conversations']) if character_stats else None
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur statistiques détaillées: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Fonctions utilitaires pour l'endpoint ci-dessus
+def get_character_from_category_util(category):
+    """Utilitaire pour obtenir le personnage depuis la catégorie"""
+    mapping = {
+        "conv_greetings_common_conversations": "alice",
+        "conv_taxi_booking": "mike",
+        "conv_airport_ticket": "sarah",
+        "conv_beginner_teacher": "emma",
+        "conv_simple_restaurant": "tom",
+        "conv_simple_shopping": "lucy",
+        "conv_simple_directions": "ben"
+    }
+    return mapping.get(category, 'unknown')
+
+def calculate_user_level_util(character_stats):
+    """Calculer le niveau de l'utilisateur"""
+    beginner_chars = ['emma', 'tom', 'lucy', 'ben']
+    intermediate_chars = ['alice']
+    advanced_chars = ['mike', 'sarah']
+    
+    beginner_progress = sum(1 for char in beginner_chars 
+                          if char in character_stats and character_stats[char]['conversations'] > 0)
+    
+    intermediate_progress = sum(1 for char in intermediate_chars 
+                              if char in character_stats and character_stats[char]['conversations'] > 0)
+    
+    advanced_progress = sum(1 for char in advanced_chars 
+                          if char in character_stats and character_stats[char]['conversations'] > 0)
+    
+    if beginner_progress == 0:
+        level = "Nouveau"
+        progress_percentage = 0
+    elif beginner_progress < 4:
+        level = "Débutant"
+        progress_percentage = (beginner_progress / 4) * 40
+    elif intermediate_progress == 0:
+        level = "Débutant Avancé" 
+        progress_percentage = 40
+    elif advanced_progress == 0:
+        level = "Intermédiaire"
+        progress_percentage = 40 + (intermediate_progress / 1) * 30
+    else:
+        level = "Avancé"
+        progress_percentage = 70 + (advanced_progress / 2) * 30
+    
+    return {
+        'level': level,
+        'progress_percentage': round(progress_percentage),
+        'beginner_progress': f"{beginner_progress}/4",
+        'intermediate_progress': f"{intermediate_progress}/1", 
+        'advanced_progress': f"{advanced_progress}/2"
+    }
+
+# 🆕 GESTION DES AVATARS ET PROFILS
+@app.post("/user/upload-avatar")
+async def upload_avatar(
+    avatar: UploadFile = File(...),
+    current_user: DBUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Upload d'avatar utilisateur"""
+    try:
+        # Vérifier le type de fichier
+        if not avatar.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="Le fichier doit être une image")
+        
+        # Vérifier la taille (5MB max)
+        if avatar.size > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="L'image ne doit pas dépasser 5MB")
+        
+        # Créer le dossier avatars s'il n'existe pas
+        avatar_dir = "./front/static/assets/images/avatars"
+        os.makedirs(avatar_dir, exist_ok=True)
+        
+        # Générer un nom de fichier unique
+        file_extension = avatar.filename.split('.')[-1].lower()
+        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
+            raise HTTPException(status_code=400, detail="Format d'image non supporté")
+        
+        avatar_filename = f"user_{current_user.id}_{int(time.time())}.{file_extension}"
+        avatar_path = os.path.join(avatar_dir, avatar_filename)
+        
+        # Sauvegarder le fichier
+        async with aiofiles.open(avatar_path, 'wb') as f:
+            content = await avatar.read()
+            await f.write(content)
+        
+        # Mettre à jour l'URL dans la base de données
+        avatar_url = f"/static/assets/images/avatars/{avatar_filename}"
+        current_user.avatar_url = avatar_url
+        db.commit()
+        
+        return {
+            "success": True,
+            "avatar_url": avatar_url,
+            "message": "Avatar mis à jour avec succès"
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur upload avatar: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/user/update-profile")
+async def update_user_profile(
+    nom: Optional[str] = Form(None),
+    bio: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    current_user: DBUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mise à jour du profil utilisateur"""
+    try:
+        if nom:
+            current_user.nom = nom
+        if bio is not None:
+            current_user.bio = bio
+        if country is not None:
+            current_user.country = country
+            
+        db.commit()
+        db.refresh(current_user)
+        
+        return {
+            "success": True,
+            "user": {
+                "id": current_user.id,
+                "nom": current_user.nom,
+                "email": current_user.email,
+                "bio": getattr(current_user, 'bio', ''),
+                "country": getattr(current_user, 'country', ''),
+                "avatar_url": getattr(current_user, 'avatar_url', None)
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur mise à jour profil: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/user/change-password")
+async def change_password(
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    current_user: DBUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Changement de mot de passe"""
+    try:
+        from back.token_security import verify_password, hash_password
+        
+        # Vérifier l'ancien mot de passe
+        if not verify_password(current_password, current_user.hashed_password):
+            raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+        
+        # Valider le nouveau mot de passe
+        if len(new_password) < 6:
+            raise HTTPException(status_code=400, detail="Le nouveau mot de passe doit contenir au moins 6 caractères")
+        
+        # Hasher et sauvegarder le nouveau mot de passe
+        current_user.hashed_password = hash_password(new_password)
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Mot de passe mis à jour avec succès"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur changement mot de passe: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

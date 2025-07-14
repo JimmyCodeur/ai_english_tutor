@@ -1,36 +1,46 @@
 async function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        // ✅ URL RELATIVE au lieu de 127.0.0.1
+        const response = await fetch('/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                email: email,
+                password: password
+            })
+        });
 
-  try {
-      const response = await fetch('http://127.0.0.1:8000/login/', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-              email: email,
-              password: password
-          })
-      });
-  
-      if (response.ok) {
-          const data = await response.json();
-          const accessToken = data.access_token;
-  
-          // Stockage du token dans LocalStorage
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('userEmail', data.email);
-          localStorage.setItem('nom', data.nom);
-  
-          // Redirection vers la page des profils utilisateur après la connexion réussie
-          window.location.href = 'home.html';
-      } else {
-          const errorMessage = await response.text();
-          alert(`Email ou mot de passe incorrect : ${errorMessage}`);
-      }
-  } catch (error) {
-      console.error('Erreur lors de la requête de connexion :', error);
-      alert('Erreur réseau lors de la connexion. Veuillez réessayer.');
-  }
+        if (response.ok) {
+            const data = await response.json();
+            
+            // ✅ STOCKAGE COHÉRENT
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_id', data.user_id);
+            localStorage.setItem('userEmail', data.email);
+            localStorage.setItem('nom', data.nom);
+
+            console.log('✅ Connexion réussie:', data);
+            
+            // Redirection
+            window.location.href = '/home.html';
+        } else {
+            let errorMessage;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || 'Erreur de connexion';
+            } catch {
+                errorMessage = await response.text();
+            }
+            
+            alert(`Email ou mot de passe incorrect : ${errorMessage}`);
+        }
+    } catch (error) {
+        console.error('❌ Erreur réseau:', error);
+        alert('Erreur réseau lors de la connexion.');
+    }
 }
