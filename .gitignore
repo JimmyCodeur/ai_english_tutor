@@ -7,7 +7,6 @@ __pycache__/
 .github/
 *.mp3
 *.wav
-*.png
 *.jpg
 *.svg
 *.ttf
