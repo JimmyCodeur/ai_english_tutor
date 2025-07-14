@@ -1,3 +1,4 @@
+#fichier schema_pydantic.py
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, date
 from pydantic import BaseModel
@@ -51,6 +52,7 @@ class TranslationRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    voice: Optional[str] = "bark"
 
 class ConversationLog(BaseModel):
     id: int

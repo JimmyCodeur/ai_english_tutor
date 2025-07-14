@@ -34,22 +34,19 @@ def user_exists(db: Session, email: str) -> bool:
 def create_user(db: Session, user: UserCreate) -> User:
     if user_exists(db, user.email):
         raise ValueError("Email déjà enregistré")
-
     hashed_password = get_password_hash(user.password)
     db_user = DBUser(
         email=user.email,
         hashed_password=hashed_password,
         nom=user.nom,
         date_naissance=user.date_naissance,
-        date_creation=datetime,
         consent=user.consent
     )
-    
     try:
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-
+        print(">>> TYPE DATE CREATION =", type(db_user.date_creation), db_user.date_creation)
         return User(
             id=db_user.id,
             email=db_user.email,
@@ -58,7 +55,6 @@ def create_user(db: Session, user: UserCreate) -> User:
             date_creation=db_user.date_creation,
             consent=db_user.consent
         )
-    
     except IntegrityError as e:
         db.rollback()
         raise ValueError("Erreur d'intégrité de la base de données") from e

@@ -1,682 +1,1704 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brain Course</title>
-    <link rel="stylesheet" href="../static/assets/css/style.css">
-    <link rel="stylesheet" href="../static/assets/css/uikit.css">
-    <link rel="stylesheet" href="../static/assets/css/icons.css">
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
+    <title>TalkAI - Chat IA</title>
     <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuration Tailwind personnalisée -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f4ff',
+                            100: '#e0eaff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#667eea',
+                            600: '#5a67d8',
+                            700: '#4c51bf',
+                            800: '#434190',
+                            900: '#3c366b',
+                        },
+                        secondary: {
+                            500: '#764ba2',
+                            600: '#6b46c1',
+                            700: '#553c9a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'bounce-slow': 'bounce 3s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(102, 126, 234, 0.3)' },
+                            '50%': { boxShadow: '0 0 40px rgba(102, 126, 234, 0.8)' },
+                        },
+                        slideIn: {
+                            from: { opacity: '0', transform: 'translateY(20px)' },
+                            to: { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .chat-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .avatar-container {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            padding: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .avatar-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        .message {
+            animation: slideIn 0.4s ease-out;
+        }
+        .btn-modern {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .btn-modern:hover::before {
+            left: 100%;
+        }
+        .recording-pulse {
+            animation: pulseGlow 1.5s infinite;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .suggestion-item {
+            background: linear-gradient(135deg, #fef3c7, #fde047);
+            border: 1px solid #f59e0b;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, #fde047, #facc15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        .audio-visualizer {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .audio-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        .message-bot {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            color: #374151;
+            border-radius: 24px 24px 24px 8px;
+            border-left: 4px solid #667eea;
+        }
+        .message-user {
+            background: linear-gradient(135deg, #667eea, #5a67d8);
+            color: white;
+            border-radius: 24px 24px 8px 24px;
+            margin-left: auto;
+        }
+        .message-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-radius: 24px;
+            border-left: 4px solid #fecaca;
+        }
+        .message-translation {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 24px;
+            border-left: 4px solid #a7f3d0;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #cbd5e0, #9ca3af);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #9ca3af, #6b7280);
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(243, 244, 246, 0.8);
+            border-radius: 20px;
+            margin-bottom: 16px;
+        }
+        .typing-dots {
+            display: flex;
+            space-x: 4px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .header-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tooltip {
+            position: relative;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+        .ai-status {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            space-x: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            space-x: 2px;
+        }
+        .voice-bar {
+            width: 3px;
+            height: 16px;
+            background: currentColor;
+            border-radius: 2px;
+            animation: voice-wave 1.2s infinite ease-in-out;
+        }
+        .voice-bar:nth-child(1) { animation-delay: -1.1s; }
+        .voice-bar:nth-child(2) { animation-delay: -1.0s; }
+        .voice-bar:nth-child(3) { animation-delay: -0.9s; }
+        .voice-bar:nth-child(4) { animation-delay: -0.8s; }
+        @keyframes voice-wave {
+            0%, 40%, 100% { transform: scaleY(0.4); }
+            20% { transform: scaleY(1.0); }
+        }
+    </style>
 </head>
-
-
-
-<body class="flex flex-col min-h-screen bg-gray-100">
-    <div id="wrapper" class="is-verticle">
-        <!-- Barre de navigation -->
-        <header uk-sticky> 
-            <div class="header_inner">
-                <div class="left-side">
-                    <div id="logo" class="logo-container">
-                        <a href="home.html">
-                            <img src="../static/assets/images/logo.png" class="logo-image" alt="">
-                            <img src="../static/assets/images/logo-light.png" class="logo_inverse" alt="">
-                            <img src="../static/assets/images/logo-mobile.png" class="logo_mobile" alt="">
-                        </a>
+<body class="flex flex-col min-h-screen">
+    <!-- Header moderne -->
+    <header class="header-glass sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <a href="home.html" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500">T</span>
+                        </div>
+                        <span class="text-white font-bold text-xl hidden sm:block">TalkAI</span>
+                    </a>
+                </div>
+                <!-- Status et profil -->
+                <div class="flex items-center space-x-4">
+                    <!-- Status IA -->
+                    <div class="ai-status">
+                        <div class="status-indicator"></div>
+                        <span class="text-sm font-medium hidden sm:block">IA Active</span>
                     </div>
-                    <div class="triger" uk-toggle="target: #wrapper ; cls: is-active"> 
+                    <!-- Profil utilisateur -->
+                    <div class="relative">
+                        <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors">
+                            <img src="../static/assets/images/avatars/placeholder.png"
+                                 class="w-8 h-8 rounded-full ring-2 ring-white shadow-lg" alt="Profile">
+                            <span class="text-white font-medium hidden md:block" id="profile-name-header">Utilisateur</span>
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <!-- Menu dropdown -->
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl py-2 z-50">
+                            <div class="px-4 py-3 border-b border-white border-opacity-20">
+                                <div class="flex items-center space-x-3">
+                                    <img src="../static/assets/images/avatars/avatar-2.jpg"
+                                         class="w-12 h-12 rounded-full" alt="">
+                                    <div>
+                                        <div id="profile-name" class="font-semibold text-gray-800"></div>
+                                        <span id="profile-email" class="text-sm text-gray-600"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="py-2">
+                                <a href="users-profile.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-white hover:bg-opacity-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Mon Compte
+                                </a>
+                                <a href="users-profile.html#conversations-container" class="flex items-center px-4 py-2 text-gray-700 hover:bg-white hover:bg-opacity-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Historique
+                                </a>
+                                <a href="profile-setting.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-white hover:bg-opacity-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    Configuration
+                                </a>
+                                <hr class="my-2 border-white border-opacity-20">
+                                <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Se déconnecter
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="right-side">                        
-                    <div> 
-                        <a href="" class="flex items-center space-x-2">
-                            <img src="../static/assets/images/avatars/placeholder.png" class="header_widgets_avatar mr-3" alt=""> 
-                        </a>
-                        <div uk-drop="mode: click;offset:5" class="header_dropdown profile_dropdown">
-                            <ul>   
-                                <li>
-                                    <a href="" class="user">
-                                        <div class="user_avatar">
-                                            <img src="../static/assets/images/avatars/avatar-2.jpg" alt="">
-                                        </div>
-                                        <div class="user_name">
-                                            <div id="profile-name" class="info-name"></div>
-                                            <span id="profile-email" class="info-email"></span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="person-circle-outline" class="is-icon"></ion-icon>
-                                         Mon Compte 
-                                    </a>
-                                </li>
-                                <li> 
-                                    <a href="users-profile.html">
-                                        <ion-icon name="folder-outline" class="is-icon"></ion-icon>
-                                         Historique 
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="profile-setting.html">
-                                        <ion-icon name="settings-outline" class="is-icon"></ion-icon>
-                                        Configuration  
-                                    </a>
-                                </li>
-                                <li> 
-                                    <hr>
-                                </li>
-                                <li> 
-                                    <a href="#" id="logout-link" onclick="logout()">
-                                        <ion-icon name="log-out-outline" class="is-icon"></ion-icon>
-                                        Se déconnecter 
-                                    </a>
-                                </li>
-                            </ul>
-                        </div> 
-                    </div>
-                </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <!-- Section avec l'image agrandie de l'avatar -->
-        <main class="flex-1 flex flex-col items-center justify-center">
-
-            <div class="w-full flex justify-center my-8">
-                <img id="avatarGif" src="../static/assets/images/ai/brain.png" class="w-64 h-64 rounded-full" alt="Avatar de l'IA">              
-
+    <!-- Loading indicator pour l'avatar -->
+    <div id="loadingIndicator" class="hidden mb-6">
+        <div class="flex items-center space-x-3 bg-white bg-opacity-20 rounded-full px-6 py-3">
+            <div class="voice-wave">
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
             </div>
-        </main>
-
-        <!-- Chat Section -->
-        <section class="chat-container w-full max-w-4xl bg-white rounded-lg p-6 mx-auto my-8 shadow-lg">
-            <!-- Barre de titre -->
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="lg:text-2xl text-lg font-bold">Chat</h1>
-                <div id="loadingIndicator" class="loading-indicator hidden mt-4 flex items-center">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0112 4.472v3.498L6.295 17.29a7.962 7.962 0 01-.294-1.999zM20 12c0-4.418-3.582-8-8-8v3.472a7.98 7.98 0 013.75 1.069l4.192-4.192A7.963 7.963 0 0120 12zm-6 5.291V16.5l4.185-4.185a8.045 8.045 0 01-2.369-1.935l-3.5 3.5zm-4.185-9.78L7.5 7.5l4.185-4.185v3.472A7.98 7.98 0 018.815 7.51z"></path>
-                    </svg>
-                    <span class="text-yellow-500">En cours</span>
-                </div>          
-            </div>
-        
-            <!-- Chat Box -->
-            <div id="chatBox" class="chat-box h-80 overflow-y-auto mb-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
-                <!-- <audio id="generatedAudio" controls></audio> -->
-
-            </div>    
-        
-            <!-- Suggestions Box -->
-            <div id="suggestionsBox" class="mb-4"></div>
-
-            <!-- <svg class="h-8 w-8 text-pink-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4" />  <path d="M11 19l4 -9l4 9m-.9 -2h-6.2" /></svg> -->
-
-        
-            <!-- Champ de texte pour parler -->
-            <!-- <textarea id="userInputField" class="user-input w-full p-1 border border-gray-300 rounded-lg mb-2 h-8 text-xs" rows="2" placeholder="Entrez votre message..."></textarea> -->
-
-        
-            <!-- Boutons d'action -->
-            <div class="action-buttons flex justify-between">
-                <button id="toggleRecording" class="btn-microphone bg-green-500 text-white py-2 px-4 rounded-lg mr-2 flex items-center" onclick="toggleRecording()">
-                    <svg class="h-6 w-6 text-white mr-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z"/>  
-                        <rect x="9" y="2" width="6" height="11" rx="3" />  
-                        <path d="M5 10a7 7 0 0 0 14 0" />  
-                        <line x1="8" y1="21" x2="16" y2="21" />  
-                        <line x1="12" y1="17" x2="12" y2="21" />
-                    </svg>
-                    Parler
-                </button>
-                <button id="toggleTextArea" class="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center" onclick="toggleTextArea()">
-                    <svg class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                    </svg>
-                    Clavier
-                </button>
-            </div>
-            <textarea id="userInputField" class="user-input w-full p-2 border border-gray-300 rounded-lg mb-2 hidden" rows="2" placeholder="Entrez votre message..."></textarea>
-            <button id="sendTextMessage" class="bg-yellow-500 text-white py-2 px-4 rounded-lg hidden" onclick="sendTextMessage()">Envoyer</button>
-            <!-- Indicateur de chargement -->
-        </section>
-        
+            <span class="text-white font-medium">Traitement<span class="loading-dots"></span></span>
+        </div>
     </div>
-</body>
+
+    <!-- Container de chat moderne -->
+    <section class="chat-container max-w-4xl mx-auto mb-8 mx-4 rounded-3xl overflow-hidden">
+        <!-- En-tête du chat -->
+        <div class="chat-header p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Assistant Conversationnel</h1>
+                        <p class="text-white text-opacity-80">Prêt à vous accompagner dans votre apprentissage</p>
+                    </div>
+                </div>
+                <!-- Retour à l'accueil -->
+                <a href="home.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-xl transition-colors tooltip" data-tooltip="Retour à l'accueil">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Zone de chat -->
+        <div class="p-6 bg-gradient-to-b from-gray-50 to-white">
+            <div id="chatBox" class="custom-scrollbar h-96 overflow-y-auto p-4 space-y-4 bg-white rounded-2xl border border-gray-100">
+                <!-- Messages seront ajoutés ici -->
+            </div>
+
+            <!-- Zone des suggestions -->
+            <div id="suggestionsBox" class="mt-4"></div>
+
+            <!-- Contrôles de chat -->
+            <div class="mt-6 space-y-4">
+                <!-- Zone de texte (cachée par défaut) -->
+                <div class="hidden" id="textInputContainer">
+                    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
+                        <textarea
+                            id="userInputField"
+                            class="w-full bg-transparent border-none outline-none resize-none text-gray-800 placeholder-gray-500 text-lg"
+                            rows="3"
+                            placeholder="Tapez votre message ici... (Ctrl+Entrée pour envoyer)">
+                        </textarea>
+                        <div class="flex justify-between items-center mt-4">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center space-x-1">
+                                    <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl</kbd>
+                                    <span>+</span>
+                                    <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">Entrée</kbd>
+                                    <span>pour envoyer</span>
+                                </span>
+                            </div>
+                            <button
+                                id="sendTextMessage"
+                                onclick="sendTextMessage()"
+                                class="btn-modern bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-8 py-3 rounded-xl hover:from-primary-600 hover:to-secondary-600 transition-all duration-300 flex items-center space-x-2 shadow-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                <span class="font-medium">Envoyer</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action principaux -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button
+                        id="toggleRecording"
+                        onclick="toggleRecording()"
+                        class="btn-modern bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"
+                        data-tooltip="Cliquer pour parler">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                        </svg>
+                        <span class="font-semibold">Parler</span>
+                    </button>
+                    <button
+                        id="toggleTextArea"
+                        onclick="toggleTextArea()"
+                        class="btn-modern bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"
+                        data-tooltip="Utiliser le clavier">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+                        </svg>
+                        <span class="font-semibold">Clavier</span>
+                    </button>
+                </div>
+
+                <!-- Raccourcis clavier -->
+                <div class="text-center">
+                    <div class="inline-flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500 bg-gray-50 rounded-full px-6 py-2">
+                        <span class="flex items-center space-x-1">
+                            <kbd class="px-2 py-1 bg-white rounded shadow-sm">Espace</kbd>
+                            <span>Enregistrer</span>
+                        </span>
+                        <span class="flex items-center space-x-1">
+                            <kbd class="px-2 py-1 bg-white rounded shadow-sm">Ctrl+Enter</kbd>
+                            <span>Envoyer</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="../static/assets/js/uikit.js"></script>
-    <script src="../static/assets/js/tippy.all.min.js"></script>
-    <script src="../static/assets/js/simplebar.js"></script>
-    <script src="../static/assets/js/custom.js"></script>
-    <script src="../static/assets/js/bootstrap-select.min.js"></script>
-    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
     <script>
-        let recorder;
-        let audioChunks = [];
-        let recording = false;
-        let initialChatStarted = false;
+    let recorder;
+    let audioChunks = [];
+    let recording = false;
+    let currentChoice = null;
+    let currentCharacter = null;
+    let isFirstMessage = true;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const choice = urlParams.get('choice');
-            await startChat(choice);
-        });
+    // 🆕 CONFIGURATION COMPLÈTE DES PERSONNAGES - AVEC NOUVEAUX
+    const CHARACTER_CONFIG = {
+        // Cours existants
+        'conv_greetings_common_conversations': {
+            character: 'Alice',
+            endpoint: '/chat_conv/alice',
+            title: 'Chat avec Alice',
+            subtitle: 'Salutations et conversations courantes - Niveau intermédiaire',
+            emoji: '👋🏼',
+            level: 'intermediate'
+        },
+        'conv_taxi_booking': {
+            character: 'Mike',
+            endpoint: '/chat_conv/mike',
+            title: 'Chat avec Mike',
+            subtitle: 'Réservation de taxi et transport - Niveau avancé',
+            emoji: '🚕',
+            level: 'advanced'
+        },
+        'conv_airport_ticket': {
+            character: 'Sarah',
+            endpoint: '/chat_conv/sarah',
+            title: 'Chat avec Sarah',
+            subtitle: 'Achat de billets d\'avion et voyage - Niveau avancé',
+            emoji: '✈️',
+            level: 'advanced'
+        },
+        // 🆕 NOUVEAUX COURS DÉBUTANTS
+        'conv_beginner_teacher': {
+            character: 'Emma',
+            endpoint: '/chat_conv/emma',
+            title: 'Chat avec Emma',
+            subtitle: 'Professeure pour débutants absolus - Niveau débutant',
+            emoji: '👩‍🏫',
+            level: 'beginner'
+        },
+        'conv_simple_restaurant': {
+            character: 'Tom',
+            endpoint: '/chat_conv/tom',
+            title: 'Restaurant avec Tom',
+            subtitle: 'Commander votre repas simplement - Niveau débutant',
+            emoji: '🍕',
+            level: 'beginner'
+        },
+        'conv_simple_shopping': {
+            character: 'Lucy',
+            endpoint: '/chat_conv/lucy',
+            title: 'Shopping avec Lucy',
+            subtitle: 'Acheter des vêtements facilement - Niveau débutant',
+            emoji: '🛍️',
+            level: 'beginner'
+        },
+        'conv_simple_directions': {
+            character: 'Ben',
+            endpoint: '/chat_conv/ben',
+            title: 'Directions avec Ben',
+            subtitle: 'Demander son chemin simplement - Niveau débutant',
+            emoji: '🗺️',
+            level: 'beginner'
+        }
+    };
 
-        async function startChat(choice) {
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) {
-                console.error("Access token not found in localStorage.");
-                return;
-            }
-
-            updateButtonState('processing');
-            try {
-                const endpoint = getChatEndpoint();
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    },
-                    body: JSON.stringify({ choice: choice })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (!data.generated_response || !data.audio_base64) {
-                    throw new Error(`Missing expected data in response.`);
-                }
-
-                displayMessage(data.generated_response, 'bot', data.audio_base64);
-
-                const audioBase64 = data.audio_base64;
-                const audioElement = document.getElementById('generatedAudio');
-                if (audioElement) {
-                    audioElement.src = "data:audio/wav;base64," + audioBase64;
-                    audioElement.style.display = "none";
-                    audioElement.style.display = "block";
-                    audioElement.className = 'audio-player hidden-audio';
-
-                    audioElement.play().then(() => {
-                        document.getElementById('avatarGif').src = "../static/assets/images/ai/brain.gif";
-                    }).catch((error) => {
-                        console.error('Error playing audio:', error);
-                    });
-
-                } else {
-                    console.error('Element with ID "generatedAudio" not found.');
-                }
-
-                document.getElementById('loadingIndicator').classList.add('hidden');
-            } catch (err) {
-                console.error('Error starting chat: ', err);
-            } finally {
-                updateButtonState('start');
-            }
+    // Initialisation au chargement de la page
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🚀 Initialisation de l\'interface...');
+        
+        // Initialiser les éléments DOM après le chargement
+        initializeDOMElements();
+        addWelcomeAnimation();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        currentChoice = urlParams.get('choice');
+        
+        console.log('📋 Choix détecté:', currentChoice);
+        
+        if (!currentChoice) {
+            displayErrorMessage('❌ Paramètre de cours manquant. Retour à l\'accueil...');
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 2000);
+            return;
         }
 
-        function getChatEndpoint() {
-            const url = window.location.href;
-            if (url.includes('conv_')) {
-                return '/chat_conv/start';
-            } else if (url.includes('r_a_m_')) {
-                return '/chat_repeat/start';
-            } else {
-                throw new Error('Invalid URL: Unable to determine the correct endpoint');
-            }
+        // 🆕 VALIDATION AVEC LA NOUVELLE CONFIGURATION
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (!config) {
+            console.error(`❌ Configuration non trouvée pour: ${currentChoice}`);
+            console.error(`📋 Choix disponibles:`, Object.keys(CHARACTER_CONFIG));
+            displayErrorMessage('❌ Cours non reconnu. Retour à l\'accueil...');
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 2000);
+            return;
         }
 
+        // Mettre à jour les variables globales
+        currentCharacter = config.character;
+        
+        // Mettre à jour l'en-tête selon le choix
+        updateChatHeader(config);
+        
+        // Afficher un message d'information
+        displayWelcomeMessage();
+        loadUserProfile();
+        
+        console.log(`✅ Configuration chargée: ${config.character} (${config.level})`);
+    });
 
-        async function toggleRecording() {
-            if (!recording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    
-                    const audioTracks = stream.getAudioTracks();
-                    if (audioTracks.length === 0 || !audioTracks[0].enabled) {
-                        throw new Error("Microphone is muted or inactive.");
-                    }
-                    recorder = new MediaRecorder(stream);
-                    recorder.ondataavailable = e => audioChunks.push(e.data);
-                    recorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks);
-                        const formData = new FormData();
-                        formData.append('audio_file', audioBlob, 'recorded_audio.wav');
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const choice = urlParams.get('choice');
-                        formData.append('choice', choice);
-                        updateButtonState('processing');
-                        try {
-                            const accessToken = localStorage.getItem("accessToken");
-                            if (!accessToken) {
-                                throw new Error("Access token not found in localStorage.");
-                            }
-                            const endpointTwo = getChatEndpointTwo();
-                            const response = await fetch(endpointTwo, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                },
-                                body: formData
-                            });
+    // 🆕 FONCTION DE VALIDATION MISE À JOUR
+    function validateCourseChoice(choice) {
+        const config = CHARACTER_CONFIG[choice];
+        if (!config) {
+            console.error(`❌ Choix invalide: ${choice}`);
+            console.error(`📋 Choix valides:`, Object.keys(CHARACTER_CONFIG));
+            return null;
+        }
+        return config;
+    }
 
-                            if (!response.ok) {
-                                if (response.status === 401) {
-                                    throw new Error('Unauthorized: Not authenticated');
-                                }
-                                throw new Error(`HTTP error! Status: ${response.status}`);
-                            }
+    // Fonction pour initialiser les éléments DOM
+    function initializeDOMElements() {
+        // Profile menu toggle
+        const profileBtn = document.getElementById('profile-btn');
+        const profileMenu = document.getElementById('profile-menu');
+        
+        if (profileBtn && profileMenu) {
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+            });
 
-                            const data = await response.json();
-                            console.log(data);
+            document.addEventListener('click', () => {
+                profileMenu.classList.add('hidden');
+            });
 
-                            if (data.error === "unknown_language") {
-                                displayMessage("😵‍💫 Il semble que ta prononciation n'est pas bonne, ou tu parles en français, recommencez.", 'bot', null, true);
-                            } else {
-                                if (data.user_input) {
-                                    displayMessage(data.user_input, 'user');
-                                }
-
-                                if (data.generated_response) {
-                                    displayMessage(data.generated_response, 'bot', data.audio_base64);
-                                }
-
-                                if (data.suggestions) {
-                                    appendSuggestions(data.suggestions);
-                                }
-                            }
-
-                        } catch (err) {
-                            console.error('Error sending audio data to server: ', err);
-                            displayErrorMessage("Erreur lors de l'enregistrement, recommencez.");
-                        } finally {
-                            audioChunks = [];
-                            recording = false;
-                            updateButtonState('start');
-                        }
-                    };
-                    recorder.start();
-                    recording = true;
-                    updateButtonState('stop');
-                } catch (err) {
-                    if (err.name === 'DOMException' && err.message.includes('Requested device not found')) {
-                        console.error('Error starting recording: ', err);
-                        displayErrorMessage("Microphone non trouvé. Veuillez vérifier que votre microphone est connecté et fonctionne correctement.");
-                    } else {
-                        console.error('Error starting recording: ', err);
-                        displayErrorMessage("🎙️ Erreur lors du démarrage de l'enregistrement : Microphone inactif ou muet.");
-                    }
-                }
-            } else {
-                recorder.stop();
-            }
+            profileMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
         }
 
-        function getChatEndpointTwo() {
-            const url = window.location.href;
-            if (url.includes('conv_')) {
-                return '/chat_conv';
-            } else if (url.includes('r_a_m_')) {
-                return '/chat_repeat';
-            } else {
-                throw new Error('Invalid URL: Unable to determine the correct endpoint');
-            }
-        }
-
-        function appendSuggestions(suggestions) {
-            const chatBox = document.getElementById('chatBox');
-            const suggestionsTitle = document.createElement('div');
-            suggestionsTitle.className = 'suggestions-title text-gray-500 font-bold mb-2';
-            suggestionsTitle.textContent = 'Suggestion : ⬇️';
-
-            chatBox.appendChild(suggestionsTitle);
-
-            if (suggestions && suggestions.length > 0) {
-                suggestions.forEach((suggestion, index) => {
-                    if (suggestion.trim() !== "") {
-                        const suggestionDiv = document.createElement('div');
-                        suggestionDiv.className = 'div bg-yellow-200 text-blue-800 p-2 rounded mb-2';
-                        suggestionDiv.textContent = suggestion;
-                        suggestionDiv.setAttribute('data-index', index);
-                        suggestionDiv.addEventListener('click', () => {
-                            const userInputField = document.getElementById('userInputField');
-                            userInputField.value = suggestion;
-                        });
-                        chatBox.appendChild(suggestionDiv);
+        // Observer le chat box pour l'auto-scroll
+        const chatBox = document.getElementById('chatBox');
+        if (chatBox) {
+            const chatObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        smartScroll();
                     }
                 });
-            } else {
-                const noSuggestionsDiv = document.createElement('div');
-                noSuggestionsDiv.className = 'no-suggestions text-red-500';
-                noSuggestionsDiv.textContent = "Aucune suggestion disponible.";
-                chatBox.appendChild(noSuggestionsDiv);
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
+            });
+            chatObserver.observe(chatBox, { childList: true });
         }
 
-        function checkAndStopSession(generated_response) {
-            if (generated_response === "Thanks for the exchange, I have to go soon! Bye.") {
-                stopChatSession();
-            }
-        }
+        // Vérifier les permissions
+        checkMicrophonePermission();
 
-        function displayMessage(message, sender, audioBase64, isError = false) {
-            const chatBox = document.getElementById('chatBox');
+        // Ajouter des raccourcis clavier visibles
+        const helpText = document.createElement('div');
+        helpText.className = 'fixed bottom-4 left-4 bg-black bg-opacity-70 text-white p-3 rounded-lg text-xs hidden lg:block';
+        helpText.innerHTML = `
+            <div class="font-semibold mb-1">Raccourcis :</div>
+            <div>• <kbd class="bg-gray-600 px-1 rounded">Espace</kbd> Enregistrer</div>
+            <div>• <kbd class="bg-gray-600 px-1 rounded">Ctrl+Enter</kbd> Envoyer</div>
+            <div>• <kbd class="bg-gray-600 px-1 rounded">Échap</kbd> Fermer clavier</div>
+        `;
+        document.body.appendChild(helpText);
+    }
 
-            if (Array.isArray(message)) {
-                console.warn('The message is a tuple, extracting the first element:', message);
-                message = message[0];
-            }
+    // 🆕 FONCTION MISE À JOUR POUR L'EN-TÊTE
+    function updateChatHeader(config) {
+        // Mettre à jour l'en-tête du chat
+        const titleElement = document.querySelector('.chat-header h1');
+        const subtitleElement = document.querySelector('.chat-header p');
+        
+        if (titleElement) titleElement.textContent = config.title;
+        if (subtitleElement) subtitleElement.textContent = config.subtitle;
 
-            if (typeof message !== 'string') {
-                console.error('The message is not a string:', message);
-                message = ''; 
-            }
+        // Mettre à jour le titre de la page
+        document.title = `TalkAI - ${config.title}`;
 
-            if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
-                const errorMessageDiv = document.createElement('div');
-                errorMessageDiv.className = 'message bg-orange-100 text-black-500 rounded-lg p-2 max-w-xs';
-                errorMessageDiv.textContent = "🗣️ Aucun audio détecté, recommencez.";
-                chatBox.appendChild(errorMessageDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-                return;
-            }
+        console.log(`🎭 En-tête mis à jour: ${config.character} - ${config.level}`);
+    }
 
-            if (!message) return; 
+    // Message de bienvenue initial
+    function displayWelcomeMessage() {
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (!config) return;
+        
+        let welcomeMessage;
+        
+        if (config.character === 'Emma') {
+            welcomeMessage = `👩‍🏫 Bienvenue dans la classe de Miss Emma ! 
+            
+    Elle va vous apprendre l'anglais comme si vous étiez un enfant de 5 ans qui ne connaît AUCUN mot d'anglais !
 
-            const messageContainer = document.createElement('div');
-            messageContainer.className = 'message-container mb-2';
+    🎯 Méthode Emma :
+    - Un seul mot par leçon
+    - Beaucoup d'encouragements  
+    - Répétition et patience
+    - Progression très douce
 
-            const messageDiv = document.createElement('div');
-            if (isError) {
-                messageDiv.className = 'message bg-red-500 text-white rounded-lg p-2 max-w-xs';
-            } else if (message.startsWith('Traduction :')) {
-                messageDiv.className = 'message bg-green-200 text-black rounded-lg p-2 max-w-xs';
-            } else {
-                messageDiv.className = sender === 'bot' ? 'message bg-gray-200 rounded-lg text-black' : 'message self bg-blue-500 text-white rounded-lg';
-            }
-
-            messageDiv.textContent = message;
-            messageContainer.appendChild(messageDiv);
-
-            if (!message.startsWith('Traduction :') && sender === 'bot') {
-                const iconSVG = `
-                    <svg class="h-6 w-6 text-pink-500 inline-block ml-2 cursor-pointer translate-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" data-message="${message}">
-                        <path stroke="none" d="M0 0h24v24H0z"/>
-                        <path d="M5 7h7m-2 -2v2a5 8 0 0 1 -5 8m1 -4a7 4 0 0 0 6.7 4"/>
-                        <path d="M11 19l4 -9l4 9m-.9 -2h-6.2"/>
-                    </svg>
-                `;
-                messageContainer.insertAdjacentHTML('beforeend', iconSVG);
-            }
-
-            if (audioBase64) {
-                const audioElement = document.createElement('audio');
-                audioElement.controls = true;
-                audioElement.src = "data:audio/wav;base64," + audioBase64;
-                audioElement.className = 'audio-player hidden-audio';
-                audioElement.addEventListener('loadeddata', () => {
-                    audioElement.play();
-                });
-
-                audioElement.onplay = () => changeAvatarToGif(); 
-                audioElement.onpause = () => changeAvatarToPng(); 
-                audioElement.onended = () => changeAvatarToPng(); 
-
-                messageContainer.appendChild(audioElement);
-
-                const replayIconSVG = `
-                    <svg class="h-6 w-6 text-zinc-500 cursor-pointer replay-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                    </svg>
-                `;
-                messageContainer.insertAdjacentHTML('beforeend', replayIconSVG);
-            }
-
-            chatBox.appendChild(messageContainer);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const translateIcon = messageContainer.querySelector('.translate-icon');
-            if (translateIcon) {
-                translateIcon.addEventListener('click', () => {
-                    const message = translateIcon.getAttribute('data-message');
-                    translateMessage(message);
-                    translateIcon.remove();
-                });
-            }
-
-            const replayIcon = messageContainer.querySelector('.replay-icon');
-            if (replayIcon) {
-                replayIcon.addEventListener('click', () => {
-                    const audioPlayer = messageContainer.querySelector('.audio-player');
-                    if (audioPlayer) {
-                        audioPlayer.play();
-                    }
-                });
-            }
-
-            if (sender === 'bot') {
-                checkAndStopSession(message);
-            }
-        }
-
-
-
-        function translateMessage(message) {
-            const translateUrl = '/translate';
-
-            const requestBody = {
-                message: message
-            };
-
-            const fetchOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            };
-
-            fetch(translateUrl, fetchOptions)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('Erreur lors de la traduction');
-                })
-                .then(data => {
-                    const translatedMessage = data.translated_message;
-                    console.log(`Message traduit: "${translatedMessage}"`);
-                    
-                    const messageContainer = document.querySelector('.message-container:last-child');
-
-                    if (messageContainer) {
-                        displayMessage(`Traduction : ${translatedMessage}`, 'bot');
-                        
-                        const translateIcon = messageContainer.querySelector('.translate-icon');
-                        if (translateIcon) {
-                            translateIcon.remove();  
-                        }
-                    } else {
-                        console.error('Erreur lors de la traduction: Aucun messageContainer trouvé.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la traduction:', error);
-                });
-        }
-
-
-        function displayErrorMessage(errorMessage) {
-            const chatBox = document.getElementById('chatBox');
-            const errorMessageDiv = document.createElement('div');
-            errorMessageDiv.className = 'message text-red-500 rounded-lg p-2 max-w-xs';
-            errorMessageDiv.textContent = errorMessage;
-            chatBox.appendChild(errorMessageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function updateButtonState(state) {
-            const button = document.getElementById('toggleRecording');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-
-            switch (state) {
-                case 'start':
-                    button.textContent = "Parler";
-                    button.classList.remove('hidden');
-                    button.classList.remove('bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
-                    button.classList.add('bg-green-500', 'text-white');
-                    loadingIndicator.classList.add('hidden');
-                    break;
-                case 'stop':
-                    button.textContent = "Arrêter l'enregistrement";
-                    button.classList.remove('bg-green-500', 'bg-orange-500', 'bg-yellow-500', 'text-white');
-                    button.classList.add('bg-red-500', 'text-white');
-                    loadingIndicator.classList.add('hidden');
-                    break;
-                case 'processing':
-                    button.classList.add('hidden');
-                    loadingIndicator.classList.remove('hidden');
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        function monitorAudioVolume(audioElement) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const analyser = audioContext.createAnalyser();
-            const source = audioContext.createMediaElementSource(audioElement);
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function checkVolume() {
-                analyser.getByteFrequencyData(dataArray);
-                const volume = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-                if (volume < 10) {
-                    changeAvatarToPng();
-                } else {
-                    changeAvatarToGif();
-                }
-                requestAnimationFrame(checkVolume);
-            }
-
-            audioElement.onplay = () => {
-                audioContext.resume().then(() => {
-                    checkVolume();
-                });
-            };
-        }
-
-       
-        function changeAvatarToGif() {
-            const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.gif"; 
-        }
-
-        function changeAvatarToPng() {
-            const avatarImg = document.getElementById('avatarGif');
-            avatarImg.src = "../static/assets/images/ai/brain.png"; 
+    Cliquez sur "Parler" pour apprendre votre premier mot : "Hello" !`;
+        } else if (config.level === 'beginner') {
+            welcomeMessage = `🌱 Bienvenue ! Vous allez apprendre avec ${config.character}, parfait pour les débutants. Cliquez sur "Parler" pour commencer votre première leçon simple !`;
+        } else {
+            welcomeMessage = `🎉 Bienvenue ! Cliquez sur "Parler" pour commencer votre conversation avec ${config.character}. Votre première phrase déclenchera automatiquement la salutation !`;
         }
         
-        function toggleTextArea() {
-            const userInputField = document.getElementById('userInputField');
-            const sendTextMessageButton = document.getElementById('sendTextMessage');
+        displayMessage(welcomeMessage, 'bot', null, false, true);
+    }
 
-            if (userInputField.classList.contains('hidden')) {
-                userInputField.classList.remove('hidden');
-                sendTextMessageButton.classList.remove('hidden');
+    // Animation de bienvenue
+    function addWelcomeAnimation() {
+        // Cette fonction peut rester vide maintenant ou être utilisée pour d'autres animations
+    }
+
+    // 🆕 FONCTION D'ENVOI AUDIO MISE À JOUR
+    async function sendAudioToCharacter(choice, audioFile) {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+            throw new Error("Token d'accès manquant");
+        }
+
+        console.log(`🎯 === DÉBUT ENVOI AUDIO ===`);
+        console.log(`📋 Choix: ${choice}`);
+
+        // 🆕 UTILISER LA NOUVELLE CONFIGURATION
+        const config = validateCourseChoice(choice);
+        if (!config) {
+            throw new Error('Paramètre de cours invalide');
+        }
+
+        console.log(`🎭 Personnage: ${config.character}`);
+        console.log(`📡 Endpoint: ${config.endpoint}`);
+
+        const formData = new FormData();
+        formData.append('audio_file', audioFile, 'recorded_audio.wav');
+
+        console.log(`🔑 Token présent: ${accessToken.substring(0, 20)}...`);
+
+        try {
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: formData
+            });
+
+            console.log(`📡 Status réponse: ${response.status}`);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('🔐 Session expirée');
+                }
+                // Lire le détail de l'erreur
+                let errorDetail = `Erreur HTTP ${response.status}`;
+                try {
+                    const errorData = await response.text();
+                    console.error(`❌ Détail erreur:`, errorData);
+                    errorDetail += ` - ${errorData}`;
+                } catch (e) {
+                    console.error('Impossible de lire le détail de l\'erreur');
+                }
+                throw new Error(errorDetail);
+            }
+
+            const result = await response.json();
+            console.log(`✅ Réponse reçue de ${config.endpoint}:`, result);
+            console.log(`🎭 Personnage dans la réponse: ${result.character}`);
+            console.log(`📝 Réponse générée: ${result.generated_response}`);
+            console.log(`🎯 === FIN ENVOI AUDIO ===`);
+
+            return result;
+        } catch (error) {
+            console.error(`❌ ERREUR avec ${config.endpoint}:`, error);
+            console.error(`🔍 Type d'erreur:`, error.name);
+            console.error(`📝 Message d'erreur:`, error.message);
+            throw error;
+        }
+    }
+
+    // 🆕 FONCTION D'ENVOI TEXTE MISE À JOUR
+    async function sendTextMessage() {
+        const userInputField = document.getElementById('userInputField');
+        if (!userInputField) return;
+
+        const message = userInputField.value.trim();
+        if (!message) {
+            userInputField.focus();
+            userInputField.style.borderColor = '#ef4444';
+            userInputField.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            setTimeout(() => {
+                userInputField.style.borderColor = '';
+                userInputField.style.boxShadow = '';
+            }, 1000);
+            return;
+        }
+
+        displayMessage(message, 'user');
+        userInputField.value = '';
+        updateButtonState('processing');
+        showTypingIndicator();
+
+        try {
+            console.log(`📝 Envoi message texte vers ${currentCharacter} (choix: ${currentChoice})`);
+            console.log(`💬 Message original: "${message}"`);
+
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) {
+                throw new Error("Token d'accès manquant");
+            }
+
+            // 🆕 UTILISER LA NOUVELLE CONFIGURATION
+            const config = validateCourseChoice(currentChoice);
+            if (!config) {
+                throw new Error('Paramètre de cours invalide');
+            }
+
+            const formData = new FormData();
+            // Créer un blob audio vide
+            const emptyArrayBuffer = new ArrayBuffer(44);
+            const emptyBlob = new Blob([emptyArrayBuffer], { type: 'audio/wav' });
+            formData.append('audio_file', emptyBlob, 'text_message.wav');
+            formData.append('text_message', message);
+
+            console.log(`📡 Appel texte vers: ${config.endpoint}`);
+
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`✅ Réponse texte reçue de ${config.endpoint}:`, data);
+
+            if (data.generated_response) {
+                setTimeout(() => {
+                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                    if (data.audio_base64) {
+                        playAudioFromBase64(data.audio_base64);
+                    }
+                }, 300);
+            }
+
+            if (data.suggestion) {
+                setTimeout(() => {
+                    appendSuggestions([data.suggestion]);
+                }, 600);
+            }
+
+        } catch (err) {
+            console.error('Erreur envoi texte:', err);
+            displayErrorMessage("💥 " + err.message);
+        } finally {
+            hideTypingIndicator();
+            updateButtonState('start');
+        }
+    }
+
+    // Enregistrement vocal
+    async function toggleRecording() {
+        if (!recording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length === 0 || !audioTracks[0].enabled) {
+                    throw new Error("Microphone inactif");
+                }
+
+                recorder = new MediaRecorder(stream);
+                recorder.ondataavailable = e => audioChunks.push(e.data);
+                recorder.onstop = async () => await handleRecordingStop();
+
+                recorder.start();
+                recording = true;
+                updateButtonState('stop');
+                console.log('🎙️ Enregistrement démarré');
+            } catch (err) {
+                console.error('❌ Erreur microphone:', err);
+                handleMicrophoneError(err);
+                updateButtonState('start');
+            }
+        } else {
+            recorder.stop();
+            console.log('⏹️ Arrêt demandé');
+        }
+    }
+
+    function handleMicrophoneError(err) {
+        if (err.name === 'NotFoundError') {
+            displayErrorMessage("🎙️ Microphone non trouvé. Vérifiez votre matériel.");
+        } else if (err.name === 'NotAllowedError') {
+            displayErrorMessage("🔒 Accès microphone refusé. Autorisez l'accès dans votre navigateur.");
+        } else {
+            displayErrorMessage("⚠️ Erreur microphone: " + err.message);
+        }
+    }
+
+    async function handleRecordingStop() {
+        try {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            updateButtonState('processing');
+            showTypingIndicator();
+            console.log(`🎯 Envoi audio vers ${currentCharacter} (choix: ${currentChoice})`);
+            console.log(`📏 Taille audio: ${audioBlob.size} bytes`);
+            console.log(`🏁 Premier message: ${isFirstMessage}`);
+            const data = await sendAudioToCharacter(currentChoice, audioBlob);
+            console.log('📨 Réponse reçue:', data);
+            
+            // Confirmer que le bon personnage répond
+            if (data.character !== currentCharacter) {
+                console.warn(`⚠️ PROBLÈME: Attendu ${currentCharacter}, reçu ${data.character}`);
             } else {
-                userInputField.classList.add('hidden');
-                sendTextMessageButton.classList.add('hidden');
+                console.log(`✅ Personnage correct: ${data.character}`);
+            }
+            
+            // Gestion intelligente du premier message
+            if (data.is_first_message && data.greeting) {
+                console.log('🎭 Premier message avec salutation détecté');
+                
+                // 🆕 VÉRIFICATION SPÉCIALE POUR TOM
+                if (currentCharacter === 'Tom' && data.user_input && data.generated_response) {
+                    console.log('🍕 Tom - Affichage simplifié sans salutation séparée');
+                    // Pour Tom, afficher seulement : user_input → generated_response
+                    displayMessage(data.user_input, 'user');
+                    
+                    setTimeout(() => {
+                        displayMessage(data.generated_response, 'bot', data.audio_base64);
+                        if (data.audio_base64) {
+                            playAudioFromBase64(data.audio_base64);
+                        }
+                    }, 300);
+                    
+                    isFirstMessage = false;
+                    // 🆕 NE PAS FAIRE RETURN ICI - continuer vers finally pour le nettoyage
+                } else {
+                    // Pour les autres personnages (Alice, Mike, Sarah, Emma, Lucy, Ben), continuer normalement
+                    const isSameResponse = data.generated_response &&
+                                        data.greeting &&
+                                        data.generated_response.trim() === data.greeting.trim();
+                    
+                    console.log(`🔍 Salutation identique à la réponse: ${isSameResponse}`);
+                    
+                    if (isSameResponse) {
+                        // Cas 1: Salutation = Réponse
+                        console.log('✅ Affichage unique - salutation et réponse identiques');
+                        if (data.user_input) {
+                            displayMessage(data.user_input, 'user');
+                        }
+                        setTimeout(() => {
+                            displayMessage(data.greeting, 'bot', data.greeting_audio);
+                            if (data.greeting_audio) {
+                                playAudioFromBase64(data.greeting_audio);
+                            }
+                        }, 500);
+                    } else {
+                        // Cas 2: Salutation ≠ Réponse
+                        console.log('📝 Affichage séparé - salutation et réponse différentes');
+                        displayMessage(data.greeting, 'bot', data.greeting_audio);
+                        if (data.greeting_audio) {
+                            setTimeout(() => {
+                                playAudioFromBase64(data.greeting_audio);
+                            }, 300);
+                        }
+                        setTimeout(() => {
+                            if (data.user_input) {
+                                displayMessage(data.user_input, 'user');
+                            }
+                            if (data.generated_response &&
+                                data.generated_response.trim() !== data.greeting.trim()) {
+                                setTimeout(() => {
+                                    displayMessage(data.generated_response, 'bot', data.audio_base64);
+                                    if (data.audio_base64) {
+                                        playAudioFromBase64(data.audio_base64);
+                                    }
+                                }, 500);
+                            }
+                        }, 2000);
+                    }
+                    isFirstMessage = false;
+                }
+            } else {
+                // Conversation normale
+                console.log('💬 Message de conversation normale');
+                if (data.user_input) {
+                    displayMessage(data.user_input, 'user');
+                }
+                if (data.generated_response) {
+                    setTimeout(() => {
+                        displayMessage(data.generated_response, 'bot', data.audio_base64);
+                        if (data.audio_base64) {
+                            playAudioFromBase64(data.audio_base64);
+                        }
+                    }, 300);
+                }
+                isFirstMessage = false;
+            }
+            
+            // Gestion des réponses spéciales
+            if (data.type) {
+                console.log(`🏷️ Type de réponse spéciale: ${data.type}`);
+            }
+            
+            // Gestion des erreurs spécifiques
+            if (data.error === "unknown_language") {
+                console.log('🗣️ Langue non reconnue');
+                displayErrorMessage("🗣️ Langue non reconnue. Parlez en anglais s'il vous plaît.");
+            }
+            
+            // Gestion des suggestions
+            if (data.suggestion) {
+                console.log('💡 Suggestion disponible:', data.suggestion);
+                setTimeout(() => {
+                    appendSuggestions([data.suggestion]);
+                }, 600);
+            }
+            
+        } catch (err) {
+            console.error('❌ Erreur dans handleRecordingStop:', err);
+            console.error('🔍 Stack trace:', err.stack);
+            
+            let errorMessage = "💥 Erreur de traitement audio";
+            if (err.message.includes('Token')) {
+                errorMessage = "🔐 Session expirée. Veuillez vous reconnecter.";
+                setTimeout(() => {
+                    window.location.href = 'form-login.html';
+                }, 2000);
+            } else if (err.message.includes('Network')) {
+                errorMessage = "📡 Problème de connexion. Vérifiez votre réseau.";
+            } else if (err.message.includes('404')) {
+                errorMessage = "🔍 Service temporairement indisponible.";
+            } else if (err.message.includes('500')) {
+                errorMessage = "⚙️ Erreur serveur. Réessayez dans un moment.";
+            } else {
+                errorMessage = `💥 ${err.message}`;
+            }
+            displayErrorMessage(errorMessage);
+        } finally {
+            console.log('🧹 Nettoyage des ressources audio');
+            audioChunks = [];
+            recording = false;
+            hideTypingIndicator();
+            updateButtonState('start');
+            if (recorder && recorder.stream) {
+                recorder.stream.getTracks().forEach(track => {
+                    track.stop();
+                    console.log('🎤 Piste audio fermée');
+                });
+            }
+            console.log('✅ Nettoyage terminé');
+        }
+    }
+
+    // Indicateur de frappe
+    function showTypingIndicator() {
+        const chatBox = document.getElementById('chatBox');
+        if (!chatBox) return;
+
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typingIndicator';
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="typing-dots mr-3">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <span class="text-gray-600 font-medium">${currentCharacter || 'L\'assistant'} réfléchit...</span>
+        `;
+
+        chatBox.appendChild(typingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    // Fonction pour jouer l'audio
+    function playAudioFromBase64(audioBase64) {
+        try {
+            const audioElement = document.createElement('audio');
+            audioElement.src = "data:audio/wav;base64," + audioBase64;
+            audioElement.play().then(() => {
+                console.log('🔊 Audio en lecture');
+                changeAvatarToGif();
+            }).catch((error) => {
+                console.warn('⚠️ Lecture auto bloquée:', error);
+            });
+
+            audioElement.onended = () => {
+                changeAvatarToPng();
+            };
+        } catch (error) {
+            console.error('❌ Erreur audio:', error);
+        }
+    }
+
+    // Affichage des suggestions
+    function appendSuggestions(suggestions) {
+        const chatBox = document.getElementById('chatBox');
+        if (!chatBox || !suggestions || suggestions.length === 0) return;
+
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.className = 'suggestions-container space-y-3 mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200';
+
+        const title = document.createElement('div');
+        title.className = 'flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-4';
+        title.innerHTML = `
+            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <span>Suggestion pour vous aider :</span>
+        `;
+        suggestionsContainer.appendChild(title);
+
+        suggestions.forEach((suggestion, index) => {
+            if (suggestion.trim()) {
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'suggestion-item p-4 rounded-xl border border-yellow-200 hover:border-yellow-300 transition-all duration-300 cursor-pointer';
+                suggestionDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-800 font-medium">${suggestion}</span>
+                    </div>
+                `;
+
+                suggestionDiv.addEventListener('click', () => {
+                    const userInputField = document.getElementById('userInputField');
+                    if (userInputField) {
+                        userInputField.value = suggestion;
+                        if (document.getElementById('textInputContainer')?.classList.contains('hidden')) {
+                            toggleTextArea();
+                        }
+                        userInputField.focus();
+                        suggestionDiv.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            suggestionDiv.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                });
+
+                suggestionsContainer.appendChild(suggestionDiv);
+            }
+        });
+
+        chatBox.appendChild(suggestionsContainer);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Fonction principale d'affichage des messages
+    function displayMessage(message, sender, audioBase64, isError = false, isWelcome = false) {
+        const chatBox = document.getElementById('chatBox');
+        if (!chatBox) return;
+
+        // Validation du message
+        if (Array.isArray(message)) {
+            message = message[0];
+        }
+        if (typeof message !== 'string') {
+            message = String(message) || '';
+        }
+
+        // Filtrer les messages indésirables
+        if (["Thank you.", "Obrigado.", "Tchau.", "E a", ".", "Bye."].includes(message.trim())) {
+            displayErrorMessage("🎤 Audio non détecté. Recommencez.");
+            return;
+        }
+
+        if (!message || message.trim() === '') {
+            return;
+        }
+
+        // Créer le conteneur du message
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `message-container mb-6 ${sender === 'user' ? 'flex justify-end' : ''}`;
+
+        // Créer l'élément message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = getMessageClasses(sender, message, isError, isWelcome);
+        messageDiv.innerHTML = `
+            <div class="flex items-start space-x-4">
+                ${sender === 'bot' ? `
+                    <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                ` : ''}
+                <div class="flex-1 max-w-md">
+                    <div class="message-content leading-relaxed">${escapeHtml(message)}</div>
+                    ${audioBase64 && !isError ? `
+                        <div class="audio-container mt-4">
+                            <audio class="audio-player w-full rounded-lg" controls style="max-width: 300px; height: 45px;">
+                                <source src="data:audio/wav;base64,${audioBase64}" type="audio/wav">
+                            </audio>
+                            <div class="audio-visualizer mt-2">
+                                <div class="audio-progress"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                ${sender === 'user' ? `
+                    <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        messageContainer.appendChild(messageDiv);
+
+        // Ajouter les actions pour les messages bot (sauf messages de bienvenue)
+        if (sender === 'bot' && !isError && !isWelcome && !message.startsWith('Traduction :')) {
+            addMessageActions(messageContainer, message);
+        }
+
+        // Animation d'apparition
+        messageContainer.style.opacity = '0';
+        messageContainer.style.transform = 'translateY(20px)';
+        chatBox.appendChild(messageContainer);
+
+        // Déclencher l'animation
+        requestAnimationFrame(() => {
+            messageContainer.style.transition = 'all 0.4s ease-out';
+            messageContainer.style.opacity = '1';
+            messageContainer.style.transform = 'translateY(0)';
+        });
+
+        // Gérer l'audio
+        const audioPlayer = messageContainer.querySelector('.audio-player');
+        if (audioPlayer) {
+            setupAudioPlayer(audioPlayer, messageContainer);
+        }
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Vérifier arrêt de session
+        if (sender === 'bot') {
+            checkAndStopSession(message);
+        }
+    }
+
+    // Configuration du lecteur audio
+    function setupAudioPlayer(audioPlayer, container) {
+        const progressBar = container.querySelector('.audio-progress');
+        if (!progressBar) return;
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (audioPlayer.duration) {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = progress + '%';
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            changeAvatarToGif();
+            progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            changeAvatarToPng();
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            changeAvatarToPng();
+            progressBar.style.width = '0%';
+        });
+
+        // Lecture automatique
+        audioPlayer.addEventListener('loadeddata', () => {
+            audioPlayer.play().catch(error => {
+                console.warn('Lecture automatique bloquée:', error);
+            });
+        });
+    }
+
+    // Actions sur les messages
+    function addMessageActions(container, message) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'flex items-center space-x-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300';
+        actionsDiv.innerHTML = `
+            <button class="translate-btn text-pink-500 hover:text-pink-600 p-2 rounded-lg hover:bg-pink-50 transition-colors" data-message="${escapeHtml(message)}" title="Traduire en français">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                </svg>
+            </button>
+            <button class="copy-btn text-gray-500 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-50 transition-colors" data-message="${escapeHtml(message)}" title="Copier le message">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+            </button>
+        `;
+
+        container.classList.add('group');
+        container.appendChild(actionsDiv);
+
+        // Événements
+        const translateBtn = actionsDiv.querySelector('.translate-btn');
+        const copyBtn = actionsDiv.querySelector('.copy-btn');
+
+        if (translateBtn) {
+            translateBtn.addEventListener('click', () => {
+                translateMessage(message);
+                translateBtn.style.color = '#10b981';
+                translateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            });
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(message);
+                    copyBtn.style.color = '#10b981';
+                    copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                    setTimeout(() => {
+                        copyBtn.style.color = '#6b7280';
+                        copyBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Erreur copie:', err);
+                }
+            });
+        }
+    }
+
+    // Classes CSS pour les messages
+    function getMessageClasses(sender, message, isError, isWelcome = false) {
+        const baseClasses = 'message p-6 shadow-lg transition-all duration-300';
+        
+        if (isWelcome) {
+            return `${baseClasses} bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-2xl`;
+        } else if (isError) {
+            return `${baseClasses} message-error`;
+        } else if (message.startsWith('Traduction :')) {
+            return `${baseClasses} message-translation`;
+        } else if (sender === 'bot') {
+            return `${baseClasses} message-bot`;
+        } else {
+            return `${baseClasses} message-user ml-auto`;
+        }
+    }
+
+    // Utilitaires
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function displayErrorMessage(errorMessage) {
+        displayMessage(errorMessage, 'bot', null, true);
+    }
+
+    // Traduction
+    function translateMessage(message) {
+        fetch('/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erreur traduction');
+            return response.json();
+        })
+        .then(data => {
+            setTimeout(() => {
+                displayMessage(`🇫🇷 ${data.translated_message}`, 'bot');
+            }, 300);
+        })
+        .catch(error => {
+            console.error('Erreur traduction:', error);
+            displayErrorMessage('❌ Erreur de traduction');
+        });
+    }
+
+    // États des boutons
+    function updateButtonState(state) {
+        const button = document.getElementById('toggleRecording');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (!button) return;
+
+        button.classList.remove('recording-pulse');
+
+        switch (state) {
+            case 'start':
+                button.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                    </svg>
+                    <span class="font-semibold">Parler</span>
+                `;
+                button.className = 'btn-modern bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center';
+                button.disabled = false;
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                break;
+
+            case 'stop':
+                button.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                    </svg>
+                    <span class="font-semibold">Arrêter</span>
+                `;
+                button.className = 'btn-modern recording-pulse bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 shadow-lg transform hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center';
+                button.disabled = false;
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                break;
+
+            case 'processing':
+                button.innerHTML = `
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span class="font-semibold">Traitement...</span>
+                `;
+                button.className = 'btn-modern bg-gray-400 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 cursor-not-allowed w-full sm:w-auto justify-center';
+                button.disabled = true;
+                if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+                break;
+        }
+    }
+
+    function changeAvatarToGif() {
+        const avatarImg = document.getElementById('avatarGif');
+        if (avatarImg) {
+            avatarImg.src = "../static/assets/images/ai/brain.gif";
+            avatarImg.style.transform = 'scale(1.1)';
+            avatarImg.style.boxShadow = '0 0 30px rgba(102, 126, 234, 0.6)';
+        }
+    }
+
+    function changeAvatarToPng() {
+        const avatarImg = document.getElementById('avatarGif');
+        if (avatarImg) {
+            avatarImg.src = "../static/assets/images/ai/brain.png";
+            avatarImg.style.transform = 'scale(1)';
+            avatarImg.style.boxShadow = 'none';
+        }
+    }
+
+    // Zone de texte
+    function toggleTextArea() {
+        const container = document.getElementById('textInputContainer');
+        const userInputField = document.getElementById('userInputField');
+        const button = document.getElementById('toggleTextArea');
+        
+        if (!container || !button) return;
+
+        if (container.classList.contains('hidden')) {
+            container.classList.remove('hidden');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            requestAnimationFrame(() => {
+                container.style.transition = 'all 0.3s ease-out';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            });
+
+            button.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span class="font-semibold">Fermer</span>
+            `;
+
+            if (userInputField) {
+                setTimeout(() => userInputField.focus(), 300);
+            }
+        } else {
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            setTimeout(() => container.classList.add('hidden'), 300);
+
+            button.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+                </svg>
+                <span class="font-semibold">Clavier</span>
+            `;
+        }
+    }
+
+    // Session management - 🆕 MISE À JOUR POUR TOUS LES PERSONNAGES
+    function checkAndStopSession(generated_response) {
+        const endMessages = [
+            "It was lovely chatting with you! I have to help other students now. Keep practicing your English!",
+            "Thanks for calling NYC Taxi! I gotta take other calls now. Have a great ride!",
+            "Thank you for choosing our airline! I need to assist other passengers now. Have a wonderful trip!",
+            // 🆕 MESSAGES DE FIN POUR LES NOUVEAUX PERSONNAGES
+            "Good job today! You did very well. See you next time!",  // Emma
+            "Thank you for coming! Have a good day!",  // Tom
+            "Thank you for shopping with us! Have a nice day!",  // Lucy
+            "I hope you find your way! Have a wonderful trip!"  // Ben
+        ];
+
+        if (endMessages.some(msg => generated_response.includes(msg))) {
+            setTimeout(() => {
+                displayMessage("🎯 Session terminée ! Redirection vers l'analyse...", 'bot');
+                setTimeout(stopChatSession, 2000);
+            }, 1000);
+        }
+    }
+
+    async function stopChatSession() {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) throw new Error("Token manquant");
+
+            const response = await fetch('/chat_conv/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+
+            const data = await response.json();
+            if (data.message === "Chat session ended successfully.") {
+                window.location.href = `analysis.html?conversation_id=${data.conversation_id}`;
+            }
+        } catch (err) {
+            console.error('Erreur arrêt session:', err);
+            // Redirection vers l'accueil en cas d'erreur
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 2000);
+        }
+    }
+
+    // Utilitaires
+    function logout() {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("nom");
+        window.location.href = "form-login.html";
+    }
+
+    // Événements clavier
+    document.addEventListener('keydown', function(event) {
+        // Ctrl+Enter pour envoyer
+        if ((event.ctrlKey || event.shiftKey) && event.key === 'Enter') {
+            event.preventDefault();
+            const userInputField = document.getElementById('userInputField');
+            const container = document.getElementById('textInputContainer');
+            if (userInputField && container && !container.classList.contains('hidden') && userInputField.value.trim()) {
+                sendTextMessage();
             }
         }
 
-    async function sendTextMessage() {
-        const userInputField = document.getElementById('userInputField');
-        const message = userInputField.value.trim();
+        // Espace pour enregistrer (sauf si on est dans un champ de texte)
+        if (event.code === 'Space' && !event.target.matches('input, textarea')) {
+            event.preventDefault();
+            toggleRecording();
+        }
 
-        if (message) {
-            displayMessage(message, 'user');
-            userInputField.value = '';
-            updateButtonState('processing');
-            try {
-                const response = await fetch('/chat/message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-                const data = await response.json();
-                if (data.generated_response) {
-                    displayMessage(data.generated_response, 'bot', data.audio_base64);
-                }
-                if (data.suggestions) {
-                    appendSuggestions(data.suggestions);
-                }
-            } catch (err) {
-                console.error('Error sending text message: ', err);
-                displayErrorMessage("Erreur lors de l'envoi du message texte.");
-            } finally {
-                updateButtonState('start');
+        // Échap pour fermer le champ de texte
+        if (event.key === 'Escape') {
+            const container = document.getElementById('textInputContainer');
+            if (container && !container.classList.contains('hidden')) {
+                toggleTextArea();
+            }
+        }
+    });
+
+    // Chargement profil utilisateur
+    async function loadUserProfile() {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) return;
+
+            const response = await fetch('/users/me', {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+
+            if (response.ok) {
+                const user = await response.json();
+                const profileName = document.getElementById('profile-name');
+                const profileEmail = document.getElementById('profile-email');
+                const profileNameHeader = document.getElementById('profile-name-header');
+
+                if (profileName) profileName.textContent = user.nom || 'Utilisateur';
+                if (profileEmail) profileEmail.textContent = user.email || '';
+                if (profileNameHeader) profileNameHeader.textContent = user.nom || 'Utilisateur';
+            }
+        } catch (error) {
+            console.error('Erreur profil:', error);
+        }
+    }
+
+    // Gestion responsive pour mobile
+    function handleResponsive() {
+        const isMobile = window.innerWidth < 768;
+        const chatContainer = document.querySelector('.chat-container');
+        
+        if (chatContainer) {
+            if (isMobile) {
+                chatContainer.classList.add('mx-2');
+                chatContainer.classList.remove('mx-4');
+            } else {
+                chatContainer.classList.add('mx-4');
+                chatContainer.classList.remove('mx-2');
             }
         }
     }
-    
 
-                window.addEventListener('beforeunload', async function(event) {
-                event.preventDefault(); 
-                await stopChatSession(); 
-            });
+    window.addEventListener('resize', handleResponsive);
+    handleResponsive(); // Appel initial
 
-            async function stopChatSession() {
-                try {
-                    const accessToken = localStorage.getItem("accessToken");
-                    if (!accessToken) {
-                        throw new Error("Access token not found in localStorage.");
-                    }
+    // Gestion de la connexion réseau
+    window.addEventListener('online', function() {
+        console.log('✅ Connexion rétablie');
+    });
 
-                    const response = await fetch('/chat_repeat/stop', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
+    window.addEventListener('offline', function() {
+        console.warn('⚠️ Connexion perdue');
+        displayErrorMessage('📡 Connexion internet perdue. Vérifiez votre réseau.');
+    });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
+    // Gestion fermeture page
+    window.addEventListener('beforeunload', function(event) {
+        if (recording) {
+            event.preventDefault();
+            event.returnValue = 'Enregistrement en cours. Êtes-vous sûr de vouloir quitter ?';
+            return 'Enregistrement en cours. Êtes-vous sûr de vouloir quitter ?';
+        }
+    });
 
-                    const data = await response.json();
-                    console.log(data); 
-
-                    if (data.message === "Chat session ended successfully.") {
-                        const conversationId = data.conversation_id;
-                        window.location.href = `analysis.html?conversation_id=${conversationId}`;
-                    }
-
-                } catch (err) {
-                    console.error('Error stopping chat session: ', err);
-                }
+    // Notification de permissions
+    async function checkMicrophonePermission() {
+        try {
+            const permission = await navigator.permissions.query({ name: 'microphone' });
+            if (permission.state === 'denied') {
+                displayErrorMessage('🎙️ Accès microphone refusé. Activez-le dans les paramètres de votre navigateur.');
             }
 
-    </script>
-</body>
+            permission.addEventListener('change', () => {
+                if (permission.state === 'granted') {
+                    console.log('✅ Permission microphone accordée');
+                }
+            });
+        } catch (error) {
+            console.warn('Impossible de vérifier les permissions microphone');
+        }
+    }
 
+    // Auto-scroll intelligent
+    function smartScroll() {
+        const chatBox = document.getElementById('chatBox');
+        if (!chatBox) return;
+
+        const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 1;
+        if (isScrolledToBottom) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    // 🆕 FONCTION DE DEBUG POUR TESTER LES NOUVEAUX PERSONNAGES
+    function debugCharacterConfig() {
+        console.log('🔍 === DEBUG CONFIGURATION PERSONNAGES ===');
+        console.log('📋 Choix actuel:', currentChoice);
+        console.log('🎭 Personnage actuel:', currentCharacter);
+        console.log('📚 Configuration complète:', CHARACTER_CONFIG);
+        
+        const config = CHARACTER_CONFIG[currentChoice];
+        if (config) {
+            console.log('✅ Configuration trouvée:', config);
+        } else {
+            console.error('❌ Configuration manquante pour:', currentChoice);
+        }
+        
+        console.log('🎯 === FIN DEBUG ===');
+    }
+
+    // Exposer la fonction de debug en global pour les tests
+    window.debugCharacterConfig = debugCharacterConfig;
+
+    console.log('🎉 Interface TalkAI chargée avec succès !');
+    console.log('🆕 Support pour tous les personnages: Alice, Mike, Sarah, Emma, Tom, Lucy, Ben');
+    
+    // 🆕 DEBUG AUTOMATIQUE AU CHARGEMENT
+    if (currentChoice) {
+        setTimeout(() => {
+            debugCharacterConfig();
+        }, 1000);
+    }
+</script>
+</body>
 </html>
