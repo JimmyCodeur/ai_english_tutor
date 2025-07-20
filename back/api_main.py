@@ -454,18 +454,30 @@ async def process_audio_and_transcribe(audio_file: UploadFile):
     return user_input.strip().lower(), user_audio_base64, transcription_time
 
 async def handle_common_responses(user_input: str, character: str, db: Session, user_id: int, category: str, user_audio_base64: str):
-    """Gère les réponses communes (français, traduction, qualité) - UTILISE EDGE-TTS"""
+    """Gère les réponses communes avec Phi3 naturel"""
+    
     # Gestion des demandes de traduction
     phrase_to_translate = detect_translation_request(user_input)
     if phrase_to_translate:
-        prompt = f"Translate this sentence into English without adding comments: {phrase_to_translate}"
+        prompt = f"""Translate this phrase into natural English: "{phrase_to_translate}"
+        
+        Give only the English translation, no explanations."""
+        
         start_time = time.time()
         translated_phrase = await asyncio.to_thread(generate_phi3_response, prompt)
         end_time = time.time()
         log_response_time_phi3(start_time, end_time)
-        generated_response = f"{translated_phrase}"      
         
-        # 🔥 UTILISER EDGE-TTS
+        # Réponse naturelle pour la traduction
+        if character == 'emma':
+            generated_response = f"In English, we say: {translated_phrase}. Can you try saying it?"
+        elif character == 'mike':
+            generated_response = f"In English, that would be: {translated_phrase}."
+        elif character == 'sarah':
+            generated_response = f"The English phrase is: {translated_phrase}."
+        else:
+            generated_response = f"In English, you can say: {translated_phrase}."
+        
         audio_file_path, duration = await edge_text_to_speech_with_fallback(generated_response, character)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
         await asyncio.to_thread(delete_audio_file, audio_file_path)
@@ -480,12 +492,19 @@ async def handle_common_responses(user_input: str, character: str, db: Session, 
             "type": "translation"
         }
     
-    # Détection de langue
+    # Détection de langue française
     language = detect_language(user_input)
     if language in ['fr', 'unknown']:
-        generated_response = "Hum.. I don't speak French, please say it in English."      
+        # Réponses naturelles selon le personnage
+        if character == 'emma':
+            generated_response = "I don't speak French. Can you try in English? Even simple words are good!"
+        elif character == 'mike':
+            generated_response = "Sorry, I only speak English here at the dispatch. Can you try in English?"
+        elif character == 'sarah':
+            generated_response = "I need to speak in English to help you with your booking. Can you try in English?"
+        else:
+            generated_response = "I don't speak French, could you please try in English?"
         
-        # 🔥 UTILISER EDGE-TTS
         audio_file_path, duration = await edge_text_to_speech_with_fallback(generated_response, character)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
         await asyncio.to_thread(delete_audio_file, audio_file_path)
@@ -500,14 +519,27 @@ async def handle_common_responses(user_input: str, character: str, db: Session, 
             "type": "french_response"
         }
     
-    # Évaluation de la qualité de la phrase
+    # Évaluation de la qualité avec réponse naturelle
     is_quality_sentence = evaluate_sentence_quality_phi3(user_input)
     if not is_quality_sentence:
-        generated_response = "I didn't understand that. Could you please rephrase?"
-        suggestion_prompt = f"Improve the following unclear response in one sentence, making it easy to understand: {user_input}"
-        suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)       
+        # Réponses naturelles d'incompréhension
+        if character == 'emma':
+            generated_response = "I didn't understand. Can you say it again with simple words?"
+        elif character == 'mike':
+            generated_response = "Sorry, I didn't catch that. Can you repeat it for me?"
+        elif character == 'sarah':
+            generated_response = "I'm sorry, I didn't understand. Could you please rephrase that?"
+        else:
+            generated_response = "I'm sorry, I didn't quite understand. Could you say that again?"
         
-        # 🔥 UTILISER EDGE-TTS
+        # Générer une suggestion d'amélioration
+        suggestion_prompt = f"""The user said: "{user_input}"
+        
+        This was unclear. Suggest a clearer way to say the same thing in simple English.
+        Give only the improved sentence, no explanations."""
+        
+        suggestion = await asyncio.to_thread(generate_phi3_response, suggestion_prompt)
+        
         audio_file_path, duration = await edge_text_to_speech_with_fallback(generated_response, character)
         audio_base64 = await asyncio.to_thread(file_to_base64, audio_file_path)
         await asyncio.to_thread(delete_audio_file, audio_file_path)
