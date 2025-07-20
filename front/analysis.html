@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TalkAI - Analyse & Rapports</title>
     <meta name="description" content="TalkAI - Analyse de vos sessions d'apprentissage">
-    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+    <link href="/static/assets/images/favicon.png" rel="icon" type="image/png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,6 +44,7 @@
                         'fade-in': 'fadeIn 0.6s ease-out',
                         'slide-up': 'slideUp 0.6s ease-out',
                         'scale-in': 'scaleIn 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
                     },
                     keyframes: {
                         fadeIn: {
@@ -74,84 +75,95 @@
             font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
-        
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
         .card-hover {
             transition: all 0.3s ease;
         }
-        
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        
         .sidebar-backdrop {
             backdrop-filter: blur(10px);
             background: rgba(0, 0, 0, 0.3);
         }
-        
         .mobile-menu-open {
             transform: translateX(0);
         }
-        
         .mobile-menu-closed {
             transform: translateX(-100%);
         }
-        
         .stat-card {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border-left: 4px solid;
             transition: all 0.3s ease;
         }
-        
         .stat-card:hover {
             transform: translateX(4px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
-        
         .pulse-dot {
             animation: pulse 2s infinite;
         }
-        
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        
         .session-item {
             transition: all 0.3s ease;
         }
-        
         .session-item:hover {
             background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             transform: translateX(8px);
         }
-        
         .loading-skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
         }
-        
         @keyframes loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring__circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.35s;
+        }
+        .character-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .character-emma { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .character-tom { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .character-lucy { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .character-ben { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .character-alice { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .character-mike { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .character-sarah { background: linear-gradient(135deg, #667eea, #764ba2); }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    
     <!-- Mobile Menu Overlay -->
     <div id="mobile-overlay" class="fixed inset-0 z-40 sidebar-backdrop hidden lg:hidden"></div>
     
     <!-- Container principal -->
     <div class="min-h-screen">
-        
         <!-- Header -->
         <header class="sticky top-0 z-50 glass-effect border-b border-gray-200/20 shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -164,7 +176,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        
                         <!-- Logo -->
                         <a href="home.html" class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -180,18 +191,18 @@
                             Cours
                         </a>
                         <a href="analysis.html" class="text-primary-600 font-semibold border-b-2 border-primary-500 pb-1">
-                            Rapports
+                            Mes Rapports
                         </a>
                     </nav>
                     
                     <!-- Profil utilisateur -->
                     <div class="relative">
                         <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                            <img src="../static/assets/images/avatars/placeholder.png" 
+                            <img id="profile-avatar" src="/static/assets/images/avatars/placeholder.png"
                                  class="w-8 h-8 rounded-full ring-2 ring-primary-500" alt="Avatar">
                             <div class="hidden sm:block text-left">
-                                <div id="profile-name" class="text-sm font-semibold text-gray-900"></div>
-                                <div id="profile-email" class="text-xs text-gray-500"></div>
+                                <div id="profile-name" class="text-sm font-semibold text-gray-900">Chargement...</div>
+                                <div id="profile-email" class="text-xs text-gray-500">Chargement...</div>
                             </div>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -202,11 +213,11 @@
                         <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl border border-gray-200/20 py-2 z-50">
                             <div class="px-4 py-3 border-b border-gray-200/20">
                                 <div class="flex items-center space-x-3">
-                                    <img src="../static/assets/images/avatars/avatar-2.jpg" 
+                                    <img id="profile-avatar-menu" src="/static/assets/images/avatars/placeholder.png"
                                          class="w-12 h-12 rounded-full" alt="Avatar">
                                     <div>
-                                        <div id="profile-name-menu" class="font-semibold text-gray-900"></div>
-                                        <div id="profile-email-menu" class="text-sm text-gray-500"></div>
+                                        <div id="profile-name-menu" class="font-semibold text-gray-900">Chargement...</div>
+                                        <div id="profile-email-menu" class="text-sm text-gray-500">Chargement...</div>
                                     </div>
                                 </div>
                             </div>
@@ -216,12 +227,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
                                     Mon Compte
-                                </a>
-                                <a href="users-profile.html#conversations-container" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    Historique
                                 </a>
                                 <a href="profile-setting.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                     <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +248,7 @@
                 </div>
             </div>
         </header>
-        
+
         <!-- Sidebar mobile -->
         <div id="mobile-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 mobile-menu-closed transition-transform duration-300 lg:hidden">
             <div class="h-full glass-effect border-r border-gray-200/20">
@@ -259,16 +264,15 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            Rapports
+                            Mes Rapports
                         </a>
                     </nav>
                 </div>
             </div>
         </div>
-        
+
         <!-- Contenu principal -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            
             <!-- En-tête -->
             <div class="text-center mb-12 animate-fade-in">
                 <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full text-sm font-semibold mb-6">
@@ -281,24 +285,150 @@
                     Suivez vos progrès et analysez vos performances d'apprentissage
                 </p>
             </div>
-            
+
+            <!-- Statistiques globales -->
+            <div id="globalStatsContainer" class="mb-8 animate-slide-up">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">📈 Aperçu Global</h2>
+                    
+                    <!-- Loading de stats globales -->
+                    <div id="globalStatsLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="loading-skeleton h-24 rounded-xl"></div>
+                        <div class="loading-skeleton h-24 rounded-xl"></div>
+                        <div class="loading-skeleton h-24 rounded-xl"></div>
+                        <div class="loading-skeleton h-24 rounded-xl"></div>
+                    </div>
+                    
+                    <!-- Stats globales -->
+                    <div id="globalStats" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- Total conversations -->
+                            <div class="stat-card border-blue-500 p-6 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div id="totalConversations" class="text-3xl font-bold text-gray-900">0</div>
+                                        <div class="text-sm text-gray-600">Conversations totales</div>
+                                        <div id="conversationsThisWeek" class="text-xs text-blue-600 mt-1"></div>
+                                    </div>
+                                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Total messages -->
+                            <div class="stat-card border-green-500 p-6 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div id="totalMessages" class="text-3xl font-bold text-gray-900">0</div>
+                                        <div class="text-sm text-gray-600">Messages échangés</div>
+                                        <div id="messagesThisWeek" class="text-xs text-green-600 mt-1"></div>
+                                    </div>
+                                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Temps total -->
+                            <div class="stat-card border-purple-500 p-6 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div id="totalTime" class="text-3xl font-bold text-gray-900">0h</div>
+                                        <div class="text-sm text-gray-600">Temps d'apprentissage</div>
+                                        <div id="avgSessionTime" class="text-xs text-purple-600 mt-1"></div>
+                                    </div>
+                                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Niveau actuel -->
+                            <div class="stat-card border-yellow-500 p-6 rounded-xl">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div id="currentLevel" class="text-3xl font-bold text-gray-900">Débutant</div>
+                                        <div class="text-sm text-gray-600">Niveau actuel</div>
+                                        <div id="progressPercentage" class="text-xs text-yellow-600 mt-1"></div>
+                                    </div>
+                                    <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progression par personnage -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">🎭 Progression par Personnage</h3>
+                            <div id="charactersProgress" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <!-- Les cartes de personnages seront ajoutées ici -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques et analyses avancées -->
+            <div id="chartsContainer" class="mb-8 animate-slide-up">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Graphique d'activité -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">📅 Activité des 7 derniers jours</h3>
+                        <div class="relative h-64">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Répartition par type d'erreur -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">🎯 Analyse des erreurs</h3>
+                        <div class="relative h-64">
+                            <canvas id="errorsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Container de l'analyse détaillée -->
             <div id="analysisContainer" class="hidden mb-12 animate-slide-up">
                 <!-- Le contenu sera généré dynamiquement -->
             </div>
-            
+
             <!-- Section des sessions -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 animate-slide-up">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Sessions de conversation</h2>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">📋 Historique des Sessions</h2>
                             <p class="text-gray-600">Historique complet de vos sessions d'apprentissage</p>
                         </div>
                         <div class="flex items-center space-x-3">
+                            <!-- Filtre par personnage -->
+                            <select id="characterFilter"
+                                    class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                    onchange="loadSessionReports()">
+                                <option value="">Tous les personnages</option>
+                                <option value="emma">👩‍🏫 Emma</option>
+                                <option value="tom">🍕 Tom</option>
+                                <option value="lucy">🛍️ Lucy</option>
+                                <option value="ben">🗺️ Ben</option>
+                                <option value="alice">🌟 Alice</option>
+                                <option value="mike">🚕 Mike</option>
+                                <option value="sarah">✈️ Sarah</option>
+                            </select>
                             <label for="sortOrder" class="text-sm font-medium text-gray-700">Trier par :</label>
-                            <select id="sortOrder" 
-                                    class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" 
+                            <select id="sortOrder"
+                                    class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                                     onchange="loadSessionReports()">
                                 <option value="desc">Plus récent</option>
                                 <option value="asc">Plus ancien</option>
@@ -311,12 +441,12 @@
                 <div class="p-6">
                     <div id="sessionsLoading" class="space-y-4">
                         <!-- Skeleton loading -->
-                        <div class="loading-skeleton h-16 rounded-xl"></div>
-                        <div class="loading-skeleton h-16 rounded-xl"></div>
-                        <div class="loading-skeleton h-16 rounded-xl"></div>
+                        <div class="loading-skeleton h-20 rounded-xl"></div>
+                        <div class="loading-skeleton h-20 rounded-xl"></div>
+                        <div class="loading-skeleton h-20 rounded-xl"></div>
                     </div>
                     
-                    <div id="sessionReports" class="space-y-3 hidden">
+                    <div id="sessionReports" class="space-y-4 hidden">
                         <!-- Les sessions seront ajoutées ici -->
                     </div>
                     
@@ -339,106 +469,880 @@
             </div>
         </main>
     </div>
-    
+
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="module" src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.2.3/dist/ionicons/ionicons.js"></script>
-    
     <script>
-        // Mapping des catégories
-        const categoryMapping = {
-            "r_a_m_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Repeat after me)",
-            "r_a_m_travel_situation_at_the_airport": "🛫 Situation de voyage à l'aéroport (Repeat after me)",
-            "conv_greetings_common_conversations": "👋🏼 Salutations et conversations courantes (Conversation)",
-            "english_phrases": "😀 English Phrases (Repeat after me)"
-        };
-        
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileSidebar = document.getElementById('mobile-sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        
-        function toggleMobileMenu() {
-            mobileSidebar.classList.toggle('mobile-menu-open');
-            mobileSidebar.classList.toggle('mobile-menu-closed');
-            mobileOverlay.classList.toggle('hidden');
+        // ===== FONCTIONS D'AUTHENTIFICATION CORRIGÉES =====
+        function getAuthToken() {
+            const token = localStorage.getItem('access_token'); // 🔥 CORRECTION ICI
+            console.log('🔑 Token récupéré:', token ? 'Présent' : 'Absent');
+            return token;
         }
-        
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
-        
-        // Profile menu toggle
-        const profileBtn = document.getElementById('profile-btn');
-        const profileMenu = document.getElementById('profile-menu');
-        
-        if (profileBtn) {
-            profileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-            });
-        }
-        
-        document.addEventListener('click', () => {
-            if (profileMenu) profileMenu.classList.add('hidden');
-        });
-        
-        if (profileMenu) {
-            profileMenu.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-        }
-        
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Initialisation de la page d\'analyse...');
+
+        async function authenticatedFetch(url, options = {}) {
+            const token = getAuthToken();
             
-            const urlParams = new URLSearchParams(window.location.search);
-            const conversationId = urlParams.get('conversation_id');
-            
-            if (conversationId) {
-                document.getElementById('analysisContainer').classList.remove('hidden');
-                await displaySessionAnalysis(conversationId);
+            if (!token) {
+                console.error('❌ Token d\'accès manquant');
+                window.location.href = '/form-login.html';
+                return;
             }
             
-            await loadSessionReports();
-            loadUserProfile();
-        });
-        
-        // Affichage de l'analyse de session
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            const requestOptions = {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            };
+            
+            try {
+                console.log('🌐 Requête authentifiée vers:', url);
+                const response = await fetch(url, requestOptions);
+                
+                if (response.status === 401) {
+                    console.error('❌ Token expiré ou invalide');
+                    localStorage.clear();
+                    window.location.href = '/form-login.html';
+                    return;
+                }
+                
+                return response;
+            } catch (error) {
+                console.error('❌ Erreur lors de la requête authentifiée:', error);
+                throw error;
+            }
+        }
+
+        // Variables globales
+        let globalStats = {};
+        let allConversations = [];
+        let activityChart = null;
+        let errorsChart = null;
+
+        // Mapping des catégories
+        const categoryMapping = {
+            "conv_greetings_common_conversations": "👋🏼 Conversations générales",
+            "conv_taxi_booking": "🚕 Réservation de taxi",
+            "conv_airport_ticket": "✈️ Réservation de vol",
+            "conv_beginner_teacher": "👩‍🏫 Professeure pour débutants",
+            "conv_simple_restaurant": "🍕 Restaurant simple",
+            "conv_simple_shopping": "🛍️ Shopping basique",
+            "conv_simple_directions": "🗺️ Demander son chemin"
+        };
+
+        // Mapping des personnages
+        const characterMapping = {
+            "conv_greetings_common_conversations": { name: "Alice", emoji: "🌟", class: "character-alice" },
+            "conv_taxi_booking": { name: "Mike", emoji: "🚕", class: "character-mike" },
+            "conv_airport_ticket": { name: "Sarah", emoji: "✈️", class: "character-sarah" },
+            "conv_beginner_teacher": { name: "Emma", emoji: "👩‍🏫", class: "character-emma" },
+            "conv_simple_restaurant": { name: "Tom", emoji: "🍕", class: "character-tom" },
+            "conv_simple_shopping": { name: "Lucy", emoji: "🛍️", class: "character-lucy" },
+            "conv_simple_directions": { name: "Ben", emoji: "🗺️", class: "character-ben" }
+        };
+
+        // ===== GESTION UI =====
+        function initializeUI() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+
+            function toggleMobileMenu() {
+                mobileSidebar.classList.toggle('mobile-menu-open');
+                mobileSidebar.classList.toggle('mobile-menu-closed');
+                mobileOverlay.classList.toggle('hidden');
+            }
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            }
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Profile menu toggle
+            const profileBtn = document.getElementById('profile-btn');
+            const profileMenu = document.getElementById('profile-menu');
+
+            if (profileBtn && profileMenu) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', () => {
+                    profileMenu.classList.add('hidden');
+                });
+
+                profileMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+        }
+
+        // ===== CHARGEMENT DES DONNÉES =====
+        async function loadGlobalStats() {
+            try {
+                console.log('📊 Chargement des statistiques globales...');
+                
+                // Charger les conversations
+                const conversationsResponse = await authenticatedFetch('/user/conversations');
+                if (!conversationsResponse || !conversationsResponse.ok) {
+                    throw new Error(`Erreur HTTP ${conversationsResponse?.status || 'inconnue'}`);
+                }
+                
+                allConversations = await conversationsResponse.json();
+                console.log('📋 Conversations chargées:', allConversations.length);
+
+                // Charger la progression utilisateur
+                let progressData = {};
+                try {
+                    const progressResponse = await authenticatedFetch('/user/progress');
+                    if (progressResponse && progressResponse.ok) {
+                        progressData = await progressResponse.json();
+                        console.log('📈 Progression chargée:', progressData);
+                    }
+                } catch (progressError) {
+                    console.warn('⚠️ Erreur progression (non bloquante):', progressError);
+                }
+
+                // Calculer les statistiques
+                await calculateAndDisplayStats(allConversations, progressData);
+                
+            } catch (err) {
+                console.error('❌ Erreur lors du chargement des stats globales:', err);
+                displayStatsError(err.message);
+            }
+        }
+
+        async function calculateAndDisplayStats(conversations, progressData) {
+            try {
+                // Statistiques de base
+                const totalConversations = conversations.length;
+                let totalMessages = 0;
+                let totalTimeMinutes = 0;
+                const characterStats = {};
+
+                // Analyser chaque conversation
+                for (const conv of conversations) {
+                    try {
+                        // Charger les messages de cette conversation
+                        const messagesResponse = await authenticatedFetch(`/user/r_a_m/${conv.id}/messages`);
+                        if (messagesResponse && messagesResponse.ok) {
+                            const messages = await messagesResponse.json();
+                            totalMessages += messages.length;
+                        }
+
+                        // Calculer la durée
+                        const startTime = new Date(conv.start_time);
+                        const endTime = conv.end_time ? new Date(conv.end_time) : new Date();
+                        const durationMs = endTime - startTime;
+                        const durationMinutes = Math.max(1, Math.floor(durationMs / 60000)); // Min 1 minute
+                        totalTimeMinutes += durationMinutes;
+
+                        // Stats par personnage
+                        const character = getCharacterFromCategory(conv.category);
+                        if (!characterStats[character]) {
+                            characterStats[character] = {
+                                conversations: 0,
+                                messages: 0,
+                                totalTime: 0,
+                                lastActivity: null
+                            };
+                        }
+                        characterStats[character].conversations++;
+                        characterStats[character].totalTime += durationMinutes;
+
+                        const activityDate = new Date(conv.start_time);
+                        if (!characterStats[character].lastActivity || activityDate > characterStats[character].lastActivity) {
+                            characterStats[character].lastActivity = activityDate;
+                        }
+                    } catch (convError) {
+                        console.warn(`⚠️ Erreur conversation ${conv.id}:`, convError);
+                    }
+                }
+
+                // Calculer les tendances (cette semaine vs semaine dernière)
+                const now = new Date();
+                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+                
+                const thisWeekConvs = conversations.filter(c => new Date(c.start_time) >= oneWeekAgo);
+                const lastWeekConvs = conversations.filter(c => {
+                    const date = new Date(c.start_time);
+                    return date >= twoWeeksAgo && date < oneWeekAgo;
+                });
+
+                // Calculer le niveau et progression
+                const { level, progressPercentage } = calculateUserLevel(characterStats, progressData);
+
+                // Afficher les statistiques
+                displayGlobalStats({
+                    totalConversations,
+                    totalMessages,
+                    totalTimeMinutes,
+                    thisWeekConvs: thisWeekConvs.length,
+                    lastWeekConvs: lastWeekConvs.length,
+                    level,
+                    progressPercentage,
+                    characterStats
+                });
+
+                // Créer les graphiques
+                await createCharts(conversations);
+
+            } catch (err) {
+                console.error('❌ Erreur calcul stats:', err);
+                displayStatsError(err.message);
+            }
+        }
+
+        function displayGlobalStats(stats) {
+            // Masquer le loading
+            document.getElementById('globalStatsLoading').classList.add('hidden');
+            document.getElementById('globalStats').classList.remove('hidden');
+
+            // Remplir les stats principales
+            document.getElementById('totalConversations').textContent = stats.totalConversations;
+            document.getElementById('totalMessages').textContent = stats.totalMessages;
+
+            // Formatage du temps
+            const hours = Math.floor(stats.totalTimeMinutes / 60);
+            const minutes = stats.totalTimeMinutes % 60;
+            const timeText = hours > 0 ? `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}` : `${minutes}m`;
+            document.getElementById('totalTime').textContent = timeText;
+            document.getElementById('currentLevel').textContent = stats.level;
+
+            // Tendances
+            const convTrend = stats.thisWeekConvs - stats.lastWeekConvs;
+            const convTrendText = convTrend > 0 ? `+${convTrend} cette semaine` :
+                                 convTrend < 0 ? `${convTrend} cette semaine` : 'Stable cette semaine';
+            document.getElementById('conversationsThisWeek').textContent = convTrendText;
+
+            const avgSessionTime = stats.totalConversations > 0 ?
+                Math.round(stats.totalTimeMinutes / stats.totalConversations) : 0;
+            document.getElementById('avgSessionTime').textContent = `${avgSessionTime} min/session en moyenne`;
+            document.getElementById('progressPercentage').textContent = `${stats.progressPercentage}% complété`;
+
+            // Afficher la progression par personnage
+            displayCharactersProgress(stats.characterStats);
+        }
+
+        function displayCharactersProgress(characterStats) {
+            const container = document.getElementById('charactersProgress');
+            container.innerHTML = '';
+
+            const characters = ['emma', 'tom', 'lucy', 'ben', 'alice', 'mike', 'sarah'];
+
+            characters.forEach(charKey => {
+                const charInfo = getCharacterInfo(charKey);
+                const stats = characterStats[charKey] || { conversations: 0, messages: 0, totalTime: 0 };
+                const progressPercentage = Math.min(100, (stats.conversations / 3) * 100); // 3 conversations = 100%
+
+                const charCard = document.createElement('div');
+                charCard.className = 'bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all cursor-pointer';
+                charCard.onclick = () => filterByCharacter(charKey);
+
+                charCard.innerHTML = `
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="character-avatar ${charInfo.class}">
+                            ${charInfo.emoji}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">${charInfo.name}</div>
+                            <div class="text-xs text-gray-500">${stats.conversations} conversation${stats.conversations !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-600">Progression</span>
+                            <span class="text-gray-900 font-medium">${Math.round(progressPercentage)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-all duration-500"
+                                 style="width: ${progressPercentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>${stats.totalTime}min</span>
+                        <span>${stats.conversations > 0 ? 'Actif' : 'Non essayé'}</span>
+                    </div>
+                `;
+
+                container.appendChild(charCard);
+            });
+        }
+
+        async function createCharts(conversations) {
+            try {
+                // Graphique d'activité (7 derniers jours)
+                createActivityChart(conversations);
+                
+                // Graphique d'analyse des erreurs
+                await createErrorsChart(conversations);
+            } catch (err) {
+                console.error('❌ Erreur création graphiques:', err);
+            }
+        }
+
+        function createActivityChart(conversations) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+
+            // Préparer les données des 7 derniers jours
+            const labels = [];
+            const data = [];
+            const now = new Date();
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                const dayLabel = date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+                labels.push(dayLabel);
+
+                const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+                const dayConversations = conversations.filter(c => {
+                    const convDate = new Date(c.start_time);
+                    return convDate >= dayStart && convDate < dayEnd;
+                });
+
+                data.push(dayConversations.length);
+            }
+
+            if (activityChart) {
+                activityChart.destroy();
+            }
+
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Conversations',
+                        data: data,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgb(102, 126, 234)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function createErrorsChart(conversations) {
+            const ctx = document.getElementById('errorsChart').getContext('2d');
+
+            let totalTranslations = 0;
+            let totalFrenchResponses = 0;
+            let totalUnclearResponses = 0;
+            let totalCorrectPhrases = 0;
+
+            // Analyser les erreurs dans toutes les conversations
+            for (const conv of conversations) {
+                try {
+                    const analysisResponse = await authenticatedFetch(`/analyze_session/${conv.id}`);
+                    if (analysisResponse && analysisResponse.ok) {
+                        const analysis = await analysisResponse.json();
+                        totalTranslations += analysis.translations_count || 0;
+                        totalFrenchResponses += analysis.french_responses_count || 0;
+                        totalUnclearResponses += analysis.unclear_responses_count || 0;
+                        totalCorrectPhrases += analysis.correct_phrases_count || 0;
+                    }
+                } catch (err) {
+                    // Ignorer les erreurs pour les conversations individuelles
+                }
+            }
+
+            const total = totalTranslations + totalFrenchResponses + totalUnclearResponses + totalCorrectPhrases;
+
+            if (total === 0) {
+                // Afficher un message si pas de données
+                ctx.canvas.parentNode.innerHTML = `
+                    <div class="flex items-center justify-center h-64 text-gray-500">
+                        <div class="text-center">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2V7a2 2 0 012-2h2a2 2 0 012 2v2h2a2 2 0 012 2v6a2 2 0 01-2 2H9z"></path>
+                            </svg>
+                            <p>Pas encore de données d'analyse</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (errorsChart) {
+                errorsChart.destroy();
+            }
+
+            errorsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Phrases correctes', 'Demandes de traduction', 'Réponses en français', 'Réponses floues'],
+                    datasets: [{
+                        data: [totalCorrectPhrases, totalTranslations, totalFrenchResponses, totalUnclearResponses],
+                        backgroundColor: [
+                            '#10B981', // Vert pour correct
+                            '#F59E0B', // Orange pour traductions
+                            '#EF4444', // Rouge pour français
+                            '#6B7280'  // Gris pour flou
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== FONCTIONS UTILITAIRES =====
+        function getCharacterFromCategory(category) {
+            const mapping = {
+                "conv_greetings_common_conversations": "alice",
+                "conv_taxi_booking": "mike",
+                "conv_airport_ticket": "sarah",
+                "conv_beginner_teacher": "emma",
+                "conv_simple_restaurant": "tom",
+                "conv_simple_shopping": "lucy",
+                "conv_simple_directions": "ben"
+            };
+            return mapping[category] || 'unknown';
+        }
+
+        function getCharacterInfo(charKey) {
+            const mapping = {
+                "emma": { name: "Emma", emoji: "👩‍🏫", class: "character-emma" },
+                "tom": { name: "Tom", emoji: "🍕", class: "character-tom" },
+                "lucy": { name: "Lucy", emoji: "🛍️", class: "character-lucy" },
+                "ben": { name: "Ben", emoji: "🗺️", class: "character-ben" },
+                "alice": { name: "Alice", emoji: "🌟", class: "character-alice" },
+                "mike": { name: "Mike", emoji: "🚕", class: "character-mike" },
+                "sarah": { name: "Sarah", emoji: "✈️", class: "character-sarah" }
+            };
+            return mapping[charKey] || { name: "Inconnu", emoji: "❓", class: "character-unknown" };
+        }
+
+        function calculateUserLevel(characterStats, progressData) {
+            const beginnerChars = ['emma', 'tom', 'lucy', 'ben'];
+            const intermediateChars = ['alice'];
+            const advancedChars = ['mike', 'sarah'];
+
+            const beginnerProgress = beginnerChars.filter(char =>
+                characterStats[char] && characterStats[char].conversations > 0
+            ).length;
+
+            const intermediateProgress = intermediateChars.filter(char =>
+                characterStats[char] && characterStats[char].conversations > 0
+            ).length;
+
+            const advancedProgress = advancedChars.filter(char =>
+                characterStats[char] && characterStats[char].conversations > 0
+            ).length;
+
+            let level = "Débutant";
+            let progressPercentage = 0;
+
+            if (beginnerProgress === 0) {
+                level = "Nouveau";
+                progressPercentage = 0;
+            } else if (beginnerProgress < 4) {
+                level = "Débutant";
+                progressPercentage = (beginnerProgress / 4) * 40;
+            } else if (intermediateProgress === 0) {
+                level = "Débutant Avancé";
+                progressPercentage = 40;
+            } else if (advancedProgress === 0) {
+                level = "Intermédiaire";
+                progressPercentage = 40 + (intermediateProgress / 1) * 30;
+            } else {
+                level = "Avancé";
+                progressPercentage = 70 + (advancedProgress / 2) * 30;
+            }
+
+            return { level, progressPercentage: Math.round(progressPercentage) };
+        }
+
+        function filterByCharacter(character) {
+            const filter = document.getElementById('characterFilter');
+            filter.value = character;
+            loadSessionReports();
+        }
+
+        function displayStatsError(message) {
+            document.getElementById('globalStatsLoading').classList.add('hidden');
+            document.getElementById('globalStats').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                    <p class="text-gray-600">${message}</p>
+                </div>
+            `;
+            document.getElementById('globalStats').classList.remove('hidden');
+        }
+
+        // ===== CHARGEMENT DES SESSIONS =====
+        async function loadSessionReports() {
+            try {
+                const response = await authenticatedFetch('/user/conversations');
+                
+                if (!response || !response.ok) {
+                    throw new Error(`Erreur HTTP ${response?.status || 'inconnue'}`);
+                }
+
+                let conversations = await response.json();
+                console.log('📋 Sessions chargées:', conversations);
+
+                // Filtrer par personnage si sélectionné
+                const characterFilter = document.getElementById('characterFilter').value;
+                if (characterFilter) {
+                    const categoryFilter = getCategoryFromCharacter(characterFilter);
+                    conversations = conversations.filter(conv => conv.category === categoryFilter);
+                }
+
+                // Masquer le loading
+                document.getElementById('sessionsLoading').classList.add('hidden');
+
+                const sortOrder = document.getElementById('sortOrder').value;
+                if (sortOrder === 'desc') {
+                    conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                } else {
+                    conversations.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+                }
+
+                const sessionReportsContainer = document.getElementById('sessionReports');
+                const noSessionsContainer = document.getElementById('noSessions');
+
+                if (conversations.length === 0) {
+                    sessionReportsContainer.classList.add('hidden');
+                    noSessionsContainer.classList.remove('hidden');
+                    return;
+                }
+
+                sessionReportsContainer.classList.remove('hidden');
+                noSessionsContainer.classList.add('hidden');
+                sessionReportsContainer.innerHTML = '';
+
+                // Grouper par date pour une meilleure organisation
+                const groupedConversations = groupConversationsByDate(conversations);
+
+                Object.keys(groupedConversations).forEach(dateKey => {
+                    // Ajouter un en-tête de date
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = 'flex items-center space-x-3 mb-4 mt-6 first:mt-0';
+                    dateHeader.innerHTML = `
+                        <div class="h-px bg-gray-300 flex-1"></div>
+                        <span class="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                            ${formatDateHeader(dateKey)}
+                        </span>
+                        <div class="h-px bg-gray-300 flex-1"></div>
+                    `;
+                    sessionReportsContainer.appendChild(dateHeader);
+
+                    // Ajouter les conversations de cette date
+                    groupedConversations[dateKey].forEach((conversation, index) => {
+                        const sessionDiv = createSessionCard(conversation, index);
+                        sessionReportsContainer.appendChild(sessionDiv);
+                    });
+                });
+
+            } catch (err) {
+                console.error('❌ Erreur lors du chargement des sessions:', err);
+                document.getElementById('sessionsLoading').classList.add('hidden');
+                document.getElementById('sessionReports').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                        <p class="text-gray-600">${err.message}</p>
+                    </div>
+                                    `;
+                document.getElementById('sessionReports').classList.remove('hidden');
+            }
+        }
+
+        function groupConversationsByDate(conversations) {
+            const grouped = {};
+            conversations.forEach(conv => {
+                const date = new Date(conv.start_time);
+                const dateKey = date.toDateString();
+                if (!grouped[dateKey]) {
+                    grouped[dateKey] = [];
+                }
+                grouped[dateKey].push(conv);
+            });
+            return grouped;
+        }
+
+        function formatDateHeader(dateKey) {
+            const date = new Date(dateKey);
+            const today = new Date();
+            const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
+            if (date.toDateString() === today.toDateString()) {
+                return "Aujourd'hui";
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return "Hier";
+            } else {
+                return date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        function createSessionCard(conversation, index) {
+            const sessionDiv = document.createElement('div');
+            sessionDiv.className = 'session-item p-6 rounded-xl border border-gray-200 cursor-pointer hover:border-primary-300 bg-white';
+            sessionDiv.setAttribute('data-conversation-id', conversation.id);
+
+            const date = new Date(conversation.start_time);
+            const timeOnly = date.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Obtenir les infos du personnage
+            const characterInfo = characterMapping[conversation.category] || { name: "Inconnu", emoji: "❓", class: "bg-gray-500" };
+
+            // Calculer la durée approximative
+            const endTime = conversation.end_time ? new Date(conversation.end_time) : new Date();
+            const durationMs = endTime - date;
+            const durationMinutes = Math.max(1, Math.floor(durationMs / 60000));
+
+            sessionDiv.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="character-avatar ${characterInfo.class}">
+                            ${characterInfo.emoji}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 flex items-center space-x-2">
+                                <span>Session avec ${characterInfo.name}</span>
+                                <span class="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-full">${timeOnly}</span>
+                            </h3>
+                            <p class="text-sm text-gray-600">${categoryMapping[conversation.category] || conversation.category}</p>
+                            <p class="text-xs text-gray-500 mt-1">Durée: ~${durationMinutes} minute${durationMinutes !== 1 ? 's' : ''}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="pulse-dot w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-500">Terminée</span>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Aperçu rapide des performances -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4" id="quickStats_${conversation.id}">
+                    <div class="text-xs text-gray-500 mb-2">Aperçu rapide :</div>
+                    <div class="flex items-center space-x-4 text-sm">
+                        <div class="flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-600">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="viewSessionAnalysis('${conversation.id}')"
+                            class="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Voir l'analyse
+                    </button>
+                    <button onclick="continueWithCharacter('${getCharacterFromCategory(conversation.category)}')"
+                            class="inline-flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Continuer
+                    </button>
+                </div>
+            `;
+
+            // Event listener pour le clic sur la session (non sur les boutons)
+            sessionDiv.addEventListener('click', async (e) => {
+                if (!e.target.closest('button')) {
+                    await viewSessionAnalysis(conversation.id);
+                }
+            });
+
+            // Charger l'aperçu rapide
+            loadQuickStats(conversation.id);
+
+            return sessionDiv;
+        }
+
+        async function loadQuickStats(conversationId) {
+            try {
+                const response = await authenticatedFetch(`/analyze_session/${conversationId}`);
+                if (response && response.ok) {
+                    const data = await response.json();
+                    const container = document.getElementById(`quickStats_${conversationId}`);
+                    if (container) {
+                        const successRate = data.total_messages > 0 ?
+                            Math.round(((data.total_messages - data.french_responses_count - data.unclear_responses_count) / data.total_messages) * 100) : 0;
+
+                        container.innerHTML = `
+                            <div class="text-xs text-gray-500 mb-2">Aperçu rapide :</div>
+                            <div class="flex items-center space-x-4 text-sm">
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-gray-600">${successRate}% réussite</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span class="text-gray-600">${data.total_messages} messages</span>
+                                </div>
+                                ${data.translations_count > 0 ? `
+                                    <div class="flex items-center space-x-1">
+                                        <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                        <span class="text-gray-600">${data.translations_count} traductions</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                }
+            } catch (err) {
+                // Ignorer les erreurs pour l'aperçu rapide
+                console.warn('⚠️ Erreur aperçu rapide:', err);
+            }
+        }
+
+        function getCategoryFromCharacter(character) {
+            const mapping = {
+                'emma': 'conv_beginner_teacher',
+                'tom': 'conv_simple_restaurant',
+                'lucy': 'conv_simple_shopping',
+                'ben': 'conv_simple_directions',
+                'alice': 'conv_greetings_common_conversations',
+                'mike': 'conv_taxi_booking',
+                'sarah': 'conv_airport_ticket'
+            };
+            return mapping[character] || '';
+        }
+
+        function continueWithCharacter(character) {
+            const characterEndpoints = {
+                'emma': 'conv_beginner_teacher',
+                'tom': 'conv_simple_restaurant',
+                'lucy': 'conv_simple_shopping',
+                'ben': 'conv_simple_directions',
+                'alice': 'conv_greetings_common_conversations',
+                'mike': 'conv_taxi_booking',
+                'sarah': 'conv_airport_ticket'
+            };
+
+            const choice = characterEndpoints[character];
+            if (choice) {
+                window.location.href = `course.html?choice=${choice}`;
+            }
+        }
+
+        // ===== ANALYSE DE SESSION =====
+        async function viewSessionAnalysis(conversationId) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('analysisContainer').classList.remove('hidden');
+            await displaySessionAnalysis(conversationId);
+
+            // Mettre en surbrillance la session sélectionnée
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.classList.remove('bg-primary-50', 'border-primary-300');
+            });
+
+            const sessionItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
+            if (sessionItem) {
+                sessionItem.classList.add('bg-primary-50', 'border-primary-300');
+            }
+        }
+
         async function displaySessionAnalysis(conversationId) {
             try {
-                const accessToken = localStorage.getItem("accessToken");
-                if (!accessToken) {
-                    throw new Error("Token d'accès non trouvé");
+                const response = await authenticatedFetch(`/analyze_session/${conversationId}`);
+                
+                if (!response || !response.ok) {
+                    throw new Error(`Erreur HTTP ${response?.status || 'inconnue'}`);
                 }
-                
-                const response = await fetch(`/analyze_session/${conversationId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP ${response.status}`);
-                }
-                
+
                 const data = await response.json();
                 console.log('📊 Données d\'analyse reçues:', data);
-                
+
                 const analysisContainer = document.getElementById('analysisContainer');
                 analysisContainer.innerHTML = '';
-                
+
+                // Obtenir les infos du personnage
+                const characterInfo = characterMapping[data.category] || { name: "Inconnu", emoji: "❓" };
+
                 // En-tête de l'analyse
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-t-2xl p-6';
                 headerDiv.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-2xl font-bold mb-2">📋 Rapport de Session Détaillé</h2>
-                            <p class="text-primary-100">${categoryMapping[data.category] || data.category}</p>
+                        <div class="flex items-center space-x-4">
+                            <div class="character-avatar ${characterInfo.class || 'bg-gray-500'}">
+                                ${characterInfo.emoji}
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold mb-2">📋 Rapport de Session avec ${characterInfo.name}</h2>
+                                <p class="text-primary-100">${categoryMapping[data.category] || data.category}</p>
+                            </div>
                         </div>
                         <div class="text-right">
                             <div class="text-3xl font-bold">${data.duration}</div>
@@ -447,20 +1351,27 @@
                     </div>
                 `;
                 analysisContainer.appendChild(headerDiv);
-                
+
                 // Container principal
                 const mainContainer = document.createElement('div');
                 mainContainer.className = 'bg-white rounded-b-2xl shadow-lg border border-gray-100';
-                
+
                 // Statistiques principales
                 const statsGrid = document.createElement('div');
                 statsGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6';
+
+                // Calculer le taux de réussite
+                const totalInteractions = data.total_messages;
+                const errorsCount = data.french_responses_count + data.unclear_responses_count;
+                const successRate = totalInteractions > 0 ? Math.round(((totalInteractions - errorsCount) / totalInteractions) * 100) : 0;
+
                 statsGrid.innerHTML = `
                     <div class="stat-card border-blue-500 p-4 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-2xl font-bold text-gray-900">${data.total_messages}</div>
                                 <div class="text-sm text-gray-600">Messages totaux</div>
+                                <div class="text-xs text-blue-600 mt-1">Échanges durant la session</div>
                             </div>
                             <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,12 +1380,12 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="stat-card border-green-500 p-4 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-2xl font-bold text-gray-900">${data.correct_phrases_count}</div>
-                                <div class="text-sm text-gray-600">Phrases correctes</div>
+                                <div class="text-2xl font-bold text-gray-900">${successRate}%</div>
+                                <div class="text-sm text-gray-600">Taux de réussite</div>
+                                <div class="text-xs text-green-600 mt-1">${data.correct_phrases_count} phrases correctes</div>
                             </div>
                             <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,12 +1394,12 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="stat-card border-orange-500 p-4 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-2xl font-bold text-gray-900">${data.translations_count}</div>
-                                <div class="text-sm text-gray-600">Traductions</div>
+                                <div class="text-sm text-gray-600">Demandes de traduction</div>
+                                <div class="text-xs text-orange-600 mt-1">Aide linguistique demandée</div>
                             </div>
                             <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,12 +1408,12 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="stat-card border-purple-500 p-4 rounded-xl">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-2xl font-bold text-gray-900">${data.avg_user_response_time}</div>
                                 <div class="text-sm text-gray-600">Temps de réponse</div>
+                                <div class="text-xs text-purple-600 mt-1">Temps moyen de réflexion</div>
                             </div>
                             <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -513,23 +1424,65 @@
                     </div>
                 `;
                 mainContainer.appendChild(statsGrid);
-                
+
+                // Graphique circulaire pour cette session
+                if (data.total_messages > 0) {
+                    const chartSection = document.createElement('div');
+                    chartSection.className = 'px-6 pb-6';
+                    chartSection.innerHTML = `
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📊 Répartition des réponses</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="relative h-64">
+                                    <canvas id="sessionChart_${conversationId}"></canvas>
+                                </div>
+                                <div class="flex flex-col justify-center space-y-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-4 h-4 bg-green-500 rounded"></div>
+                                        <span class="text-sm text-gray-700">Phrases correctes: ${data.correct_phrases_count}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-4 h-4 bg-orange-500 rounded"></div>
+                                        <span class="text-sm text-gray-700">Traductions: ${data.translations_count}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-4 h-4 bg-red-500 rounded"></div>
+                                        <span class="text-sm text-gray-700">Français: ${data.french_responses_count}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-4 h-4 bg-gray-500 rounded"></div>
+                                        <span class="text-sm text-gray-700">Réponses floues: ${data.unclear_responses_count}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    mainContainer.appendChild(chartSection);
+                }
+
                 // Analyse de performance
                 const performanceSection = document.createElement('div');
                 performanceSection.className = 'px-6 pb-6';
+
+                // Générer des recommandations basées sur les performances
+                const recommendations = generateRecommendations(data, characterInfo);
+
                 performanceSection.innerHTML = `
                     <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
                         <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                             <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
-                            Analyse de Performance
+                            Analyse de Performance Détaillée
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-gray-700">Sentiment général :</span>
-                                    <span class="font-semibold text-gray-900">${data.sentiment_analysis}</span>
+                                    <span class="text-gray-700">Taux de réussite :</span>
+                                    <span class="font-semibold text-gray-900 flex items-center">
+                                        ${successRate}%
+                                        ${successRate >= 80 ? '🎉' : successRate >= 60 ? '👍' : '💪'}
+                                    </span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-gray-700">Réponses en français :</span>
@@ -539,29 +1492,46 @@
                                     <span class="text-gray-700">Incompréhensions :</span>
                                     <span class="font-semibold text-gray-900">${data.unclear_responses_count}</span>
                                 </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Sentiment général :</span>
+                                    <span class="font-semibold text-gray-900">Positif</span>
+                                </div>
                             </div>
                             <div class="space-y-3">
-                                ${data.translations && data.translations.length > 0 ? `
-                                    <div>
-                                        <span class="text-gray-700 font-medium">Dernières traductions :</span>
-                                        <div class="mt-2 space-y-2">
-                                            ${data.translations.slice(0, 3).map(([user_input, response]) => `
-                                                <div class="bg-white p-3 rounded-lg border">
-                                                    <div class="text-sm text-gray-600">${user_input}</div>
-                                                    <div class="text-sm font-medium text-gray-900">→ ${response}</div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
+                                <h4 class="font-semibold text-gray-900">🎯 Recommandations</h4>
+                                ${recommendations.map(rec => `
+                                    <div class="flex items-start space-x-2">
+                                        <span class="text-lg">${rec.icon}</span>
+                                        <span class="text-sm text-gray-700">${rec.text}</span>
                                     </div>
-                                ` : ''}
+                                `).join('')}
                             </div>
                         </div>
+                        ${data.translations && data.translations.length > 0 ? `
+                            <div class="border-t border-gray-200 pt-4">
+                                <h4 class="font-semibold text-gray-900 mb-3">🔤 Dernières traductions demandées</h4>
+                                <div class="space-y-3">
+                                    ${data.translations.slice(0, 3).map(([user_input, response]) => `
+                                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                            <div class="text-sm text-gray-600 mb-1">Vous avez dit :</div>
+                                            <div class="font-medium text-gray-900 mb-2">"${user_input}"</div>
+                                            <div class="text-sm text-gray-600 mb-1">Traduction :</div>
+                                            <div class="text-sm text-blue-700 bg-blue-50 px-3 py-1 rounded">"${response}"</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
                 mainContainer.appendChild(performanceSection);
-                
                 analysisContainer.appendChild(mainContainer);
-                
+
+                // Créer le graphique pour cette session
+                setTimeout(() => {
+                    createSessionChart(conversationId, data);
+                }, 100);
+
             } catch (err) {
                 console.error('❌ Erreur lors du chargement de l\'analyse:', err);
                 const analysisContainer = document.getElementById('analysisContainer');
@@ -576,204 +1546,186 @@
                 `;
             }
         }
-        
-        // Chargement des rapports de session
-        async function loadSessionReports() {
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) {
-                console.error("Token d'accès non trouvé");
-                return;
-            }
-            
-            try {
-                const response = await fetch('/user/conversations', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
+
+        function generateRecommendations(data, characterInfo) {
+            const recommendations = [];
+            const successRate = data.total_messages > 0 ?
+                Math.round(((data.total_messages - data.french_responses_count - data.unclear_responses_count) / data.total_messages) * 100) : 0;
+
+            if (successRate >= 90) {
+                recommendations.push({
+                    icon: '🎉',
+                    text: 'Excellent travail ! Vous maîtrisez très bien la conversation avec ' + characterInfo.name
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP ${response.status}`);
-                }
-                
-                const conversations = await response.json();
-                console.log('📋 Sessions chargées:', conversations);
-                
-                // Masquer le loading
-                document.getElementById('sessionsLoading').classList.add('hidden');
-                
-                const sortOrder = document.getElementById('sortOrder').value;
-                if (sortOrder === 'desc') {
-                    conversations.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
-                } else {
-                    conversations.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-                }
-                
-                const sessionReportsContainer = document.getElementById('sessionReports');
-                const noSessionsContainer = document.getElementById('noSessions');
-                
-                if (conversations.length === 0) {
-                    sessionReportsContainer.classList.add('hidden');
-                    noSessionsContainer.classList.remove('hidden');
-                    return;
-                }
-                
-                sessionReportsContainer.classList.remove('hidden');
-                noSessionsContainer.classList.add('hidden');
-                sessionReportsContainer.innerHTML = '';
-                
-                conversations.forEach((conversation, index) => {
-                    const sessionDiv = document.createElement('div');
-                    sessionDiv.className = 'session-item p-6 rounded-xl border border-gray-200 cursor-pointer hover:border-primary-300';
-                    sessionDiv.setAttribute('data-conversation-id', conversation.id);
-                    
-                    const date = new Date(conversation.start_time);
-                    const formattedDate = date.toLocaleDateString('fr-FR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                const nextCharacter = getNextRecommendedCharacter(data.category);
+                if (nextCharacter) {
+                    recommendations.push({
+                        icon: '🚀',
+                        text: `Prêt pour le défi suivant ? Essayez ${nextCharacter}`
                     });
-                    
-                    sessionDiv.innerHTML = `
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center text-white font-bold">
-                                    ${index + 1}
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">Session du ${formattedDate}</h3>
-                                    <p class="text-sm text-gray-600">Cliquez pour voir le rapport détaillé</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="pulse-dot w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-sm text-gray-500">Terminée</span>
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <button onclick="viewSessionAnalysis('${conversation.id}')" 
-                                    class="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors text-sm font-medium">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
-                                Voir l'analyse
-                            </button>
-                            <button onclick="viewConversationDetail('${conversation.id}')" 
-                                    class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                                Voir la conversation
-                            </button>
-                        </div>
-                    `;
-                    
-                    // Event listener pour le clic sur la session (non sur les boutons)
-                    sessionDiv.addEventListener('click', async (e) => {
-                        // Vérifier si le clic n'est pas sur un bouton
-                        if (!e.target.closest('button')) {
-                            await viewSessionAnalysis(conversation.id);
+                }
+            } else if (successRate >= 70) {
+                recommendations.push({
+                    icon: '👍',
+                    text: 'Bon travail ! Continuez à pratiquer avec ' + characterInfo.name + ' pour vous améliorer'
+                });
+            } else if (successRate >= 50) {
+                recommendations.push({
+                    icon: '💪',
+                    text: 'Vous progressez ! Concentrez-vous sur l\'écoute et la répétition'
+                });
+            } else {
+                recommendations.push({
+                    icon: '🌱',
+                    text: 'Ne vous découragez pas ! Chaque conversation vous aide à progresser'
+                });
+            }
+
+            if (data.french_responses_count > 2) {
+                recommendations.push({
+                    icon: '🇬🇧',
+                    text: 'Essayez de répondre en anglais même si c\'est simple (Yes, No, I don\'t know)'
+                });
+            }
+
+            if (data.translations_count > 3) {
+                recommendations.push({
+                    icon: '📚',
+                    text: 'Révisez le vocabulaire de base avant votre prochaine session'
+                });
+            }
+
+            if (data.unclear_responses_count > 2) {
+                recommendations.push({
+                    icon: '🗣️',
+                    text: 'Parlez lentement et clairement, utilisez des phrases courtes'
+                });
+            }
+
+            return recommendations;
+        }
+
+        function getNextRecommendedCharacter(currentCategory) {
+            const progression = {
+                'conv_beginner_teacher': '🍕 Tom (Restaurant)',
+                'conv_simple_restaurant': '🛍️ Lucy (Shopping)',
+                'conv_simple_shopping': '🗺️ Ben (Directions)',
+                'conv_simple_directions': '🌟 Alice (Conversation générale)',
+                'conv_greetings_common_conversations': '🚕 Mike (Taxi)',
+                'conv_taxi_booking': '✈️ Sarah (Aéroport)'
+            };
+            return progression[currentCategory] || null;
+        }
+
+        function createSessionChart(conversationId, data) {
+            const canvasId = `sessionChart_${conversationId}`;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Phrases correctes', 'Traductions', 'Français', 'Réponses floues'],
+                    datasets: [{
+                        data: [
+                            data.correct_phrases_count || 0,
+                            data.translations_count || 0,
+                            data.french_responses_count || 0,
+                            data.unclear_responses_count || 0
+                        ],
+                        backgroundColor: [
+                            '#10B981', // Vert
+                            '#F59E0B', // Orange
+                            '#EF4444', // Rouge
+                            '#6B7280'  // Gris
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
-                    });
-                    
-                    sessionReportsContainer.appendChild(sessionDiv);
-                });
-                
-            } catch (err) {
-                console.error('❌ Erreur lors du chargement des sessions:', err);
-                document.getElementById('sessionsLoading').classList.add('hidden');
-                document.getElementById('sessionReports').innerHTML = `
-                    <div class="text-center py-8">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
-                        <p class="text-gray-600">${err.message}</p>
-                    </div>
-                `;
-                document.getElementById('sessionReports').classList.remove('hidden');
-            }
-        }
-        
-        // Fonction pour voir l'analyse d'une session
-        async function viewSessionAnalysis(conversationId) {
-            // Scroll vers le haut
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Afficher l'analyse
-            document.getElementById('analysisContainer').classList.remove('hidden');
-            await displaySessionAnalysis(conversationId);
-            
-            // Mettre en évidence la session sélectionnée
-            document.querySelectorAll('.session-item').forEach(item => {
-                item.classList.remove('bg-primary-50', 'border-primary-300');
+                    }
+                }
             });
-            
-            const sessionItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
-            if (sessionItem) {
-                sessionItem.classList.add('bg-primary-50', 'border-primary-300');
-            }
         }
-        
-        // Fonction pour voir les détails de la conversation
-        function viewConversationDetail(conversationId) {
-            window.open(`conversation.html?id=${conversationId}`, '_blank');
-        }
-        
-        // Chargement du profil utilisateur
+
+        // ===== CHARGEMENT DU PROFIL UTILISATEUR =====
         async function loadUserProfile() {
             try {
-                const accessToken = localStorage.getItem("accessToken");
-                if (!accessToken) return;
+                const response = await authenticatedFetch('/users/me');
                 
-                const response = await fetch('http://127.0.0.1:8000/users/me', {
-                    method: 'GET',
-                    headers: { 
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
+                if (response && response.ok) {
                     const user = await response.json();
                     console.log('👤 Utilisateur chargé:', user);
-                    
+
+                    // Mettre à jour les éléments du profil
                     const profileName = document.getElementById('profile-name');
                     const profileEmail = document.getElementById('profile-email');
                     const profileNameMenu = document.getElementById('profile-name-menu');
                     const profileEmailMenu = document.getElementById('profile-email-menu');
-                    
+                    const profileAvatar = document.getElementById('profile-avatar');
+                    const profileAvatarMenu = document.getElementById('profile-avatar-menu');
+
                     if (profileName) profileName.textContent = user.nom || 'Utilisateur';
                     if (profileEmail) profileEmail.textContent = user.email || '';
                     if (profileNameMenu) profileNameMenu.textContent = user.nom || 'Utilisateur';
                     if (profileEmailMenu) profileEmailMenu.textContent = user.email || '';
                     
-                } else if (response.status === 401) {
-                    console.warn('Token expiré, redirection vers login');
-                    logout();
+                    // Mettre à jour l'avatar si disponible
+                    if (user.avatar_url) {
+                        if (profileAvatar) profileAvatar.src = user.avatar_url;
+                        if (profileAvatarMenu) profileAvatarMenu.src = user.avatar_url;
+                    }
                 }
             } catch (error) {
-                console.error('Erreur profil:', error);
+                console.error('❌ Erreur profil:', error);
             }
         }
-        
-        // Fonction logout
+
+        // ===== FONCTION LOGOUT =====
         function logout() {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("userEmail");
-            localStorage.removeItem("nom");
-            window.location.href = "form-login.html";
+            localStorage.clear();
+            window.location.href = "/form-login.html";
         }
-        
-        console.log('📊 Page d\'analyse initialisée avec succès !');
+
+        // ===== INITIALISATION =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initialisation de la page d\'analyse...');
+            
+            // Vérifier l'authentification
+            const token = getAuthToken();
+            if (!token) {
+                console.error('❌ Non authentifié, redirection...');
+                window.location.href = '/form-login.html';
+                return;
+            }
+
+            // Initialiser l'interface
+            initializeUI();
+
+            // Gérer l'analyse spécifique si ID de conversation dans l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationId = urlParams.get('conversation_id');
+            if (conversationId) {
+                document.getElementById('analysisContainer').classList.remove('hidden');
+                await displaySessionAnalysis(conversationId);
+            }
+
+            // Charger les données principales
+            await loadGlobalStats();
+            await loadSessionReports();
+            await loadUserProfile();
+
+            console.log('✅ Page d\'analyse initialisée avec succès !');
+        });
     </script>
 </body>
 </html>

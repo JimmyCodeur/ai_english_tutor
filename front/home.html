@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TalkAI - Cours</title>
     <meta name="description" content="TalkAI - Vos cours d'apprentissage des langues">
-    <link href="../static/assets/images/favicon.png" rel="icon" type="image/png">
+    <link href="/static/assets/images/favicon.png" rel="icon" type="image/png">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Configuration Tailwind personnalisée -->
     <script>
         tailwind.config = {
@@ -39,10 +41,12 @@
             }
         }
     </script>
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -139,11 +143,11 @@
                     <!-- Profil utilisateur -->
                     <div class="relative">
                         <button id="profile-btn" class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                            <img src="../static/assets/images/avatars/placeholder.png"
+                            <img id="profile-avatar" src="/static/assets/images/avatars/placeholder.png"
                                  class="w-8 h-8 rounded-full ring-2 ring-primary-500" alt="Avatar">
                             <div class="hidden sm:block text-left">
-                                <div id="profile-name" class="text-sm font-semibold text-gray-900"></div>
-                                <div id="profile-email" class="text-xs text-gray-500"></div>
+                                <div id="profile-name" class="text-sm font-semibold text-gray-900">Chargement...</div>
+                                <div id="profile-email" class="text-xs text-gray-500">Chargement...</div>
                             </div>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -154,11 +158,11 @@
                         <div id="profile-menu" class="hidden absolute right-0 mt-2 w-64 glass-effect rounded-2xl shadow-xl border border-gray-200/20 py-2 z-50">
                             <div class="px-4 py-3 border-b border-gray-200/20">
                                 <div class="flex items-center space-x-3">
-                                    <img src="../static/assets/images/avatars/avatar-2.jpg"
+                                    <img id="profile-avatar-menu" src="/static/assets/images/avatars/avatar-2.jpg"
                                          class="w-12 h-12 rounded-full" alt="Avatar">
                                     <div>
-                                        <div id="profile-name-menu" class="font-semibold text-gray-900"></div>
-                                        <div id="profile-email-menu" class="text-sm text-gray-500"></div>
+                                        <div id="profile-name-menu" class="font-semibold text-gray-900">Chargement...</div>
+                                        <div id="profile-email-menu" class="text-sm text-gray-500">Chargement...</div>
                                     </div>
                                 </div>
                             </div>
@@ -169,24 +173,12 @@
                                     </svg>
                                     Mon Compte
                                 </a>
-                                <a href="users-profile.html#conversations-container" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    Historique
-                                </a>
                                 <a href="profile-setting.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                     <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     Configuration
-                                </a>
-                                <a href="voice-tester.html" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                                    </svg>
-                                    🎙️ Testeur de Voix
                                 </a>
                                 <hr class="my-2 border-gray-200/20">
                                 <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
@@ -229,7 +221,7 @@
             <!-- En-tête -->
             <div class="text-center mb-12">
                 <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                    Bienvenue <span id="welcome-name" class="text-primary-600"></span> ! 👋
+                    Bienvenue <span id="welcome-name" class="text-primary-600">Utilisateur</span> ! 👋
                 </h1>
                 <p class="text-xl text-gray-600 max-w-2xl mx-auto">
                     Choisissez un cours pour commencer votre apprentissage des langues avec l'IA
@@ -399,14 +391,13 @@
                         </div>
 
                         <!-- COURS EXISTANTS -->
-
                         <!-- Cours 5: Salutations avec Alice -->
                         <div class="conv-card conv-all conv-intermediate">
                             <a href="course.html?choice=conv_greetings_common_conversations" class="block">
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
                                         <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center animate-float">
-                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
+                                            <span class="text-2xl">👋</span>
                                         </div>
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Salutations & Conversations</h3>
@@ -435,7 +426,7 @@
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
                                         <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center animate-float">
-                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
+                                            <span class="text-2xl">🚕</span>
                                         </div>
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Réservation de Taxi</h3>
@@ -464,7 +455,7 @@
                                 <div class="card-hover bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                                     <div class="flex items-center space-x-4 mb-4">
                                         <div class="w-16 h-16 bg-gradient-to-r from-green-400 to-teal-500 rounded-2xl flex items-center justify-center animate-float">
-                                            <img src="../static/assets/images/ai/brain.gif" alt="" class="w-10 h-10 rounded-lg">
+                                            <span class="text-2xl">✈️</span>
                                         </div>
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-gray-900 mb-1">Achat de Billet d'Avion</h3>
@@ -533,117 +524,120 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../static/assets/js/logout.js"></script>
-    <script src="../static/assets/js/info_users.js" defer></script>
     <script>
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileSidebar = document.getElementById('mobile-sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-
-        function toggleMobileMenu() {
-            mobileSidebar.classList.toggle('mobile-menu-open');
-            mobileSidebar.classList.toggle('mobile-menu-closed');
-            mobileOverlay.classList.toggle('hidden');
+        // ===== FONCTIONS D'AUTHENTIFICATION =====
+        function getAuthToken() {
+            return localStorage.getItem('access_token');
         }
 
-        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        mobileOverlay.addEventListener('click', toggleMobileMenu);
-
-        // Profile menu toggle
-        const profileBtn = document.getElementById('profile-btn');
-        const profileMenu = document.getElementById('profile-menu');
-
-        profileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileMenu.classList.toggle('hidden');
-        });
-
-        document.addEventListener('click', () => {
-            profileMenu.classList.add('hidden');
-        });
-
-        profileMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        // Category filters
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const category = btn.getAttribute('data-category');
-                
-                // Update active button
-                document.querySelectorAll('.category-btn').forEach(b => {
-                    b.classList.remove('active');
-                    b.classList.add('border', 'border-gray-200');
-                });
-                btn.classList.add('active');
-                btn.classList.remove('border', 'border-gray-200');
-
-                // Filter cards
-                const cards = document.querySelectorAll('.conv-card');
-                cards.forEach(card => {
-                    if (category === 'conv-all' || card.classList.contains(category.replace('conv-', 'conv-'))) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        });
-
-        // Mise à jour du nom d'utilisateur
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cette fonction sera appelée par info_users.js
-            window.updateWelcomeName = function(name) {
-                document.getElementById('welcome-name').textContent = name || 'Utilisateur';
+        async function authenticatedFetch(url, options = {}) {
+            const token = getAuthToken();
+            
+            if (!token) {
+                window.location.href = '/form-login.html';
+                return;
+            }
+            
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             };
             
-            // Charger les statistiques de l'utilisateur
-            loadUserStats();
-            
-            // Animation d'apparition des nouvelles cartes
-            animateNewCards();
-        });
-
-        // Fonction pour charger les statistiques
-        async function loadUserStats() {
-            try {
-                const accessToken = localStorage.getItem("accessToken");
-                if (!accessToken) return;
-
-                // Charger les conversations de l'utilisateur
-                const response = await fetch('/user/conversations', {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-
-                if (response.ok) {
-                    const conversations = await response.json();
-                    console.log('Conversations loaded:', conversations.length);
-                    
-                    // Recommandations personnalisées basées sur l'historique
-                    showPersonalizedRecommendations(conversations);
+            const requestOptions = {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
                 }
+            };
+            
+            try {
+                const response = await fetch(url, requestOptions);
+                
+                if (response.status === 401) {
+                    localStorage.clear();
+                    window.location.href = '/form-login.html';
+                    return;
+                }
+                
+                return response;
             } catch (error) {
-                console.error('Erreur lors du chargement des statistiques:', error);
+                console.error('Erreur lors de la requête:', error);
+                throw error;
             }
         }
 
-        // Fonction pour afficher des recommandations personnalisées
+        // ===== CHARGEMENT DES INFORMATIONS UTILISATEUR =====
+        async function loadUserInfoForHome() {
+            try {
+                const response = await authenticatedFetch('/users/me');
+                
+                if (response && response.ok) {
+                    const user = await response.json();
+                    
+                    // Mettre à jour le nom d'accueil
+                    const welcomeName = document.getElementById('welcome-name');
+                    if (welcomeName) {
+                        welcomeName.textContent = user.nom || 'Utilisateur';
+                    }
+                    
+                    // Mettre à jour les éléments du profil
+                    const profileName = document.getElementById('profile-name');
+                    const profileEmail = document.getElementById('profile-email');
+                    const profileNameMenu = document.getElementById('profile-name-menu');
+                    const profileEmailMenu = document.getElementById('profile-email-menu');
+                    
+                    if (profileName) profileName.textContent = user.nom || 'Utilisateur';
+                    if (profileEmail) profileEmail.textContent = user.email;
+                    if (profileNameMenu) profileNameMenu.textContent = user.nom || 'Utilisateur';
+                    if (profileEmailMenu) profileEmailMenu.textContent = user.email;
+                    
+                    // Mettre à jour l'avatar si disponible
+                    if (user.avatar_url) {
+                        const profileAvatar = document.getElementById('profile-avatar');
+                        const profileAvatarMenu = document.getElementById('profile-avatar-menu');
+                        if (profileAvatar) profileAvatar.src = user.avatar_url;
+                        if (profileAvatarMenu) profileAvatarMenu.src = user.avatar_url;
+                    }
+                    
+                    console.log('✅ Informations utilisateur chargées:', user);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement infos utilisateur:', error);
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    window.location.href = '/form-login.html';
+                }
+            }
+        }
+
+        // ===== STATISTIQUES UTILISATEUR =====
+        async function loadUserStats() {
+            try {
+                const response = await authenticatedFetch('/user/conversations');
+                
+                if (response && response.ok) {
+                    const conversations = await response.json();
+                    console.log('✅ Conversations chargées:', conversations.length);
+                    
+                    showPersonalizedRecommendations(conversations);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement conversations:', error);
+            }
+        }
+
         function showPersonalizedRecommendations(conversations) {
             const beginnerChoices = ['conv_beginner_teacher', 'conv_simple_restaurant', 'conv_simple_shopping', 'conv_simple_directions'];
             const hasBeginnerConversations = conversations.some(conv => beginnerChoices.includes(conv.category));
             
             if (!hasBeginnerConversations && conversations.length === 0) {
-                // Premier utilisateur - suggérer Emma
                 highlightCard('conv_beginner_teacher');
             } else if (!hasBeginnerConversations && conversations.length > 0) {
-                // Utilisateur expérimenté - continuer avec les cours existants
                 console.log('Utilisateur expérimenté détecté');
             }
         }
 
-        // Fonction pour mettre en surbrillance une carte
         function highlightCard(choice) {
             const card = document.querySelector(`[href="course.html?choice=${choice}"]`);
             if (card) {
@@ -655,7 +649,94 @@
             }
         }
 
-        // Animation des nouvelles cartes
+        // ===== FONCTION LOGOUT =====
+        async function logout() {
+            const token = localStorage.getItem('access_token');
+            
+            if (token) {
+                try {
+                    await fetch('/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ token: token })
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la déconnexion:', error);
+                }
+            }
+            
+            localStorage.clear();
+            window.location.href = '/form-login.html';
+        }
+
+        // ===== GESTION UI =====
+        function initializeUI() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+
+            function toggleMobileMenu() {
+                mobileSidebar.classList.toggle('mobile-menu-open');
+                mobileSidebar.classList.toggle('mobile-menu-closed');
+                mobileOverlay.classList.toggle('hidden');
+            }
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            }
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Profile menu toggle
+            const profileBtn = document.getElementById('profile-btn');
+            const profileMenu = document.getElementById('profile-menu');
+
+            if (profileBtn && profileMenu) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', () => {
+                    profileMenu.classList.add('hidden');
+                });
+
+                profileMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            // Category filters
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const category = btn.getAttribute('data-category');
+                    
+                    // Update active button
+                    document.querySelectorAll('.category-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('border', 'border-gray-200');
+                    });
+                    btn.classList.add('active');
+                    btn.classList.remove('border', 'border-gray-200');
+
+                    // Filter cards
+                    const cards = document.querySelectorAll('.conv-card');
+                    cards.forEach(card => {
+                        if (category === 'conv-all' || card.classList.contains(category.replace('conv-', 'conv-'))) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+
         function animateNewCards() {
             const newCards = document.querySelectorAll('.conv-card[class*="beginner"]');
             newCards.forEach((card, index) => {
@@ -669,15 +750,30 @@
             });
         }
 
-        // Fonction logout
-        function logout() {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("userEmail");
-            localStorage.removeItem("nom");
-            window.location.href = "form-login.html";
-        }
+        // ===== INITIALISATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier l'authentification
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = '/form-login.html';
+                return;
+            }
 
-        // Animation des cartes au scroll
+            // Initialiser l'interface
+            initializeUI();
+            
+            // Charger les données utilisateur
+            loadUserInfoForHome();
+            loadUserStats();
+            
+            // Animations
+            animateNewCards();
+
+            console.log('🎉 Interface TalkAI Home chargée avec succès !');
+            console.log('🆕 Nouveaux personnages : Emma, Tom, Lucy, Ben disponibles !');
+        });
+
+        // ===== ANIMATIONS ET EFFETS =====
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -708,8 +804,8 @@
             });
         });
 
-        // Easter egg - clic sur le logo pour afficher les stats des nouveaux personnages
-        document.querySelector('[href="home.html"]').addEventListener('dblclick', async () => {
+        // Easter egg - double clic sur le logo
+        document.querySelector('[href="home.html"]')?.addEventListener('dblclick', async () => {
             try {
                 const response = await fetch('/beginner_characters_info');
                 if (response.ok) {
@@ -720,9 +816,6 @@
                 console.log('Informations des personnages non disponibles');
             }
         });
-
-        console.log('🎉 Interface TalkAI Home chargée avec succès !');
-        console.log('🆕 Nouveaux personnages : Emma, Tom, Lucy, Ben disponibles !');
     </script>
 </body>
 </html>

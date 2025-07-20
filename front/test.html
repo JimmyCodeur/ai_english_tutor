@@ -269,7 +269,7 @@
                 const response = await fetch(`/test_phi3_mike?test_message=${encodeURIComponent(message)}`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('accessToken') || 'demo_token'}`
+                        'Authorization': `Bearer ${localStorage.getItem('access_token') || 'demo_token'}`
                     }
                 });
                 

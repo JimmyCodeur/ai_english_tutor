@@ -1,25 +1,33 @@
 async function logout() {
-    try {
-        const accessToken = localStorage.getItem('accessToken');
-        const response = await fetch('http://127.0.0.1:8000/logout', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ token: accessToken }) 
-        });
-
-        if (response.ok) {
-            localStorage.removeItem('accessToken');
-            alert('Vous êtes maintenant déconnecté.');
-            window.location.href = 'form-login.html';
-        } else {
-            const errorMessage = await response.text();
-            alert(`Erreur lors de la déconnexion : ${errorMessage}`);
+    const token = localStorage.getItem('access_token');
+    
+    if (token) {
+        try {
+            // Informer le serveur de la déconnexion
+            await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ token: token })
+            });
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error);
         }
-    } catch (error) {
-        console.error('Erreur lors de la requête de déconnexion :', error);
-        alert('Erreur réseau lors de la déconnexion. Veuillez réessayer.');
     }
+    
+    // Nettoyer le localStorage
+    localStorage.clear();
+    
+    // Rediriger vers la page de connexion
+    window.location.href = '/form-login.html';
 }
+
+// Ajouter un écouteur pour le bouton de déconnexion
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+});
